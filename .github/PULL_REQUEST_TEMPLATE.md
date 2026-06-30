@@ -1,27 +1,27 @@
-## Descripción
+## Description
 
-¿Qué hace este PR? ¿Qué problema resuelve?
+What does this PR do? What problem does it solve?
 
-## Tipo de cambio
+## Type of change
 
-- [ ] feat: Nueva funcionalidad
-- [ ] fix: Corrección de errores
-- [ ] docs: Documentación
-- [ ] refactor: Mejora de código
-- [ ] chore: Mantenimiento
+- [ ] feat: New feature
+- [ ] fix: Bug fix
+- [ ] docs: Documentation
+- [ ] refactor: Code improvement
+- [ ] chore: Maintenance
 
 ## Checklist
 
-- [ ] El código funciona sin errores
-- [ ] No hay data leakage (scaler/encoder ajustados solo en train)
-- [ ] Notebook ejecutado de principio a fin
-- [ ] Métricas interpretadas y documentadas
-- [ ] No se suben datos sensibles ni archivos temporales
+- [ ] Code runs without errors
+- [ ] No data leakage (scaler/encoder fitted on train only)
+- [ ] Notebook executed from start to finish
+- [ ] Metrics interpreted and documented
+- [ ] No sensitive data or temporary files uploaded
 
-## ¿Cómo se ha probado?
+## Testing
 
-Describir brevemente cómo verificar que funciona.
+Briefly describe how to verify this works.
 
 ## Reviewer
 
-Asignar revisor cuando esté listo para merge.
+Assign reviewer when ready to merge.
