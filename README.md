@@ -1,54 +1,69 @@
 # Golden Forecast - DataScope Solutions
 
-## Contexto
+## Context
 
-Somos **DataScope Solutions**, consultora internacional de análisis de datos. Este proyecto aplica Machine Learning supervisado sobre datos históricos del oro para generar predicciones explicables.
+We are **DataScope Solutions**, an international data analytics consultancy. This project applies supervised Machine Learning to historical gold price data to generate explainable predictions.
 
-## Equipo
+## Team
 
-| Rol | Nombre |
-|-----|--------|
+| Role | Name |
+|------|------|
 | Product Owner | María |
 | Scrum Master | Juan |
 | Development Team | José, Gema, Joel |
 
-## Problema de negocio
+## Business Problem
 
-Predecir el comportamiento del precio del oro (GLD) usando datos históricos. Abordamos el problema desde dos enfoques:
+Predict the price movement of gold (GC=F) using historical data. We approach the problem from two angles:
 
-- **Regresión**: predecir el precio de cierre (valor numérico continuo)
-- **Clasificación**: predecir si el precio subirá o bajará al día siguiente (binario)
+- **Regression**: predict the closing price (continuous numerical value)
+- **Classification**: predict whether the price will go up or down next day (binary)
 
 ## Dataset
 
-Datos históricos del ETF **GLD** (Gold Trust) vía Yahoo Finance, desde 2010 hasta la actualidad. Variables principales: Open, High, Low, Close, Volume. Enriquecido con SP500 y USD Index como features externas.
+Historical data of **GC=F** (Gold Futures) via Yahoo Finance, from 2015 to present. Main variables: Open, High, Low, Close, Volume. Enriched with SP500 and USD Index as external features.
 
-## Stack tecnológico
+## Tech Stack
 
 Python · pandas · numpy · scikit-learn · matplotlib · seaborn · yfinance
 
-## Estructura del repositorio
+## Repository Structure
 
 ```
 golden-forecast/
-├── data/          # Datos crudos y procesados
-├── notebooks/     # Notebooks del pipeline completo
-├── src/           # Funciones reutilizables
-├── models/        # Modelos entrenados (.pkl)
-├── slides/        # Presentación final
-├── docs/          # Documentación y decisiones
+├── data/                # Raw and processed data
+│   └── README.md        # Data lineage
+├── notebooks/           # Pipeline notebooks
+├── src/                 # Reusable functions
+├── models/              # Trained models (.pkl)
+├── slides/              # Final presentation
+├── docs/
+│   ├── project_handbook.md   # Project governance
+│   ├── data_dictionary.md    # Variable definitions
+│   └── decision_log.md       # Decision registry
+├── .github/
+│   └── PULL_REQUEST_TEMPLATE.md
 ├── README.md
 ├── ROADMAP.md
 ├── requirements.txt
 └── .gitignore
 ```
 
-## Cómo ejecutar
+## How to Run
 
-1. Clonar el repositorio
+1. Clone the repository
 2. `pip install -r requirements.txt`
-3. Abrir y ejecutar los notebooks en orden numérico
+3. Open and run notebooks in numerical order
 
-## Licencia
+## Governance
 
-Proyecto académico sin fines comerciales.
+This project follows an Agile (Scrum) methodology with:
+- **Sprint planning** and daily syncs
+- **GitHub Flow**: feature branches + PRs with peer review
+- **Protected `main`** branch (no direct pushes)
+- **Decision Log** documenting all key technical choices
+- **Data lineage** tracked for full reproducibility
+
+## License
+
+Academic project for non-commercial use.
