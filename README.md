@@ -31,12 +31,18 @@ Python · pandas · numpy · scikit-learn · matplotlib · seaborn · yfinance
 
 ```
 golden-forecast/
-├── data/          # Raw and processed data
-├── notebooks/     # Pipeline notebooks
-├── src/           # Reusable functions
-├── models/        # Trained models (.pkl)
-├── slides/        # Final presentation
-├── docs/          # Documentation and decisions
+├── data/                # Raw and processed data
+│   └── README.md        # Data lineage
+├── notebooks/           # Pipeline notebooks
+├── src/                 # Reusable functions
+├── models/              # Trained models (.pkl)
+├── slides/              # Final presentation
+├── docs/
+│   ├── project_handbook.md   # Project governance
+│   ├── data_dictionary.md    # Variable definitions
+│   └── decision_log.md       # Decision registry
+├── .github/
+│   └── PULL_REQUEST_TEMPLATE.md
 ├── README.md
 ├── ROADMAP.md
 ├── requirements.txt
@@ -48,6 +54,15 @@ golden-forecast/
 1. Clone the repository
 2. `pip install -r requirements.txt`
 3. Open and run notebooks in numerical order
+
+## Governance
+
+This project follows an Agile (Scrum) methodology with:
+- **Sprint planning** and daily syncs
+- **GitHub Flow**: feature branches + PRs with peer review
+- **Protected `main`** branch (no direct pushes)
+- **Decision Log** documenting all key technical choices
+- **Data lineage** tracked for full reproducibility
 
 ## License
 
