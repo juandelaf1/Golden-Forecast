@@ -1,76 +1,3 @@
-# Golden Forecast - DataScope Solutions
-
-## Context
-
-We are **DataScope Solutions**, an international data analytics consultancy. This project applies supervised Machine Learning to historical gold price data to generate explainable predictions.
-
-## Team
-
-| Role | Name |
-|------|------|
-| Product Owner | María |
-| Scrum Master | Juan |
-| Development Team | José, Gema, Joel |
-
-## Business Problem
-
-Predict the price movement of gold (GC=F) using historical data. We approach the problem from two angles:
-
-- **Regression**: predict the closing price (continuous numerical value)
-- **Classification**: predict whether the price will go up or down next day (binary)
-
-## Dataset
-
-Historical data of **GC=F** (Gold Futures) via Yahoo Finance, from 2015 to present. Main variables: Open, High, Low, Close, Volume. Enriched with SP500 and USD Index as external features.
-
-## Tech Stack
-
-Python · pandas · numpy · scikit-learn · matplotlib · seaborn · yfinance
-
-## Repository Structure
-
-```
-golden-forecast/
-├── data/                # Raw and processed data
-│   └── README.md        # Data lineage
-├── notebooks/           # Pipeline notebooks
-├── src/                 # Reusable functions
-├── models/              # Trained models (.pkl)
-├── slides/              # Final presentation
-├── docs/
-│   ├── project_handbook.md   # Project governance
-│   ├── data_dictionary.md    # Variable definitions
-│   └── decision_log.md       # Decision registry
-├── .github/
-│   └── PULL_REQUEST_TEMPLATE.md
-├── README.md
-├── ROADMAP.md
-├── requirements.txt
-└── .gitignore
-```
-
-## How to Run
-
-1. Clone the repository
-2. `pip install -r requirements.txt`
-3. Open and run notebooks in numerical order
-
-## Governance
-
-This project follows an Agile (Scrum) methodology with:
-- **Sprint planning** and daily syncs
-- **GitHub Flow**: feature branches + PRs with peer review
-- **Protected `main`** branch (no direct pushes)
-- **Decision Log** documenting all key technical choices
-- **Data lineage** tracked for full reproducibility
-
-## License
-
-Academic project for non-commercial use.
-
-
----
-
 <p align="center">
   <img src="src/dashboard/assets/banner.png" alt="Golden Forecast Banner" width="800">
 </p>
@@ -87,29 +14,119 @@ Academic project for non-commercial use.
   <img src="https://img.shields.io/badge/License-MIT-green" alt="License">
 </p>
 
+---
+
+# Golden Forecast - DataScope Solutions
+
+Somos **DataScope Solutions**, consultora internacional de analisis de datos. Este proyecto aplica Machine Learning supervisado sobre datos historicos del oro para generar predicciones explicables.
+
+## Problema de Negocio
+
+Predecir el comportamiento del precio del oro (GC=F) usando datos historicos y macroeconomicos (DXY, VIX, TNX). Abordamos el problema desde dos enfoques:
+
+- **Clasificacion**: predecir si el oro sube o baja al dia siguiente (binaria y multiclase)
+- **Regresion**: predecir el precio de cierre (valor continuo)
+
+## Equipo
+
+| Rol | Nombre |
+|-----|--------|
+| Product Owner | Maria |
+| Scrum Master | Juan |
+| Development Team | Jose, Gema, Joel |
+
+## Dataset
+
+Datos diarios de **GC=F** (Gold Futures) via Yahoo Finance desde 2015. Enriquecido con 3 indicadores macro:
+
+- **DXY**: indice del dolar (relacion inversa con el oro)
+- **VIX**: indice de volatilidad/miedo (oro como activo refugio)
+- **TNX**: bono USA 10 anos (tipos altos = oro menos atractivo)
+
+## Stack Tecnologico
+
+Python, pandas, numpy, scikit-learn, matplotlib, seaborn, yfinance, Plotly Dash
+
+## Estructura del Repositorio
+
+```
+golden-forecast/
+├── data/
+│   ├── raw/                    # Datos crudos (gold-macro-data.csv)
+│   ├── processed/              # Datos procesados (gold-features.csv)
+│   └── README.md               # Lineage de datos
+├── notebooks/
+│   ├── EDA_Golden_Forecast.ipynb   # Analisis exploratorio
+│   ├── 02_preprocessing.ipynb      # Preprocesamiento
+│   └── 03_classification.ipynb     # Clasificacion
+├── src/
+│   ├── extract/extract.py      # Descarga de datos Yahoo Finance
+│   ├── preprocessing.py        # Limpieza y renombrado de columnas
+│   ├── feature_engineering.py  # Features tecnicas y macro
+│   ├── targets.py              # Construccion de targets
+│   ├── pipeline.py             # Split temporal, escalado, pipeline
+│   ├── classification.py       # Modelos de clasificacion
+│   └── dashboard/              # Dashboard Plotly Dash
+├── docs/
+│   ├── project_handbook.md     # Gobernanza del proyecto
+│   ├── data_dictionary.md      # Definicion de variables
+│   └── decision_log.md         # Registro de decisiones
+├── models/                     # Modelos entrenados (.pkl)
+├── .github/
+│   └── PULL_REQUEST_TEMPLATE.md
+├── README.md
+├── ROADMAP.md
+├── requirements.txt
+└── .gitignore
+```
+
+## Pipeline de ML
+
+```
+extract.py → preprocessing.py → feature_engineering.py → targets.py → pipeline.py → classification.py
+     ↓              ↓                    ↓                   ↓             ↓              ↓
+  Datos crudos   Columnas limpias   Features tecnicas   Target binario  Split train/test  Modelos
+                 y renombradas      y macro              y multiclase   y escalado        evaluados
+```
+
+## Como Ejecutar
+
+```bash
+# 1. Clonar el repositorio
+git clone https://github.com/juandelaf1/Golden-Forecast.git
+
+# 2. Instalar dependencias
+pip install -r requirements.txt
+
+# 3. Descargar datos
+python src/extract/extract.py
+
+# 4. Ejecutar notebooks en orden
+#    EDA_Golden_Forecast.ipynb → 02_preprocessing.ipynb → 03_classification.ipynb
+```
+
 ## Dashboard
 
-The **Wild-West slot machine** dashboard is available at http://localhost:8050 with the following sections:
+Dashboard **Wild-West Saloon** disponible en http://localhost:8050:
 
-- Price: gold chart with RSI, MACD and volatility
-- Macro: correlations with DXY, VIX, TNX
-- Models: accuracy comparison across 4 models
-- Backtest: strategy performance vs Buy and Hold
-- Simulation: trading simulator on historical data
+- **Price**: grafico del oro con RSI, MACD y volatilidad
+- **Macro**: correlaciones con DXY, VIX, TNX
+- **Models**: comparacion de accuracy entre modelos
+- **Backtest**: rendimiento de estrategia vs Buy and Hold
+- **Simulation**: simulador de trading en datos historicos
 
-To run it:
 ```bash
 python src/dashboard/app.py
 ```
 
----
+## Gobernanza (Scrum)
 
-## Version en Espanol
+- **Sprint Planning** y daily syncs
+- **GitHub Flow**: ramas feature/ + PRs con revision por pares
+- **Main protegido** (sin pushes directos)
+- **Decision Log** documentando decisiones tecnicas clave
+- **Data lineage** para trazabilidad y reproducibilidad
 
-Somos **DataScope Solutions**, consultora internacional de analisis de datos. Este proyecto aplica Machine Learning supervisado sobre datos historicos del oro para generar predicciones explicables.
+## License
 
-**Problema de negocio**: predecir el comportamiento del precio del oro (GC=F) usando datos historicos y macroeconomicos (DXY, VIX, TNX). Abordamos el problema desde regresion y clasificacion (binaria y multiclase).
-
-**Dataset**: datos diarios de GC=F, DXY, VIX y TNX via Yahoo Finance desde 2015.
-
-**Dashboard**: tragaperras del lejano oeste en http://localhost:8050 con secciones de precio, macro, modelos, backtest y simulacion.
+Proyecto academico para uso no comercial.

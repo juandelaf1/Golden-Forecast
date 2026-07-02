@@ -121,14 +121,14 @@ El objetivo es determinar si es posible construir un modelo predictivo que permi
 
 El equipo deberá:
 
-* Determinar si el problema se aborda como clasificación o regresión.
-* Definir el target adecuado.
+* Abordar el problema desde clasificación (sube/baja) y regresión (precio continuo).
+* Definir targets binario y multiclase.
 * Construir un pipeline completo de Machine Learning supervisado.
-* Evaluar el rendimiento predictivo del modelo.
+* Evaluar el rendimiento predictivo de los modelos.
 * Traducir resultados técnicos a lenguaje de negocio.
 * Comunicar conclusiones de manera clara y comprensible.
 
-**Estado actual:** Dataset definitivo pendiente de selección.
+**Estado actual:** Dataset seleccionado (GC=F + DXY + VIX + TNX, 2015-presente). Pipeline de ML en `src/` con módulos de extracción, preprocesamiento, feature engineering, targets y clasificación.
 
 ---
 
@@ -310,15 +310,9 @@ Una tarea está completada si:
 
 ---
 
-## 13. Registro de Decisiones (Decision Log)
+## 13. Registro de Decisiones
 
-| Fecha      | Decisión                                           | Justificación                                                     |
-| ---------- | -------------------------------------------------- | ----------------------------------------------------------------- |
-| 29/06/2026 | Selección de dataset                               | Pendiente                                                         |
-| 30/06/2026 | María designada Product Owner                      | Responsable de visión de negocio                                  |
-| 30/06/2026 | Juan designado Scrum Master                        | Responsable de coordinación y seguimiento                         |
-| 30/06/2026 | José, Gema y Joel asignados al Development Team    | Distribución de responsabilidades técnicas                        |
-| 30/06/2026 | Evaluación del precio del oro como caso de estudio | Posible aplicación de modelos predictivos sobre series temporales |
+Ver `docs/decision_log.md` para el registro completo y actualizado de decisiones técnicas del proyecto.
 
 ---
 
