@@ -30,17 +30,16 @@ def build_layout() -> html.Div:
                 className='machine-shell',
                 children=[
 # ── Tapa superior con remaches ──
-                     html.Div(
-                         className='machine-top',
-                         style={'position': 'relative'},
-                         children=[
-                             html.Img(src='/assets/logo.png', className='machine-logo', style={'height': '48px', 'marginRight': '12px'}),
-                             html.Div(
-                                 'Intelligence · Insight · Trust',
-                                 className='machine-subtitle',
-                             ),
-                         ],
-                     ),
+                      html.Div(
+                          className='machine-top',
+                          style={'position': 'relative'},
+                          children=[
+                              html.Div(
+                                  'Intelligence · Insight · Trust',
+                                  className='machine-subtitle',
+                              ),
+                          ],
+                      ),
 
                     # ── Cinta móvil Wanted Ticker ──
                      html.Div(
@@ -81,14 +80,14 @@ def build_layout() -> html.Div:
                                                                  ),
                                                          ],
                                                      ),
-                                                     html.Img(src='/assets/logo.png', className='hero-logo', style={'height': '64px'}),
+                                                     html.Img(src='/assets/logo.png', className='hero-logo', style={'height': '80px'}),
                                                  ],
                                              ),
                                          ],
                                      ),
 
-                                    # ── Tabs con lenguaje B2B ──
-dcc.Tabs(
+# ── Tabs con lenguaje B2B ──
+                                     dcc.Tabs(
                                          id='dashboard-tabs',
                                          value='tab-summary',
                                          className='dashboard-tabs',
@@ -100,8 +99,32 @@ dcc.Tabs(
                                                  selected_className='tab-button--selected',
                                              ),
                                              dcc.Tab(
-                                                 label='Análisis Completo',
-                                                 value='tab-deep-dive',
+                                                 label='Precio y Señales',
+                                                 value='tab-price',
+                                                 className='tab-button',
+                                                 selected_className='tab-button--selected',
+                                             ),
+                                             dcc.Tab(
+                                                 label='Indicadores Técnicos',
+                                                 value='tab-indicators',
+                                                 className='tab-button',
+                                                 selected_className='tab-button--selected',
+                                             ),
+                                             dcc.Tab(
+                                                 label='Correlaciones Macro',
+                                                 value='tab-macro',
+                                                 className='tab-button',
+                                                 selected_className='tab-button--selected',
+                                             ),
+                                             dcc.Tab(
+                                                 label='Backtest y Estrategia',
+                                                 value='tab-backtest',
+                                                 className='tab-button',
+                                                 selected_className='tab-button--selected',
+                                             ),
+                                             dcc.Tab(
+                                                 label='Simulación',
+                                                 value='tab-sim',
                                                  className='tab-button',
                                                  selected_className='tab-button--selected',
                                              ),

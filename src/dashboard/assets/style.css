@@ -51,7 +51,7 @@ h1, h2, h3, h4, h5, h6, .hero-title, .section-title, .card-title, .section-title
 .metric-label, .metric-value, .input-label, .footer-title, .audio-label,
 .ticker-label, .ticker-value, .machine-label, .button-wanted {
   font-family: 'Rye', 'Smokum', serif !important;
-  font-weight: 700 !important;
+  font-weight: 400 !important;
 }
 
 .section-text, .hero-subtitle, .machine-subtitle, .help-copy, .help-point, .help-note,
@@ -864,7 +864,7 @@ body {
 
 .machine-shell {
   position: relative;
-  max-width: 1240px;
+  max-width: 1500px;
   margin: 0 auto;
   padding: 26px;
   background:

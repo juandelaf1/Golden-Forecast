@@ -54,8 +54,16 @@ def register_callbacks(app):
     def render_tab(active_tab):
         if active_tab == 'tab-summary':
             return build_summary_tab()
-        if active_tab == 'tab-deep-dive':
-            return build_deep_dive_tab()
+        if active_tab == 'tab-price':
+            return build_price_tab()
+        if active_tab == 'tab-indicators':
+            return build_indicators_tab()
+        if active_tab == 'tab-macro':
+            return build_macro_tab()
+        if active_tab == 'tab-backtest':
+            return build_backtest_tab()
+        if active_tab == 'tab-sim':
+            return build_simulation_tab()
         if active_tab == 'tab-metrics':
             return build_metrics_tab()
         if active_tab == 'tab-governance':
@@ -456,6 +464,209 @@ def build_methodology_tab() -> html.Div:
     ])
 
 
+def build_price_tab() -> html.Div:
+    return html.Div(
+        className='section-panel',
+        children=[
+            html.Div(
+                className='section-copy',
+                children=[
+                    html.H2('Precio y Señales', className='section-title'),
+                    html.P(
+                        'Precio histórico del oro con señales del modelo (estrellas) y media móvil de 21 períodos.',
+                        className='section-text',
+                    ),
+                ],
+            ),
+            html.Div(
+                className='wide-card',
+                children=[
+                    html.Div('Precio del Oro y Señales del Modelo', className='card-title'),
+                    dcc.Loading(type='dot', children=dcc.Graph(id='price-chart', figure=build_price_figure(), config={'displayModeBar': False})),
+                ],
+            ),
+        ],
+    )
+
+
+def build_indicators_tab() -> html.Div:
+    return html.Div(
+        className='section-panel',
+        children=[
+            html.Div(
+                className='section-copy',
+                children=[
+                    html.H2('Indicadores Técnicos', className='section-title'),
+                    html.P(
+                        'RSI (14), MACD y volatilidad para identificar condiciones de sobrecompra/sobreventa y cambios de tendencia.',
+                        className='section-text',
+                    ),
+                ],
+            ),
+            html.Div(
+                className='chart-grid',
+                children=[
+                    html.Div(
+                        className='graph-card',
+                        children=[
+                            html.Div('RSI (14)', className='card-title'),
+                            dcc.Loading(type='dot', children=dcc.Graph(id='indicators-rsi', figure=build_rsi_figure(), config={'displayModeBar': False})),
+                        ],
+                    ),
+                    html.Div(
+                        className='graph-card',
+                        children=[
+                            html.Div('MACD', className='card-title'),
+                            dcc.Loading(type='dot', children=dcc.Graph(id='indicators-macd', figure=build_macd_figure(), config={'displayModeBar': False})),
+                        ],
+                    ),
+                ],
+            ),
+        ],
+    )
+
+
+def build_macro_tab() -> html.Div:
+    return html.Div(
+        className='section-panel',
+        children=[
+            html.Div(
+                className='section-copy',
+                children=[
+                    html.H2('Correlaciones Macro', className='section-title'),
+                    html.P(
+                        'Relación del oro con DXY (dólar), VIX (volatilidad) y TNX (bonos). Panel inferior: indicadores normalizados.',
+                        className='section-text',
+                    ),
+                ],
+            ),
+            html.Div(
+                className='wide-card',
+                children=[
+                    html.Div('Correlaciones y Normalizados', className='card-title'),
+                    dcc.Loading(type='dot', children=dcc.Graph(id='macro-chart', figure=build_macro_figure(), config={'displayModeBar': False})),
+                ],
+            ),
+        ],
+    )
+
+
+def build_backtest_tab() -> html.Div:
+    return html.Div(
+        className='section-panel',
+        children=[
+            html.Div(
+                className='section-copy',
+                children=[
+                    html.H2('Backtest y Estrategia', className='section-title'),
+                    html.P(
+                        'Rendimiento de la estrategia ML vs Buy & Hold, alpha generado y precisión del modelo en el tiempo.',
+                        className='section-text',
+                    ),
+                ],
+            ),
+            html.Div(
+                className='overview-row',
+                children=[
+                    html.Div(
+                        className='wide-card',
+                        children=[
+                            html.Div('Estrategia ML vs Buy & Hold', className='card-title'),
+                            dcc.Loading(type='dot', children=dcc.Graph(id='backtest-chart', figure=build_backtest_figure(), config={'displayModeBar': False})),
+                        ],
+                    ),
+                    html.Div(
+                        className='narrow-card',
+                        children=[
+                            html.Div('Precisión en el Tiempo', className='card-title'),
+                            dcc.Loading(type='dot', children=dcc.Graph(id='learning-chart', figure=build_learning_curve_figure(), config={'displayModeBar': False})),
+                        ],
+                    ),
+                ],
+            ),
+            html.Div(
+                className='overview-row',
+                children=[
+                    html.Div(
+                        className='wide-card',
+                        children=[
+                            html.Div('Predicción vs Realidad', className='card-title'),
+                            dcc.Loading(type='dot', children=dcc.Graph(id='deviation-chart', figure=build_prediction_deviation_figure(), config={'displayModeBar': False})),
+                        ],
+                    ),
+                    html.Div(
+                        className='narrow-card',
+                        children=[
+                            html.Div('Métricas del Modelo', className='card-title'),
+                            dcc.Loading(type='dot', children=dcc.Graph(id='model-chart', figure=build_model_figure(), config={'displayModeBar': False})),
+                        ],
+                    ),
+                ],
+            ),
+        ],
+    )
+
+
+def build_simulation_tab() -> html.Div:
+    return html.Div(
+        className='section-panel',
+        children=[
+            html.Div(
+                className='section-copy',
+                children=[
+                    html.H2('Simulación de Escenario', className='section-title'),
+                    html.P(
+                        'Simula el comportamiento de la cartera siguiendo las señales del modelo en un período personalizado.',
+                        className='section-text',
+                    ),
+                ],
+            ),
+            html.Div(
+                className='simulation-panel',
+                children=[
+                    html.Div('Parámetros', className='card-title'),
+                    html.Div(
+                        className='simulation-controls',
+                        children=[
+                            html.Div(
+                                className='input-group',
+                                children=[
+                                    html.Label('Fecha inicio', className='input-label'),
+                                    dcc.DatePickerSingle(id='sim-start', date=context['data'].index[context['split_index']].date(), display_format='YYYY-MM-DD', className='date-picker'),
+                                ],
+                            ),
+                            html.Div(
+                                className='input-group',
+                                children=[
+                                    html.Label('Fecha fin', className='input-label'),
+                                    dcc.DatePickerSingle(id='sim-end', date=context['data'].index[-1].date(), display_format='YYYY-MM-DD', className='date-picker'),
+                                ],
+                            ),
+                            html.Div(
+                                className='input-group',
+                                children=[
+                                    html.Label('Capital inicial', className='input-label'),
+                                    dcc.Input(id='sim-capital', type='number', min=1000, max=1000000, step=1000, value=10000, className='input-field'),
+                                ],
+                            ),
+                            html.Button('EJECUTAR SIMULACIÓN', id='simulate-button', className='control-button', n_clicks=0),
+                        ],
+                    ),
+                    html.Div(
+                        className='stats-grid',
+                        children=[
+                            build_stat_card('Valor final', '$0', 'Resultado de la simulación', '#F2EBE1'),
+                            build_stat_card('Retorno', '0.0%', 'Rentabilidad de la simulación', '#F2EBE1'),
+                            build_stat_card('Operaciones', '0', 'Número de señales ejecutadas', '#F2EBE1'),
+                        ],
+                    ),
+                    dcc.Loading(type='dot', children=dcc.Graph(id='sim-chart', figure=build_simulation_placeholder(), config={'displayModeBar': False})),
+                ],
+            ),
+        ],
+    )
+
+
 def build_stat_card(title, value, subtitle, help_text=None, accent='#D4AF37') -> html.Div:
     children = [
         html.Div(title, className='metric-label'),
@@ -554,6 +765,41 @@ def build_rsi_figure() -> go.Figure:
     fig.update_layout(**PLOT_THEME, height=340, hovermode='x unified')
     fig.update_xaxes(**AXIS_THEME)
     fig.update_yaxes(**AXIS_THEME, title_text='RSI')
+    return fig
+
+
+def build_macd_figure() -> go.Figure:
+    df = context['data']
+    fig = go.Figure()
+    fig.add_trace(
+        go.Scatter(
+            x=df.index,
+            y=df['macd'],
+            name='MACD',
+            line={'color': '#D4AF37', 'width': 2},
+        )
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=df.index,
+            y=df['macd_signal'],
+            name='Señal',
+            line={'color': '#AC7D3D', 'width': 2, 'dash': 'dot'},
+        )
+    )
+    fig.add_trace(
+        go.Bar(
+            x=df.index,
+            y=df['macd'] - df['macd_signal'],
+            name='Histograma',
+            marker_color='#E8C34A',
+            opacity=0.6,
+        )
+    )
+    fig.add_hline(y=0, line_color='#5C4732', line_width=1)
+    fig.update_layout(**PLOT_THEME, height=340, hovermode='x unified')
+    fig.update_xaxes(**AXIS_THEME)
+    fig.update_yaxes(**AXIS_THEME, title_text='MACD')
     return fig
 
 
