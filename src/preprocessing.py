@@ -20,20 +20,6 @@ def rename_columns(df):
     """
     Renombra las columnas originales del dataset.
 
-    El objetivo es dejar nombres más claros y consistentes:
-    - gold: oro
-    - dxy: índice dólar
-    - vix: volatilidad del mercado
-    - tnx: bono americano a 10 años
-
-    Así evitamos columnas genéricas como Close, High, Low u Open.
-    """
-    df = df.copy()
-
-def rename_columns(df):
-    """
-    Renombra las columnas originales del dataset.
-
     El CSV original trae nombres largos con esta estructura:
     Gold_('Close', 'GC=F')
     DXY_('Close', 'DX-Y.NYB')
@@ -86,7 +72,6 @@ def drop_uninformative_columns(df):
     df = df.copy()
 
     columns_to_drop = [
-        "gold_volume",
         "dxy_volume",
         "vix_volume",
         "tnx_volume",
