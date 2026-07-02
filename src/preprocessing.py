@@ -1,52 +1,50 @@
-"""
-Módulo de preprocesamiento básico.
-
-Este archivo contiene funciones reutilizables para preparar el dataset
-antes de crear features, targets o entrenar modelos.
-
-Incluye:
-- Conversión de fechas.
-- Renombrado de columnas.
-- Eliminación de columnas poco informativas.
-- Tratamiento de valores nulos.
-"""
-
 import pandas as pd
 
 
-def convert_date(df: pd.DataFrame) -> pd.DataFrame:
+def convert_date(df):
     """
-    Convierte la columna Date a formato datetime.
+    Convierte la columna Date a formato fecha.
 
-    Recibe:
-        df: DataFrame original.
-
-    Devuelve:
-        DataFrame con Date convertida a tipo fecha.
+    Esto es importante porque más adelante el dataset se trabaja como
+    serie temporal. Si Date se queda como texto, no podremos ordenar,
+    filtrar o dividir correctamente por fechas.
     """
-
-    # Hacemos una copia para no modificar el DataFrame original directamente
     df = df.copy()
 
-    # Convertimos la columna Date de texto a formato fecha
     df["Date"] = pd.to_datetime(df["Date"])
 
     return df
 
 
-def rename_columns(df: pd.DataFrame) -> pd.DataFrame:
+def rename_columns(df):
     """
-    Renombra las columnas descargadas desde yfinance.
+    Renombra las columnas originales del dataset.
 
-    Los nombres originales son largos y difíciles de manejar.
-    Aquí los convertimos a nombres simples y consistentes.
+    El objetivo es dejar nombres más claros y consistentes:
+    - gold: oro
+    - dxy: índice dólar
+    - vix: volatilidad del mercado
+    - tnx: bono americano a 10 años
+
+    Así evitamos columnas genéricas como Close, High, Low u Open.
     """
-
-    # Hacemos una copia para evitar modificar el DataFrame original
     df = df.copy()
 
-    # Diccionario con nombres originales y nombres nuevos
-    column_mapping = {
+def rename_columns(df):
+    """
+    Renombra las columnas originales del dataset.
+
+    El CSV original trae nombres largos con esta estructura:
+    Gold_('Close', 'GC=F')
+    DXY_('Close', 'DX-Y.NYB')
+    VIX_('Close', '^VIX')
+    TNX_('Close', '^TNX')
+
+    Aquí los convertimos a nombres simples y consistentes.
+    """
+    df = df.copy()
+
+    df = df.rename(columns={
         "Gold_('Close', 'GC=F')": "gold_close",
         "Gold_('High', 'GC=F')": "gold_high",
         "Gold_('Low', 'GC=F')": "gold_low",
@@ -70,52 +68,79 @@ def rename_columns(df: pd.DataFrame) -> pd.DataFrame:
         "TNX_('Low', '^TNX')": "tnx_low",
         "TNX_('Open', '^TNX')": "tnx_open",
         "TNX_('Volume', '^TNX')": "tnx_volume",
-    }
-
-    # Aplicamos el renombrado
-    df = df.rename(columns=column_mapping)
+    })
 
     return df
 
 
-def drop_uninformative_columns(df: pd.DataFrame) -> pd.DataFrame:
+def drop_uninformative_columns(df):
     """
-    Elimina columnas poco informativas para el modelo.
+    Elimina columnas de volumen.
 
-    En este dataset mantenemos gold_volume, pero eliminamos volúmenes
-    de índices macro que suelen venir con ceros o aportar poca información.
+    En este dataset los volúmenes no se van a usar como variables
+    predictoras principales, por eso se eliminan en la limpieza inicial.
+
+    errors="ignore" evita que el programa falle si alguna de estas columnas
+    no existe en una versión futura del dataset.
     """
-
-    # Hacemos una copia del DataFrame
     df = df.copy()
 
-    # Columnas que decidimos eliminar
     columns_to_drop = [
+        "gold_volume",
         "dxy_volume",
         "vix_volume",
         "tnx_volume",
     ]
 
-    # Eliminamos solo las columnas que existan en el DataFrame
     df = df.drop(columns=columns_to_drop, errors="ignore")
 
     return df
 
 
-def remove_missing_values(df: pd.DataFrame) -> pd.DataFrame:
+def remove_missing_values(df):
     """
     Elimina filas con valores nulos.
 
-    Esta función se puede usar:
-    - después de cargar y revisar el dataset original;
-    - después del feature engineering, cuando se generan nulos naturales
-      por retornos, medias móviles o target futuro.
+    En este proyecto se decidió eliminar los registros incompletos porque
+    eran pocos y no compensaba imputarlos.
     """
-
-    # Hacemos una copia para no modificar el DataFrame original
     df = df.copy()
 
-    # Eliminamos cualquier fila que tenga al menos un valor nulo
     df = df.dropna()
 
     return df
+
+
+def clean_gold_data(input_path, output_path):
+    """
+    Ejecuta la limpieza inicial del dataset y genera un CSV limpio.
+
+    Flujo:
+    1. Cargar dataset original desde data/raw.
+    2. Convertir Date a formato datetime.
+    3. Renombrar columnas.
+    4. Eliminar columnas poco útiles.
+    5. Eliminar valores nulos.
+    6. Guardar el resultado en data/processed.
+
+    Este archivo limpio será la entrada para feature_engineering.py.
+    """
+    df = pd.read_csv(input_path)
+
+    df = convert_date(df)
+    df = rename_columns(df)
+    df = drop_uninformative_columns(df)
+    df = remove_missing_values(df)
+
+    df.to_csv(output_path, index=False)
+
+    print(f"Dataset limpio guardado en {output_path} | shape: {df.shape}")
+
+    return df
+
+
+if __name__ == "__main__":
+    clean_gold_data(
+        "data/raw/gold-macro-data.csv",
+        "data/processed/gold-clean.csv"
+    )
