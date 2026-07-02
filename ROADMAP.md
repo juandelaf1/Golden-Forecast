@@ -16,7 +16,7 @@
 | Milestone | Assigned to | Estado |
 |-----------|-------------|--------|
 | Classification model: baseline + Random Forest | Juan | ✅ `src/classification.py` + `03_classification.ipynb` |
-| Regression model: baseline + Random Forest | Joel | En progreso |
+| Regression model: baseline + Random Forest | Joel | ✅ PR #35 mergeado |
 
 **Deliverable**: Notebooks `03_classification.ipynb` and `04_regression.ipynb` with trained models and metrics
 
@@ -38,8 +38,6 @@
 |---------|-------------|---------|
 | `extract/extract.py` | Joel | Descarga datos de Yahoo Finance |
 | `preprocessing.py` | Gema | Limpieza, renombrado de columnas, eliminación de nulos |
-| `feature_engineering.py` | Gema | Retornos, rangos, open-close, medias móviles |
-| `targets.py` | Gema | Target binario y multiclase |
-| `pipeline.py` | Gema | Split temporal, escalado, pipeline sklearn |
+| `feature_engineering.py` | Gema | Retornos, rangos, open-close, medias móviles, features macro |
 | `classification.py` | Juan | Modelos de clasificación, evaluación, backtesting |
 | `dashboard/` | Juan | Dashboard Plotly Dash |

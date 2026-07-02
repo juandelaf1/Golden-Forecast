@@ -53,7 +53,7 @@ Python, pandas, numpy, scikit-learn, matplotlib, seaborn, yfinance, Plotly Dash
 golden-forecast/
 ├── data/
 │   ├── raw/                    # Datos crudos (gold-macro-data.csv)
-│   ├── processed/              # Datos procesados (gold-features.csv)
+│   ├── processed/              # Datos procesados (gold-clean.csv, gold-features.csv)
 │   └── README.md               # Lineage de datos
 ├── notebooks/
 │   ├── EDA_Golden_Forecast.ipynb   # Analisis exploratorio
@@ -63,8 +63,6 @@ golden-forecast/
 │   ├── extract/extract.py      # Descarga de datos Yahoo Finance
 │   ├── preprocessing.py        # Limpieza y renombrado de columnas
 │   ├── feature_engineering.py  # Features tecnicas y macro
-│   ├── targets.py              # Construccion de targets
-│   ├── pipeline.py             # Split temporal, escalado, pipeline
 │   ├── classification.py       # Modelos de clasificacion
 │   └── dashboard/              # Dashboard Plotly Dash
 ├── docs/
@@ -83,10 +81,11 @@ golden-forecast/
 ## Pipeline de ML
 
 ```
-extract.py → preprocessing.py → feature_engineering.py → targets.py → pipeline.py → classification.py
-     ↓              ↓                    ↓                   ↓             ↓              ↓
-  Datos crudos   Columnas limpias   Features tecnicas   Target binario  Split train/test  Modelos
-                 y renombradas      y macro              y multiclase   y escalado        evaluados
+extract.py → preprocessing.py → feature_engineering.py → classification.py
+     ↓              ↓                    ↓                    ↓
+  Datos crudos   Columnas limpias   Features tecnicas    Modelos de
+                 y renombradas      y macro              clasificacion
+                                                      evaluados
 ```
 
 ## Como Ejecutar

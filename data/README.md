@@ -24,24 +24,26 @@
 ## Processing Pipeline
 
 ```
-extract.py → preprocessing.py → feature_engineering.py → targets.py → pipeline.py
-     ↓              ↓                    ↓                   ↓             ↓
-  data/raw/      Columnas            Features            Target        Split + Escalado
-  gold-macro-    renombradas         técnicas            binario       temporal
-  data.csv       y limpiadas         y macro             multiclase
+extract.py → preprocessing.py → feature_engineering.py → classification.py
+     ↓              ↓                    ↓                    ↓
+   data/raw/      Columnas           Features              Modelos de
+   gold-macro-    renombradas        técnicas y            clasificación
+   data.csv       y limpiadas        macro                 evaluados
 ```
 
 ## Storage
 
 - **Raw**: `data/raw/gold-macro-data.csv` (immutable, never modified)
-- **Processed**: `data/processed/gold-features.csv` (output of full pipeline)
+- **Processed**: `data/processed/gold-clean.csv` (cleaned data)
+- **Features**: `data/processed/gold-features.csv` (features + targets for modeling)
 
 ## Reproducibility
 
 ```bash
 python src/extract/extract.py          # Descargar datos crudos
-python src/preprocessing.py            # (Opcional) Generar CSV limpio
-python src/feature_engineering.py      # (Opcional) Generar CSV con features
+python src/preprocessing.py            # Generar CSV limpio (gold-clean.csv)
+python src/feature_engineering.py      # Generar CSV con features (gold-features.csv)
+python src/classification.py           # Entrenar y evaluar modelos
 ```
 
 O ejecutar los notebooks en orden:
