@@ -1,5 +1,5 @@
 /* cache-bust: 2026-07-02T12:00:00Z */
-@import url('https://fonts.googleapis.com/css2?family=Rye&family=Smokum&family=Space+Mono:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Rye&family=Smokum&family=Space+Mono:wght@400;600&display=swap');
 
 :root {
   color-scheme: dark;
@@ -40,6 +40,25 @@ body {
   background: radial-gradient(circle at 50% -10%, rgba(255, 196, 77, 0.14), transparent 25%),
     linear-gradient(180deg, #150c07 0%, #0b0502 55%, #1b1110 100%);
   color: var(--text);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+h1, h2, h3, h4, h5, h6, .hero-title, .section-title, .card-title, .section-title,
+.machine-title, .badge-label, .badge-value, .tab-button, .help-summary,
+.metric-label, .metric-value, .input-label, .footer-title, .audio-label,
+.ticker-label, .ticker-value, .machine-label, .button-wanted {
+  font-family: 'Rye', 'Smokum', serif !important;
+  font-weight: 700 !important;
+}
+
+.section-text, .hero-subtitle, .machine-subtitle, .help-copy, .help-point, .help-note,
+.metric-note, .metric-help-text, .metric-help-summary, .governance-markdown,
+.footer-detail, .ticker-content, .summary-grid, .stats-grid {
+  font-family: 'Inter', system-ui, sans-serif !important;
+  font-weight: 400 !important;
 }
 
 body {
@@ -130,6 +149,26 @@ body {
   100% { transform: translate(var(--drift, 30px), calc(-1 * var(--rise, 60px))); }
 }
 
+/* Fix plotly hover labels and modebar */
+.hovertext, .plotly-hovertext, .hoverlabel {
+  font-family: 'Inter', system-ui, sans-serif !important;
+  font-size: 12px !important;
+}
+
+.modebar {
+  opacity: 0 !important;
+  transition: opacity 0.3s ease !important;
+}
+
+.plotly-graph-div:hover .modebar {
+  opacity: 1 !important;
+}
+
+/* Force Inter font for all plotly text */
+.xtitle, .ytitle, .legendtext, .annotation-text {
+  font-family: 'Inter', system-ui, sans-serif !important;
+}
+
 .button-wanted {
   background: var(--signal-buy) !important;
   color: var(--text) !important;
@@ -168,12 +207,12 @@ body {
   height: 64px;
   margin: 18px 0;
   overflow: hidden;
-  background: linear-gradient(180deg, rgba(232, 195, 74, 0.08), rgba(0, 0, 0, 0.2));
-  border: 2px solid rgba(232, 195, 74, 0.15);
+  background: linear-gradient(180deg, rgba(232, 195, 74, 0.04), rgba(0, 0, 0, 0.12));
+  border: 1px solid rgba(232, 195, 74, 0.10);
   border-radius: 16px;
   box-shadow:
-    inset 0 0 20px rgba(232, 195, 74, 0.05),
-    0 4px 12px rgba(0, 0, 0, 0.3);
+    inset 0 0 20px rgba(232, 195, 74, 0.03),
+    0 4px 12px rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(4px);
 }
 
@@ -363,6 +402,41 @@ body {
   background: linear-gradient(180deg, rgba(232, 195, 74, 0.04), rgba(0, 0, 0, 0.10));
   border: 1px solid rgba(232, 195, 74, 0.10);
   border-radius: 22px;
+}
+
+.hero-copy {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 24px;
+}
+
+.hero-text {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hero-logo {
+  flex-shrink: 0;
+}
+
+.hero-copy {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.hero-logo {
+  flex-shrink: 0;
+}
+
+.hero-text {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .hero-title {
