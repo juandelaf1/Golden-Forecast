@@ -28,3 +28,5 @@
 | 02/07/2026 | Refactorización de `03_classification.ipynb` | Notebook limpio: solo clasificación, usa módulos de `src/` |
 | 02/07/2026 | Creación de `src/classification.py` | Funciones reutilizables: get_models, evaluate, overfitting_check, backtest, feature_importance |
 | 02/07/2026 | Merge de main en `feature/classification` | Integrados EDA, preprocessing, features, targets y pipeline |
+| 02/07/2026 | PR #34: Feature engineering avanzado mergeado a main | Indicadores técnicos (RSI, MACD, volatilidad, lags), threshold multiclase 0.5%, limpieza columnas absolutas |
+| 02/07/2026 | Sync docs en `feature/classification` | data_dictionary actualizado a features reales, decision_log completado, READMEs y ROADMAP sincronizados |
