@@ -21,6 +21,10 @@ def download_ticker(name: str, ticker: str, start: str, interval: str) -> pd.Dat
  
     if df.empty:
         raise ValueError(f"No se obtuvieron datos para {name} ({ticker})")
+    
+    #ponemos al mismo nivel las columnas
+    #if isinstance(df.columns, pd.MultiIndex):
+    #   df.columns = df.columns.get_level_values(0)
  
     # yfinance puede devolver columnas multi-index si se piden varios tickers,
     # nos quedamos solo con las columnas que nos interesan

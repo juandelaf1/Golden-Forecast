@@ -1,0 +1,23 @@
+{
+  "modelos": [
+    "lr_binary",
+    "lr_multiclass",
+    "lr_strong_reg_binary",
+    "lr_strong_reg_multiclass",
+    "rf_binary",
+    "rf_multiclass",
+    "rf_deep_binary",
+    "rf_deep_multiclass",
+    "xgb_binary",
+    "xgb_multiclass",
+    "xgb_deep_binary",
+    "xgb_deep_multiclass"
+  ],
+  "features": "data/processed/gold-features.csv",
+  "test_size": 0.2,
+  "NO_FEATURE_COLUMN": [
+    "Date",
+    "target_binary",
+    "target_multiclass"
+  ]
+}
