@@ -219,3 +219,5 @@ __marimo__/
 
 #archivos ignorados 
 data/raw/gold-data.csv
+temp_app.py
+*.backup

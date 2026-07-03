@@ -22,6 +22,12 @@ except ImportError:
 DATA_PATH = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'raw', 'gold-macro-data.csv')
 TICKERS = {'gold': 'GC=F', 'dxy': 'DX-Y.NYB', 'vix': '^VIX', 'tnx': '^TNX'}
 
+try:
+    from src.classification import train_experimental_models
+    EXPERIMENTAL_AVAILABLE = True
+except ImportError:
+    EXPERIMENTAL_AVAILABLE = False
+
 FEATURE_COLUMNS = [
     'returns',
     'ma_5',
@@ -288,6 +294,22 @@ def build_context() -> dict:
     data = compute_indicators(raw_data)
     model_results = train_models(data)
 
+    # Experimental models
+    experimental_results = None
+    if EXPERIMENTAL_AVAILABLE:
+        try:
+            split_idx = model_results['split_index']
+            scaler = model_results['scaler']
+            X_train = scaler.transform(data[FEATURE_COLUMNS].iloc[:split_idx])
+            X_test = scaler.transform(data[FEATURE_COLUMNS].iloc[split_idx:])
+            y_reg_train = data['returns'].iloc[:split_idx].values
+            y_reg_test = data['returns'].iloc[split_idx:].values
+            experimental_results = train_experimental_models(
+                X_train, X_test, y_reg_train, y_reg_test, FEATURE_COLUMNS
+            )
+        except Exception:
+            experimental_results = None
+
     latest = data.iloc[-1]
     prev = data.iloc[-2]
     change = latest['gold'] - prev['gold']
@@ -366,6 +388,7 @@ def build_context() -> dict:
         'natural_text': model_results['natural_text'],
         'model_table_data': model_table_data,
         'scaler': model_results['scaler'],
+        'experimental': experimental_results,
     }
 
 context = build_context()

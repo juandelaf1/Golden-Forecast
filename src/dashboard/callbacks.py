@@ -1469,6 +1469,74 @@ TD_LEFT = {**TD, 'textAlign': 'left'}
 TABLE = {'width': '100%', 'borderCollapse': 'collapse'}
 
 
+def build_experimental_section() -> html.Div:
+    """B2B-friendly horizon comparison table."""
+    exp = context.get('experimental')
+    if not exp or not exp.get('horizons'):
+        return html.Div()
+
+    rows = [
+        html.Tr([
+            html.Th('Ventana', style=TH),
+            html.Th('Precisión', style=TH),
+            html.Th('Precision', style=TH),
+            html.Th('Recall', style=TH),
+            html.Th('F1', style=TH),
+            html.Th('ROC-AUC', style=TH),
+        ]),
+    ]
+
+    for h in exp['horizons']:
+        label = f'{h["horizon"]} día' + ('s' if h['horizon'] > 1 else '')
+        rows.append(html.Tr([
+            html.Td(label, style=TD),
+            html.Td(f'{h["accuracy"]:.1%}', style=TD),
+            html.Td(f'{h["precision"]:.1%}', style=TD),
+            html.Td(f'{h["recall"]:.1%}', style=TD),
+            html.Td(f'{h["f1"]:.3f}', style=TD),
+            html.Td(f'{h["auc"]:.3f}', style=TD),
+        ]))
+
+    children = [
+        html.Div('Evaluación Multiciclo', className='card-title'),
+        html.P(
+            'Análisis del rendimiento del modelo Logistic Regression aplicado a distintos horizontes temporales. '
+            'Permite identificar a qué plazo la señal predictiva es más consistente.',
+            style={'color': '#a89070', 'fontSize': '0.8rem', 'margin': '4px 0 12px', 'lineHeight': '1.4'},
+        ),
+        html.Table(style=TABLE, children=rows),
+    ]
+
+    # Voting classifier row
+    voting = exp.get('voting')
+    if voting:
+        v_row = html.Tr([
+            html.Td('Voting (LR+RF+XGB) — 1 día', style={**TD, 'color': '#D4AF37'}),
+            html.Td(f'{voting["accuracy"]:.1%}', style=TD),
+            html.Td(f'{voting["precision"]:.1%}', style=TD),
+            html.Td(f'{voting["recall"]:.1%}', style=TD),
+            html.Td(f'{voting["f1"]:.3f}', style=TD),
+            html.Td('—', style=TD),
+        ])
+        children.append(html.Div(
+            'Ensemble: promedio de 3 modelos',
+            style={'color': '#D4AF37', 'fontSize': '0.75rem', 'margin': '12px 0 4px', 'fontFamily': 'Rye, Smokum, serif'},
+        ))
+        children.append(html.Table(style=TABLE, children=[v_row]))
+
+    # Threshold optimization
+    best_th = exp.get('best_threshold_1d')
+    best_f1 = exp.get('best_f1_at_threshold')
+    if best_th is not None:
+        children.append(html.P(
+            f'Umbral óptimo calculado: {best_th:.2f} (F1: {best_f1:.3f}). '
+            f'El umbral por defecto (0.50) se ajusta automáticamente para maximizar la relación acierto/error.',
+            style={'color': '#a89070', 'fontSize': '0.75rem', 'margin': '8px 0 0', 'lineHeight': '1.4'},
+        ))
+
+    return html.Div(className='wide-card', style={'marginTop': '16px'}, children=children)
+
+
 def build_metrics_tab() -> html.Div:
     return html.Div(
         className='section-panel',
@@ -1534,5 +1602,6 @@ def build_metrics_tab() -> html.Div:
                     build_model_comparison_table(),
                 ],
             ),
+            build_experimental_section(),
         ],
     )
