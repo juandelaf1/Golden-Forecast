@@ -1447,11 +1447,9 @@ def build_roc_curve_figure() -> go.Figure:
 def build_model_comparison_table() -> html.Div:
     """Model comparison tables for classification and regression."""
     model_results = context.get('model_results', {})
-    if not model_results:
-        return html.Div('No hay datos de modelos disponibles', style={'color': '#D4AF37', 'padding': '8px'})
-
+    regression_results = context.get('regression', {}).get('eval_results') if context.get('regression') else None
+    
     clf_models = {n: r for n, r in model_results.items() if r.get('type') == 'classification'}
-    reg_models = {n: r for n, r in model_results.items() if r.get('type') == 'regression'}
 
     # Classification table
     clf_rows = [
@@ -1487,20 +1485,21 @@ def build_model_comparison_table() -> html.Div:
             html.Th('MAPE', style=TH),
         ]),
     ]
-    for name, r in reg_models.items():
-        reg_rows.append(html.Tr([
-            html.Td(name, style=TD),
-            html.Td(f'{r["mae"]:.4f}', style=TD),
-            html.Td(f'{r["rmse"]:.4f}', style=TD),
-            html.Td(f'{r["r2"]:.4f}', style=TD),
-            html.Td(f'{r["mape"]:.1f}%', style=TD),
-        ]))
+    if regression_results is not None:
+        for _, row in regression_results.iterrows():
+            reg_rows.append(html.Tr([
+                html.Td(row['Modelo'], style=TD),
+                html.Td(f'{row["MAE"]:.4f}', style=TD),
+                html.Td(f'{row["RMSE"]:.4f}', style=TD),
+                html.Td(f'{row["R²"]:.4f}', style=TD),
+                html.Td(f'{row["MAPE (%)"]:.1f}%', style=TD),
+            ]))
 
     children = []
     if clf_rows:
         children.append(html.Div('Clasificación (sube/baja)', style={'color': '#D4AF37', 'fontFamily': 'Rye, Smokum, serif', 'fontSize': '0.9rem', 'marginBottom': '6px'}))
         children.append(html.Table(style=TABLE, children=clf_rows))
-    if reg_rows:
+    if reg_rows and len(reg_rows) > 1:
         children.append(html.Div('Regresión (retorno esperado)', style={'color': '#D4AF37', 'fontFamily': 'Rye, Smokum, serif', 'fontSize': '0.9rem', 'margin': '16px 0 6px'}))
         children.append(html.Table(style=TABLE, children=reg_rows))
 

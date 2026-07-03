@@ -122,36 +122,26 @@ def feature_importance(model, feature_names):
     return None
 
 
-def train_for_horizon(X_train, X_test, y_reg_train, y_reg_test, horizon=1, threshold=0.5):
-    """
-    Entrena Logistic Regression para predecir dirección del oro a N días vista.
-    target = 1 si el precio en h días es mayor que hoy.
-    """
+def _make_horizon_target(y_reg_train, y_reg_test, horizon):
+    """Crea target binario desplazado h días."""
     target_train = (np.concatenate([y_reg_train[horizon:], np.full(horizon, np.nan)]) > 0).astype(float)
     target_test = (np.concatenate([y_reg_test[horizon:], np.full(horizon, np.nan)]) > 0).astype(float)
-
     valid_train = ~np.isnan(target_train)
     valid_test = ~np.isnan(target_test)
+    return target_train, target_test, valid_train, valid_test
 
-    if valid_train.sum() < 100 or valid_test.sum() < 50:
-        return None
 
-    model = LogisticRegression(max_iter=1000, random_state=42)
-    model.fit(X_train[valid_train], target_train[valid_train])
+def _eval_model(model, X_train, X_test, y_train, y_test, horizon):
+    """Entrena un modelo y devuelve métricas."""
+    model.fit(X_train, y_train)
+    preds = model.predict(X_test)
+    probas = model.predict_proba(X_test)[:, 1] if hasattr(model, 'predict_proba') else None
 
-    preds = model.predict(X_test[valid_test])
-    probas = model.predict_proba(X_test[valid_test])[:, 1]
-    preds_adj = (probas >= threshold).astype(int)
-
-    acc = accuracy_score(target_test[valid_test], preds_adj)
-    prec = precision_score(target_test[valid_test], preds_adj, zero_division=0)
-    rec = recall_score(target_test[valid_test], preds_adj, zero_division=0)
-    f1 = f1_score(target_test[valid_test], preds_adj, zero_division=0)
-
-    if len(np.unique(probas)) > 1:
-        auc = roc_auc_score(target_test[valid_test], probas)
-    else:
-        auc = 0.5
+    acc = accuracy_score(y_test, preds)
+    prec = precision_score(y_test, preds, zero_division=0)
+    rec = recall_score(y_test, preds, zero_division=0)
+    f1 = f1_score(y_test, preds, zero_division=0)
+    auc = roc_auc_score(y_test, probas) if probas is not None and len(np.unique(probas)) > 1 else 0.5
 
     return {
         'horizon': horizon,
@@ -160,64 +150,67 @@ def train_for_horizon(X_train, X_test, y_reg_train, y_reg_test, horizon=1, thres
         'recall': round(rec, 4),
         'f1': round(f1, 4),
         'auc': round(auc, 4),
-        'threshold': threshold,
     }
-
-
-def optimize_threshold(y_true, probas):
-    """Encuentra el threshold que maximiza F1 usando PR-curve."""
-    precisions, recalls, thresholds = precision_recall_curve(y_true, probas)
-    f1_scores = 2 * (precisions[:-1] * recalls[:-1]) / (precisions[:-1] + recalls[:-1] + 1e-8)
-    best_idx = np.argmax(f1_scores)
-    return thresholds[best_idx], f1_scores[best_idx]
 
 
 def train_experimental_models(X_train, X_test, y_reg_train, y_reg_test, feature_columns):
     """
-    Entrena modelos experimentales: horizontes [1,5,10,20] + voting + threshold óptimo.
-    Devuelve dict listo para el dashboard.
+    Entrena modelos experimentales: LR, RF, XGB para horizontes [1,5,10,20] + voting + threshold óptimo.
+    Devuelve dict con resultados por modelo y horizonte.
     """
-    results = {'horizons': [], 'voting': None, 'best_threshold_1d': None}
+    results = {'models': {}, 'voting': None, 'best_threshold_1d': None}
 
-    # 1. Evaluar LR en cada horizonte
-    for h in [1, 5, 10, 20]:
-        res = train_for_horizon(X_train, X_test, y_reg_train, y_reg_test, horizon=h)
-        if res:
-            results['horizons'].append(res)
+    HORIZONS = [1, 5, 10, 20]
 
-    # 2. Voting Classifier a 1 día (target desplazado, mismo que target_bin)
-    target_train_shifted = np.concatenate([y_reg_train[1:], np.full(1, np.nan)])
-    target_test_shifted = np.concatenate([y_reg_test[1:], np.full(1, np.nan)])
-    valid_train_v = ~np.isnan(target_train_shifted)
-    valid_test_v = ~np.isnan(target_test_shifted)
-    target_train_1d = (target_train_shifted[valid_train_v] > 0).astype(int)
-    target_test_1d = (target_test_shifted[valid_test_v] > 0).astype(int)
+    # Definir modelos a probar en cada horizonte
+    model_defs = {
+        'Logistic Regression': LogisticRegression(max_iter=1000, random_state=42),
+        'Random Forest': RandomForestClassifier(n_estimators=200, max_depth=10, min_samples_leaf=20, random_state=42, n_jobs=-1),
+    }
+    if XGB_AVAILABLE:
+        model_defs['XGBoost'] = XGBClassifier(n_estimators=200, max_depth=4, random_state=42, eval_metric='logloss')
+
+    # Entrenar cada modelo en cada horizonte
+    for model_name, model in model_defs.items():
+        model_results = []
+        for h in HORIZONS:
+            target_train, target_test, valid_train, valid_test = _make_horizon_target(y_reg_train, y_reg_test, h)
+            if valid_train.sum() < 100 or valid_test.sum() < 50:
+                continue
+            res = _eval_model(
+                model.__class__(**model.get_params()),
+                X_train[valid_train], X_test[valid_test],
+                target_train[valid_train].astype(int), target_test[valid_test].astype(int),
+                h,
+            )
+            model_results.append(res)
+        results['models'][model_name] = model_results
+
+    # Voting Classifier a 1 día
+    target_train_1d, target_test_1d, valid_train_v, valid_test_v = _make_horizon_target(y_reg_train, y_reg_test, 1)
     try:
         voting = get_voting_model()
-        voting.fit(X_train[valid_train_v], target_train_1d)
+        voting.fit(X_train[valid_train_v], target_train_1d[valid_train_v].astype(int))
         voting_preds = voting.predict(X_test[valid_test_v])
-        voting_probas = voting.predict_proba(X_test[valid_test_v])[:, 1]
-        voting_acc = accuracy_score(target_test_1d, voting_preds)
-        voting_f1 = f1_score(target_test_1d, voting_preds, zero_division=0)
-        voting_prec = precision_score(target_test_1d, voting_preds, zero_division=0)
-        voting_rec = recall_score(target_test_1d, voting_preds, zero_division=0)
         results['voting'] = {
-            'accuracy': round(voting_acc, 4),
-            'f1': round(voting_f1, 4),
-            'precision': round(voting_prec, 4),
-            'recall': round(voting_rec, 4),
+            'accuracy': round(accuracy_score(target_test_1d[valid_test_v].astype(int), voting_preds), 4),
+            'f1': round(f1_score(target_test_1d[valid_test_v].astype(int), voting_preds, zero_division=0), 4),
+            'precision': round(precision_score(target_test_1d[valid_test_v].astype(int), voting_preds, zero_division=0), 4),
+            'recall': round(recall_score(target_test_1d[valid_test_v].astype(int), voting_preds, zero_division=0), 4),
         }
-    except Exception as e:
+    except Exception:
         results['voting'] = None
 
-    # 3. Threshold óptimo para LR a 1 día
+    # Threshold óptimo para LR a 1 día
     try:
         lr = LogisticRegression(max_iter=1000, random_state=42)
-        lr.fit(X_train[valid_train_v], target_train_1d)
+        lr.fit(X_train[valid_train_v], target_train_1d[valid_train_v].astype(int))
         probas_1d = lr.predict_proba(X_test[valid_test_v])[:, 1]
-        best_th, best_f1 = optimize_threshold(target_test_1d, probas_1d)
-        results['best_threshold_1d'] = round(float(best_th), 3)
-        results['best_f1_at_threshold'] = round(float(best_f1), 4)
+        precisions, recalls, thresholds = precision_recall_curve(target_test_1d[valid_test_v].astype(int), probas_1d)
+        f1_scores = 2 * (precisions[:-1] * recalls[:-1]) / (precisions[:-1] + recalls[:-1] + 1e-8)
+        best_idx = np.argmax(f1_scores)
+        results['best_threshold_1d'] = round(float(thresholds[best_idx]), 3)
+        results['best_f1_at_threshold'] = round(float(f1_scores[best_idx]), 4)
     except Exception:
         results['best_threshold_1d'] = None
 

@@ -128,7 +128,7 @@ El equipo deberá:
 * Traducir resultados técnicos a lenguaje de negocio.
 * Comunicar conclusiones de manera clara y comprensible.
 
-**Estado actual:** Dataset GC=F + DXY + VIX + TNX (2015-2026). 12 modelos pre-entrenados (LR, RF, XGB × binario, multiclase, regresión). Dashboard interactivo Plotly Dash desplegable via Docker.
+**Estado actual:** Dataset GC=F + DXY + VIX + TNX (2015-2026). 12 modelos pre-entrenados de clasificación (LR, RF, XGB × binario, multiclase). Regresión implementada como módulo experimental. Dashboard interactivo Plotly Dash desplegable via Docker.
 
 ---
 

@@ -19,6 +19,12 @@ try:
 except ImportError:
     EXPERIMENTAL_AVAILABLE = False
 
+try:
+    from src.regression import train_and_evaluate_regression
+    REGRESSION_AVAILABLE = True
+except ImportError:
+    REGRESSION_AVAILABLE = False
+
 CLEAN_PATH = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'processed', 'gold-clean.csv')
 
 FEATURE_COLUMNS = [
@@ -225,6 +231,14 @@ def build_context() -> dict:
         except Exception:
             experimental_results = None
 
+    # Regression models (Juan de la Fuente)
+    regression_results = None
+    if REGRESSION_AVAILABLE:
+        try:
+            regression_results = train_and_evaluate_regression()
+        except Exception:
+            regression_results = None
+
     return {
         'data': data,
         'latest': latest,
@@ -262,6 +276,7 @@ def build_context() -> dict:
         'model_table_data': model_table_data,
         'scaler': ml_context['scaler'],
         'experimental': experimental_results,
+        'regression': regression_results,
     }
 
 
