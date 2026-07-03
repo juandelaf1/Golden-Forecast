@@ -303,7 +303,12 @@ def register_callbacks(app):
         '''
         function(volume) {
             const audio = document.getElementById('ambient-audio');
-            if (audio) audio.volume = volume / 100;
+            if (audio) {
+                audio.volume = volume / 100;
+                if (audio.paused) {
+                    audio.play().catch(function() {});
+                }
+            }
             return window.dash_clientside.no_update;
         }
         ''',

@@ -127,10 +127,10 @@ def build_layout() -> html.Div:
                                                     html.Audio(
                                                         id='ambient-audio',
                                                         src='/assets/saloon.mp3',
-                                                        controls=True,
                                                         autoPlay=True,
                                                         loop=True,
-                                                        style={'width': '100%', 'maxWidth': '320px'},
+                                                        preload='auto',
+                                                        style={'display': 'none'},
                                                     ),
                                                 ],
                                             ),
