@@ -41,12 +41,24 @@ RANGESELECTOR = {
 }
 
 RANGE_BUTTONS = [
+    {'count': 1, 'label': '1D', 'step': 'day', 'stepmode': 'backward'},
+    {'count': 5, 'label': '5D', 'step': 'day', 'stepmode': 'backward'},
     {'count': 1, 'label': '1M', 'step': 'month', 'stepmode': 'backward'},
     {'count': 3, 'label': '3M', 'step': 'month', 'stepmode': 'backward'},
     {'count': 6, 'label': '6M', 'step': 'month', 'stepmode': 'backward'},
     {'count': 1, 'label': '1A', 'step': 'year', 'stepmode': 'backward'},
-    {'step': 'all', 'label': 'TODO'},
+    {'step': 'all', 'label': 'HIST'},
 ]
+
+
+def _apply_rangeselector(fig, df):
+    """Apply date range selector and slider to a figure's x-axis (default: last 5 days)."""
+    last_idx = min(len(df) - 1, 5)
+    fig.update_xaxes(
+        rangeselector={'buttons': RANGE_BUTTONS, **RANGESELECTOR},
+        rangeslider={'visible': True, 'bgcolor': 'rgba(26, 16, 8, 0.4)', 'bordercolor': 'rgba(232, 195, 74, 0.15)'},
+        range=[df.index[-last_idx], df.index[-1]],
+    )
 
 # Colores estilo western/wanted
 WANTED_COLORS = {
@@ -713,21 +725,8 @@ def build_price_figure() -> go.Figure:
     
     fig.update_layout(**PLOT_THEME, height=420, hovermode='x unified',
                       title={'text': 'Precio del Oro y Señales del Modelo', 'font': {'family': 'Rye, Smokum, serif', 'color': WANTED_COLORS['gold']}})
-    fig.update_xaxes(**AXIS_THEME, rangeselector={
-        'buttons': [
-            {'count': 1, 'label': '1M', 'step': 'month', 'stepmode': 'backward'},
-            {'count': 3, 'label': '3M', 'step': 'month', 'stepmode': 'backward'},
-            {'count': 6, 'label': '6M', 'step': 'month', 'stepmode': 'backward'},
-            {'count': 1, 'label': '1A', 'step': 'year', 'stepmode': 'backward'},
-            {'step': 'all', 'label': 'TODO'},
-        ],
-        'bgcolor': 'rgba(26, 16, 8, 0.8)',
-        'activecolor': 'rgba(232, 195, 74, 0.3)',
-        'borderwidth': 1,
-        'bordercolor': 'rgba(232, 195, 74, 0.3)',
-        'font': {'color': '#F2EBE1', 'size': 10, 'family': 'Space Mono, monospace'},
-    }, rangeslider={'visible': True, 'bgcolor': 'rgba(26, 16, 8, 0.4)', 'bordercolor': 'rgba(232, 195, 74, 0.15)'},
-       range=[df.index[-365], df.index[-1]])
+    fig.update_xaxes(**AXIS_THEME)
+    _apply_rangeselector(fig, df)
     fig.update_yaxes(**AXIS_THEME, title_text='USD por onza')
     return fig
 
@@ -747,6 +746,7 @@ def build_rsi_figure() -> go.Figure:
     fig.add_hline(y=30, line_dash='dash', line_color='#7A5C33')
     fig.update_layout(**PLOT_THEME, height=340, hovermode='x unified')
     fig.update_xaxes(**AXIS_THEME)
+    _apply_rangeselector(fig, df)
     fig.update_yaxes(**AXIS_THEME, title_text='RSI')
     return fig
 
@@ -782,6 +782,7 @@ def build_macd_figure() -> go.Figure:
     fig.add_hline(y=0, line_color='#5C4732', line_width=1)
     fig.update_layout(**PLOT_THEME, height=340, hovermode='x unified')
     fig.update_xaxes(**AXIS_THEME)
+    _apply_rangeselector(fig, df)
     fig.update_yaxes(**AXIS_THEME, title_text='MACD')
     return fig
 
