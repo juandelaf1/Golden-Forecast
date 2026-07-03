@@ -1,43 +1,43 @@
-# Roadmap - Gold Price Forecast
+# Roadmap — Golden Forecast
 
-## Sprint 1 (Days 1-3): Data & Preprocessing
+## Sprint 1 (Days 1-3): Data & Preprocessing ✅
 
-| Milestone | Assigned to | Estado |
-|-----------|-------------|--------|
-| Full EDA: nulls, statistics, visualizations, correlations | José | ✅ PR #33 mergeado |
-| Preprocessing: cleaning, scaling, encoding, train/test split, pipeline | Gema | ✅ PR #31 mergeado + PR #32 refactorización |
-| Visual EDA for presentation | María | Pendiente |
-| Dataset downloaded and repo operational | Juan (SM) | ✅ `src/extract/extract.py` funcional |
+| Milestone | Asignado | Estado |
+|-----------|----------|--------|
+| EDA completo | José | ✅ |
+| Preprocessing + Feature Engineering | Gema | ✅ |
+| Pipeline `src/` modular | Gema | ✅ |
+| Datos extraídos (Yahoo Finance) | Juan (SM) | ✅ |
 
-**Deliverable**: Notebooks `EDA_Golden_Forecast.ipynb` and `02_preprocessing.ipynb` working ✅
+## Sprint 2 (Days 4-6): Modeling ✅
 
-## Sprint 2 (Days 4-6): Modeling
+| Milestone | Asignado | Estado |
+|-----------|----------|--------|
+| Clasificación (LR, RF, XGB) binaria + multiclase | Juan | ✅ `src/classification.py` + `03_classification.ipynb` |
+| Pipeline reutilizable `src/models/train.py` | Joel | ✅ 12 modelos pre-entrenados |
+| Evaluación automatizada `src/models/evaluate.py` | Joel | ✅ Métricas + backtest + overfitting check |
+| Dashboard interactivo Plotly Dash | Juan | ✅ 8 pestañas, selector de fechas, unidad, modelos |
 
-| Milestone | Assigned to | Estado |
-|-----------|-------------|--------|
-| Classification model: baseline + Random Forest | Juan | ✅ `src/classification.py` + `03_classification.ipynb` |
-| Regression model: baseline + Random Forest | Joel | ✅ PR #35 mergeado |
+## Sprint 3 (Days 7-8): Evaluación & Cierre
 
-**Deliverable**: Notebooks `03_classification.ipynb` and `04_regression.ipynb` with trained models and metrics
+| Milestone | Asignado | Estado |
+|-----------|----------|--------|
+| Integración modelos pre-entrenados en dashboard | Juan | 🔄 En progreso |
+| Presentación final con narrativa de negocio | María (lead) + todos | Pendiente |
+| Documentación completa y cierre del repo | Juan (SM) | 🔄 En progreso |
 
-## Sprint 3 (Days 7-8): Evaluation & Closing
-
-| Milestone | Assigned to | Estado |
-|-----------|-------------|--------|
-| Comparative evaluation, overfitting detection, critical analysis | Joel | Pendiente |
-| Slides presentation with business narrative | María (lead) + all | Pendiente |
-| Final README, decision_log and repo closure | Juan (SM) | Pendiente |
-
-**Final deliverable**: Notebook `05_evaluation.ipynb`, presentation, complete repo
+**Entrega final**: Dashboard funcional + Presentación + Repositorio documentado
 
 ---
 
-## Módulos de `src/`
+## Módulos del proyecto
 
-| Archivo | Responsable | Función |
-|---------|-------------|---------|
-| `extract/extract.py` | Joel | Descarga datos de Yahoo Finance |
-| `preprocessing.py` | Gema | Limpieza, renombrado de columnas, eliminación de nulos |
-| `feature_engineering.py` | Gema | Retornos, rangos, open-close, medias móviles, features macro |
-| `classification.py` | Juan | Modelos de clasificación, evaluación, backtesting |
-| `dashboard/` | Juan | Dashboard Plotly Dash |
+| Archivo | Función |
+|---------|---------|
+| `src/extract/extract.py` | Descarga Yahoo Finance (GC=F, DXY, VIX, TNX) |
+| `src/preprocessing.py` | Limpieza y renombrado de columnas |
+| `src/feature_engineering.py` | 24 features técnicas y macro |
+| `src/models/train.py` | Entrenamiento de 6 modelos x 2 targets |
+| `src/models/evaluate.py` | Evaluación, backtesting, overfitting check |
+| `src/dashboard/` | App Dash: 8 pestañas, gráficos interactivos |
+| `src/dashboard/model_loader.py` | Carga de modelos pre-entrenados |

@@ -30,3 +30,9 @@
 | 02/07/2026 | Merge de main en `feature/classification` | Integrados EDA, preprocessing, features, targets y pipeline |
 | 02/07/2026 | PR #34: Feature engineering avanzado mergeado a main | Indicadores técnicos (RSI, MACD, volatilidad, lags), threshold multiclase 0.5%, limpieza columnas absolutas |
 | 02/07/2026 | Sync docs en `feature/classification` | data_dictionary actualizado a features reales, decision_log completado, READMEs y ROADMAP sincronizados |
+| 03/07/2026 | PR #37: Pipeline ML completo integrado a main | `src/models/train.py` + `evaluate.py`, 12 modelos pre-entrenados (.pkl) |
+| 03/07/2026 | Dashboard: metricas extendidas (precision, recall, regression) | Añadidas precision, recall a clasificacion + MAE, RMSE, R², MAPE a regresion |
+| 03/07/2026 | Dashboard: graficos interactivos | Selector de unidad (USD/oz, %, indexado), selector de fechas 1D-HIST, importancia de variables filtrable |
+| 03/07/2026 | Dashboard: desplegables explicativos | Guia rapida en Panel de Control, explicacion de DXY/VIX/TNX en pestana Macro |
+| 03/07/2026 | Dashboard: control de volumen | Slider de volumen para ambientacion sonora (30% por defecto) |
+| 03/07/2026 | Merge de main en `feature/classification` | Integrados pipeline de modelos pre-entrenados en la rama de dashboard |

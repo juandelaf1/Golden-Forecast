@@ -1,0 +1,7 @@
+services:
+  golden-forecast:
+    build: .
+    ports:
+      - "8050:8050"
+    environment:
+      - PORT=8050

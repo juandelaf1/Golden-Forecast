@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: golden-forecast
+    env: docker
+    repo: https://github.com/juandelaf1/Golden-Forecast
+    branch: feature/classification
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /
+    envVars:
+      - key: PORT
+        value: "8050"

@@ -16,16 +16,17 @@
 
 ---
 
-# Golden Forecast - DataScope Solutions
+# Golden Forecast — DataScope Solutions
 
-Somos **DataScope Solutions**, consultora internacional de analisis de datos. Este proyecto aplica Machine Learning supervisado sobre datos historicos del oro para generar predicciones explicables.
+Somos **DataScope Solutions**, consultora internacional de analisis de datos. Este proyecto aplica Machine Learning supervisado sobre datos historicos del oro (GC=F) para generar predicciones explicables a traves de un dashboard interactivo.
 
 ## Problema de Negocio
 
-Predecir el comportamiento del precio del oro (GC=F) usando datos historicos y macroeconomicos (DXY, VIX, TNX). Abordamos el problema desde dos enfoques:
+Predecir el comportamiento del precio del oro usando datos historicos y macroeconomicos (DXY, VIX, TNX). Abordamos el problema desde dos enfoques:
 
-- **Clasificacion**: predecir si el oro sube o baja al dia siguiente (binaria y multiclase)
-- **Regresion**: predecir el precio de cierre (valor continuo)
+- **Clasificacion binaria**: sube (1) o baja (0) al dia siguiente
+- **Clasificacion multiclase**: comprar (+1%), mantener, vender (<-1%)
+- **Regresion**: prediccion del retorno esperado (MAE, RMSE, R², MAPE)
 
 ## Equipo
 
@@ -37,94 +38,147 @@ Predecir el comportamiento del precio del oro (GC=F) usando datos historicos y m
 
 ## Dataset
 
-Datos diarios de **GC=F** (Gold Futures) via Yahoo Finance desde 2015. Enriquecido con 3 indicadores macro:
+Datos diarios de **GC=F** (Gold Futures) via Yahoo Finance desde 2015, enriquecidos con 3 indicadores macro:
 
-- **DXY**: indice del dolar (relacion inversa con el oro)
-- **VIX**: indice de volatilidad/miedo (oro como activo refugio)
-- **TNX**: bono USA 10 anos (tipos altos = oro menos atractivo)
+| Indicador | Descripcion | Relacion con oro |
+|-----------|-------------|------------------|
+| **DXY** | Indice del dolar (cesta 6 divisas) | Inversa |
+| **VIX** | Indice de volatilidad / miedo | Directa (refugio) |
+| **TNX** | Bono USA 10 anos (tipos de interes) | Inversa |
 
 ## Stack Tecnologico
 
-Python, pandas, numpy, scikit-learn, matplotlib, seaborn, yfinance, Plotly Dash
+| Area | Tecnologias |
+|------|-------------|
+| Datos | Python, pandas, numpy, yfinance |
+| Modelado | scikit-learn, XGBoost |
+| Dashboard | Plotly Dash, Plotly.js, CSS Grid |
+| Deployment | Docker, Render |
+| Gobernanza | GitHub Flow, Scrum, Conventional Commits |
 
 ## Estructura del Repositorio
 
 ```
 golden-forecast/
 ├── data/
-│   ├── raw/                    # Datos crudos (gold-macro-data.csv)
-│   ├── processed/              # Datos procesados (gold-clean.csv, gold-features.csv)
-│   └── README.md               # Lineage de datos
-├── notebooks/
-│   ├── EDA_Golden_Forecast.ipynb   # Analisis exploratorio
-│   ├── 02_preprocessing.ipynb      # Preprocesamiento
-│   └── 03_classification.ipynb     # Clasificacion
+│   ├── raw/                    # Datos crudos Yahoo Finance
+│   └── processed/              # gold-clean.csv, gold-features.csv (24 features)
+├── notebooks/                  # EDA, preprocessing, clasificacion
 ├── src/
-│   ├── extract/extract.py      # Descarga de datos Yahoo Finance
-│   ├── preprocessing.py        # Limpieza y renombrado de columnas
-│   ├── feature_engineering.py  # Features tecnicas y macro
-│   ├── classification.py       # Modelos de clasificacion
-│   └── dashboard/              # Dashboard Plotly Dash
-├── docs/
-│   ├── project_handbook.md     # Gobernanza del proyecto
-│   ├── data_dictionary.md      # Definicion de variables
-│   └── decision_log.md         # Registro de decisiones
-├── models/                     # Modelos entrenados (.pkl)
-├── .github/
-│   └── PULL_REQUEST_TEMPLATE.md
-├── README.md
-├── ROADMAP.md
-├── requirements.txt
-└── .gitignore
+│   ├── extract/                # Descarga de datos
+│   ├── models/                 # Pipeline entrenamiento (train.py, evaluate.py)
+│   └── dashboard/              # App Dash (app.py, callbacks.py, layout.py, data.py, model_loader.py)
+├── models/                     # 12 modelos pre-entrenados (.pkl) + scaler + metadata
+├── docs/                       # Handbook, data dictionary, decision log
+├── mock_server/                # API mock para pruebas
+└── README.md, ROADMAP.md, requirements.txt
 ```
 
 ## Pipeline de ML
 
 ```
-extract.py → preprocessing.py → feature_engineering.py → classification.py
-     ↓              ↓                    ↓                    ↓
-  Datos crudos   Columnas limpias   Features tecnicas    Modelos de
-                 y renombradas      y macro              clasificacion
-                                                      evaluados
+extract.py → preprocessing.py → feature_engineering.py → train.py → evaluate.py
+     ↓              ↓                    ↓                   ↓           ↓
+  Yahoo Finance  Columnas          24 features           6 modelos    Metricas +
+  (GC=F, DXY,    limpias           tecnicas+macro        x 2 targets  Backtest
+   VIX, TNX)                                                                    
 ```
 
-## Como Ejecutar
+## Modelos Pre-entrenados
+
+12 modelos entrenados con split temporal 80/20, escalado sin data leakage:
+
+| Modelo | Algoritmo | Target | F1 (test) | Accuracy |
+|--------|-----------|--------|-----------|----------|
+| lr_strong_reg_binary | Logistic Regression (C=0.1) | Binario | 0.70 | 56.9% |
+| lr_binary | Logistic Regression (C=1.0) | Binario | 0.69 | 56.2% |
+| xgb_binary | XGBoost (n=100, d=3) | Binario | 0.67 | 56.5% |
+| rf_binary | Random Forest (n=100, d=5) | Binario | 0.66 | 55.2% |
+| rf_deep_binary | Random Forest (n=200, d=10) | Binario | 0.62 | 53.6% |
+| xgb_deep_binary | XGBoost (n=200, d=5) | Binario | 0.62 | 53.9% |
+| lr_multiclass | Logistic Regression | Multiclase | 0.31 | 38.1% |
+
+Metricas de regresion disponibles via dashboard (MAE, RMSE, R², MAPE).
+
+## Dashboard Interactivo
+
+Dashboard tematico **Wild-West Saloon** con 8 pestanas:
+
+| Pestana | Contenido |
+|---------|-----------|
+| **Panel de Control** | Senal del dia, certeza, precio + tendencia, prediccion vs realidad, rendimiento acumulado |
+| **Precio** | Grafico historico con RSI, MACD, volatilidad y rango de fechas seleccionable (1D a HIST) |
+| **Indicadores** | RSI, MACD, volumen con selector de fechas |
+| **Macro** | Correlaciones DXY/VIX/TNX con desplegable explicativo por indicador |
+| **Backtest** | Estrategia ML vs Buy & Hold, alpha generado |
+| **Simulacion** | Simulador de trading con capital inicial y rango de fechas |
+| **Metricas** | Importancia de variables (interactivo por categoria), matriz de confusion, ROC, comparativa modelos |
+| **Metodologia** | Pipeline, modelos, equipo, stack, repositorio (QR) |
+
+### Funcionalidades destacadas
+
+- **Selector de unidad** en grafico de precio: USD/oz, % variacion diaria, indexado (base 100)
+- **Selector de fechas** (1D, 5D, 1M, 3M, 6M, 1A, HIST) en todos los graficos temporales
+- **Importancia de variables** filtrable por categoria (Tecnico, Macro, Precio)
+- **Dropdowns explicativos** en pestanas de Macro y Panel de Control
+- **Control de volumen** para ambientacion sonora
+- **Ticker** con datos en tiempo real del oro, DXY, VIX, MA 21
+
+### Metricas mostradas
+
+| Tipo | Metricas |
+|------|----------|
+| Clasificacion | Accuracy, Precision, Recall, F1 Score, ROC-AUC |
+| Regresion | MAE, RMSE, R², MAPE |
+| Backtest | Retorno estrategia, retorno Buy & Hold, Alpha |
+
+### Ejecutar
 
 ```bash
-# 1. Clonar el repositorio
+pip install -r requirements.txt
+python src/dashboard/app.py
+# Abrir http://localhost:8050
+```
+
+### Docker
+
+```bash
+docker build -t golden-forecast .
+docker run -p 8050:8050 golden-forecast
+```
+
+## Como Ejecutar (Pipeline completo)
+
+```bash
+# 1. Clonar
 git clone https://github.com/juandelaf1/Golden-Forecast.git
 
-# 2. Instalar dependencias
+# 2. Dependencias
 pip install -r requirements.txt
 
-# 3. Descargar datos
+# 3. Descargar datos frescos
 python src/extract/extract.py
 
-# 4. Ejecutar notebooks en orden
-#    EDA_Golden_Forecast.ipynb → 02_preprocessing.ipynb → 03_classification.ipynb
-```
+# 4. Re-entrenar modelos
+python src/models/train.py
+python src/models/evaluate.py
 
-## Dashboard
-
-Dashboard **Wild-West Saloon** disponible en http://localhost:8050:
-
-- **Price**: grafico del oro con RSI, MACD y volatilidad
-- **Macro**: correlaciones con DXY, VIX, TNX
-- **Models**: comparacion de accuracy entre modelos
-- **Backtest**: rendimiento de estrategia vs Buy and Hold
-- **Simulation**: simulador de trading en datos historicos
-
-```bash
+# 5. Lanzar dashboard
 python src/dashboard/app.py
 ```
 
 ## Gobernanza (Scrum)
 
-- **Sprint Planning** y daily syncs
+- **Sprint Planning** semanal + Daily Syncs
 - **GitHub Flow**: ramas feature/ + PRs con revision por pares
 - **Main protegido** (sin pushes directos)
-- **Decision Log** documentando decisiones tecnicas clave
-- **Data lineage** para trazabilidad y reproducibilidad
+- **Decision Log** en `docs/decision_log.md`
+- **Data lineage** en `data/README.md`
+- **Conventional Commits**: feat, fix, docs, refactor, chore
+
+## Roadmap
+
+Ver [ROADMAP.md](ROADMAP.md) para el plan de desarrollo completo.
 
 ## License
 
