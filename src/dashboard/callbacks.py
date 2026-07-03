@@ -32,6 +32,22 @@ AXIS_THEME = {
     'title': {'font': {'color': '#D4AF37', 'family': 'Rye, Smokum, serif'}},
 }
 
+RANGESELECTOR = {
+    'bgcolor': 'rgba(26, 16, 8, 0.8)',
+    'activecolor': 'rgba(232, 195, 74, 0.3)',
+    'borderwidth': 1,
+    'bordercolor': 'rgba(232, 195, 74, 0.3)',
+    'font': {'color': '#F2EBE1', 'size': 10, 'family': 'Space Mono, monospace'},
+}
+
+RANGE_BUTTONS = [
+    {'count': 1, 'label': '1M', 'step': 'month', 'stepmode': 'backward'},
+    {'count': 3, 'label': '3M', 'step': 'month', 'stepmode': 'backward'},
+    {'count': 6, 'label': '6M', 'step': 'month', 'stepmode': 'backward'},
+    {'count': 1, 'label': '1A', 'step': 'year', 'stepmode': 'backward'},
+    {'step': 'all', 'label': 'TODO'},
+]
+
 # Colores estilo western/wanted
 WANTED_COLORS = {
     'gold': '#E8C34A',
@@ -137,7 +153,6 @@ def register_callbacks(app):
                 ],
             ),
         ]
-        
         return items
 
     @app.callback(
@@ -158,10 +173,7 @@ def register_callbacks(app):
             fig = go.Figure()
             fig.update_layout(**PLOT_THEME, height=380)
             fig.add_annotation(
-                x=0.5,
-                y=0.5,
-                xref='paper',
-                yref='paper',
+                x=0.5, y=0.5, xref='paper', yref='paper',
                 text='Intervalo seleccionado demasiado corto para una simulación válida.',
                 showarrow=False,
                 font={'color': '#D4AF37', 'size': 14, 'family': 'Space Mono, monospace'},
@@ -178,18 +190,14 @@ def register_callbacks(app):
         fig = go.Figure()
         fig.add_trace(
             go.Scatter(
-                x=sim_data.index,
-                y=equity,
+                x=sim_data.index, y=equity,
                 name='Portfolio Value',
                 line={'color': '#D4AF37', 'width': 2.5},
-                fill='tozeroy',
-                fillcolor='rgba(212, 175, 55, 0.12)',
+                fill='tozeroy', fillcolor='rgba(212, 175, 55, 0.12)',
             )
         )
         fig.add_hline(
-            y=capital,
-            line_dash='dash',
-            line_color='#AC7D3D',
+            y=capital, line_dash='dash', line_color='#AC7D3D',
             annotation_text=f'Capital inicial: ${capital:,.0f}',
             annotation_position='top left',
             annotation_font={'color': '#F2EBE1', 'family': 'Space Mono, monospace', 'size': 11},
@@ -251,20 +259,17 @@ def build_summary_tab() -> html.Div:
                     html.Details(
                         className='help-panel-details',
                         children=[
-                            html.Summary('¿Qué significa todo esto?', className='help-summary'),
+                            html.Summary('Claves para interpretar el panel', className='help-summary'),
                             html.Div(
                                 className='help-copy',
                                 children=[
-                                    html.P('Este panel funciona como un sistema de pronóstico: cada señal te indica si el modelo anticipa una subida o bajada del precio del oro.'),
-                                    html.P('El precio actual es la base. La señal y la confianza ayudan a traducir los números en una recomendación simple:'),
-                                    html.Ul(
-                                        children=[
-                                            html.Li('ALZA = el modelo predice que el precio subirá.', className='help-point'),
-                                            html.Li('PRECAUCIÓN = el modelo anticipa una posible baja.', className='help-point'),
-                                            html.Li('ESTABLE = señal poco clara, mejor esperar.', className='help-point'),
-                                        ],
-                                    ),
-                                    html.P('Los gráficos muestran la tendencia y el desempeño del modelo frente a una inversión tradicional para que puedas ver si la estrategia tiene fuerza.', className='help-note'),
+                                    html.P(html.Strong('Precio actual:'), ' cotizaci\u00f3n spot del oro (GC=F) en USD/oz.'),
+                                    html.P(html.Strong('Se\u00f1al del modelo:'), ' predicci\u00f3n del algoritmo ensemble para la pr\u00f3xima sesi\u00f3n.'),
+                                    html.P(html.Strong('Certeza:'), ' probabilidad asignada por el modelo a su predicci\u00f3n. Mide la confianza estad\u00edstica, no la precisi\u00f3n real.'),
+                                    html.P(html.Strong('Aciertos / Fiabilidad:'), ' precisi\u00f3n global (accuracy) y F1-score del modelo en datos de test.'),
+                                    html.P(html.Strong('Indicadores macro (DXY, VIX):'), ' el precio del oro se correlaciona inversamente con el d\u00f3lar y directamente con la volatilidad.'),
+                                    html.P(html.Strong('MA 21:'), ' media m\u00f3vil de 21 sesiones. Si el precio est\u00e1 por encima, la tendencia es alcista a corto plazo.'),
+                                    html.P('Los gr\u00e1ficos inferiores del panel comparan: (1) la evoluci\u00f3n del precio con las se\u00f1ales del modelo, (2) la precisi\u00f3n acumulada, (3) la desviaci\u00f3n entre predicci\u00f3n y realidad, y (4) el rendimiento de la estrategia ML versus Buy & Hold.', className='help-note'),
                                 ],
                             ),
                         ],
@@ -325,143 +330,86 @@ def build_summary_tab() -> html.Div:
     )
 
 
-def build_deep_dive_tab() -> html.Div:
+def build_methodology_tab() -> html.Div:
     return html.Div(
         className='section-panel',
         children=[
             html.Div(
                 className='section-copy',
                 children=[
-                    html.H2('Análisis Completo', className='section-title'),
+                    html.H2('Metodolog\u00eda', className='section-title'),
                     html.P(
-                        'Gráficos detallados de precio histórico, tendencias del mercado, comparación con indicadores macro y rendimiento de la estrategia.',
+                        'Arquitectura del sistema, pipeline de datos, modelos implementados y se\u00f1ales de trading.',
                         className='section-text',
                     ),
                 ],
             ),
-              html.Div(
-                className='chart-grid',
+            html.Div(
+                className='overview-row',
                 children=[
                     html.Div(
-                        className='graph-card',
+                        className='wide-card',
                         children=[
-                            html.Div('Precio histórico y señales', className='card-title'),
-                            dcc.Loading(type='dot', children=dcc.Graph(id='deep-price', figure=build_price_figure(), config={'displayModeBar': False})),
+                            html.Div('Pipeline de Datos', className='card-title'),
+                            html.Div(
+                                className='governance-markdown',
+                                children=[
+                                    html.P('1. Extracci\u00f3n: Datos diarios v\u00eda Yahoo Finance desde 2015 (gold, DXY, VIX, TNX).'),
+                                    html.P('2. Preprocesamiento: Limpieza, normalizaci\u00f3n y tratamiento de NaN.'),
+                                    html.P('3. Feature Engineering: RSI, MACD, medias m\u00f3viles, volatilidad, retornos macro.'),
+                                    html.P('4. Modelado: Ensemble con validaci\u00f3n temporal (80/20).'),
+                                    html.P('5. Evaluaci\u00f3n: Precisi\u00f3n, F1, ROC-AUC, backtest vs Buy & Hold.'),
+                                ],
+                            ),
                         ],
                     ),
                     html.Div(
-                        className='graph-card',
+                        className='narrow-card',
                         children=[
-                            html.Div('Indicadores técnicos', className='card-title'),
-                            dcc.Loading(type='dot', children=dcc.Graph(id='deep-rsi', figure=build_rsi_figure(), config={'displayModeBar': False})),
-                        ],
-                    ),
-                    html.Div(
-                        className='graph-card',
-                        children=[
-                            html.Div('Predicción vs Realidad', className='card-title'),
-                            dcc.Loading(type='dot', children=dcc.Graph(id='deep-deviation', figure=build_prediction_deviation_figure(), config={'displayModeBar': False})),
-                        ],
-                    ),
-                    html.Div(
-                        className='graph-card',
-                        children=[
-                            html.Div('Curva de Aprendizaje', className='card-title'),
-                            dcc.Loading(type='dot', children=dcc.Graph(id='deep-learning', figure=build_learning_curve_figure(), config={'displayModeBar': False})),
-                        ],
-                    ),
-                    html.Div(
-                        className='graph-card',
-                        children=[
-                            html.Div('Correlaciones macro', className='card-title'),
-                            dcc.Loading(type='dot', children=dcc.Graph(id='deep-macro', figure=build_macro_figure(), config={'displayModeBar': False})),
-                        ],
-                    ),
-                    html.Div(
-                        className='graph-card',
-                        children=[
-                            html.Div('Backtest de estrategia', className='card-title'),
-                            dcc.Loading(type='dot', children=dcc.Graph(id='deep-backtest', figure=build_backtest_figure(), config={'displayModeBar': False})),
+                            html.Div('Modelos Implementados', className='card-title'),
+                            html.Div(
+                                className='governance-markdown',
+                                children=[
+                                    html.P(html.Strong('Random Forest'), ' \u2014 200 \u00e1rboles, max_depth=10 (principal)'),
+                                    html.P(html.Strong('Logistic Regression'), ' \u2014 baseline lineal'),
+                                    html.P(html.Strong('XGBoost'), ' \u2014 gradient boosting (si disponible)'),
+                                ],
+                            ),
                         ],
                     ),
                 ],
             ),
             html.Div(
-                className='simulation-panel',
+                className='wide-card',
                 children=[
-                    html.Div('Simulación de escenario', className='card-title'),
+                    html.Div('Se\u00f1ales de Trading', className='card-title'),
                     html.Div(
-                        className='simulation-controls',
+                        className='governance-markdown',
                         children=[
-                            html.Div(
-                                className='input-group',
-                                children=[
-                                    html.Label('Fecha inicio', className='input-label'),
-                                    dcc.DatePickerSingle(id='sim-start', date=context['data'].index[context['split_index']].date(), display_format='YYYY-MM-DD', className='date-picker'),
-                                ],
-                            ),
-                            html.Div(
-                                className='input-group',
-                                children=[
-                                    html.Label('Fecha fin', className='input-label'),
-                                    dcc.DatePickerSingle(id='sim-end', date=context['data'].index[-1].date(), display_format='YYYY-MM-DD', className='date-picker'),
-                                ],
-                            ),
-                            html.Div(
-                                className='input-group',
-                                children=[
-                                    html.Label('Capital inicial', className='input-label'),
-                                    dcc.Input(id='sim-capital', type='number', min=1000, max=1000000, step=1000, value=10000, className='input-field'),
-                                ],
-                            ),
-                            html.Button('EJECUTAR SIMULACIÓN', id='simulate-button', className='control-button', n_clicks=0),
+                            html.P(html.Strong('ALZA'), ' \u2014 Se espera que el precio suba en la pr\u00f3xima sesi\u00f3n (confianza \u2265 58%)'),
+                            html.P(html.Strong('PRECAUCI\u00d3N'), ' \u2014 Se anticipa una posible ca\u00edda (confianza \u2264 42%)'),
+                            html.P(html.Strong('ESTABLE'), ' \u2014 Se\u00f1al no concluyente, se recomienda esperar'),
                         ],
                     ),
+                ],
+            ),
+            html.Div(
+                className='wide-card',
+                children=[
+                    html.Div('Supuestos y Limitaciones', className='card-title'),
                     html.Div(
-                        className='stats-grid',
+                        className='governance-markdown',
                         children=[
-                            build_stat_card('Valor final', '$0', 'Resultado de la simulación', '#F2EBE1'),
-                            build_stat_card('Retorno', '0.0%', 'Rentabilidad de la simulación', '#F2EBE1'),
-                            build_stat_card('Operaciones', '0', 'Número de señales ejecutadas', '#F2EBE1'),
+                            html.P('Datos de cierre diario (no HFT).'),
+                            html.P('Se\u00f1ales probabil\u00edsticas, no certezas absolutas.'),
+                            html.P('Rendimiento pasado no garantiza resultados futuros.'),
+                            html.P('Modelos re-entrenados con cada actualizaci\u00f3n de datos.'),
                         ],
                     ),
-                    dcc.Loading(type='dot', children=dcc.Graph(id='sim-chart', figure=build_simulation_placeholder(), config={'displayModeBar': False})),
                 ],
             ),
         ],
     )
-
-
-def build_methodology_tab() -> html.Div:
-    markdown_text = '''
-## Metodología
-
-**Golden Forecast** es un sistema de inteligencia de mercado diseñado para apoyar decisiones informadas sobre el precio del oro.
-
-### ¿Cómo funciona?
-- Carga datos históricos del oro y de indicadores macroeconómicos (dólar, volatilidad, bonos).
-- Aplica filtros técnicos: tendencias, momentum, volatilidad y correlaciones con el mercado.
-- Un modelo predictivo analiza estos datos y genera una señal diaria: **ALZA**, **ESTABLE** o **PRECAUCIÓN**.
-
-### ¿Qué significa cada señal?
-- **ALZA** → El modelo estima que es probable que el precio suba.
-- **PRECAUCIÓN** → El modelo anticipa una posible baja.
-- **ESTABLE** → No hay una dirección clara; es mejor esperar.
-
-### Supuestos importantes
-- El sistema opera con datos de cierre diario, no es trading de alta frecuencia.
-- La señal indica una probabilidad, no una certeza absoluta.
-- El rendimiento histórico no garantiza resultados futuros.
-
-### Estado del sistema
-- Datos actualizados diariamente desde fuentes de mercado.
-- El modelo se re-entrena automáticamente con cada actualización.
-- El panel de sonido ambiental es opcional.
-'''
-    return html.Div(className='section-panel', children=[
-        html.H2('Metodología', className='section-title'),
-        dcc.Markdown(markdown_text, className='governance-markdown'),
-    ])
 
 
 def build_price_tab() -> html.Div:
@@ -655,9 +603,30 @@ def build_simulation_tab() -> html.Div:
                     html.Div(
                         className='stats-grid',
                         children=[
-                            build_stat_card('Valor final', '$0', 'Resultado de la simulación', '#F2EBE1'),
-                            build_stat_card('Retorno', '0.0%', 'Rentabilidad de la simulación', '#F2EBE1'),
-                            build_stat_card('Operaciones', '0', 'Número de señales ejecutadas', '#F2EBE1'),
+                            html.Div(
+                                className='metric-card',
+                                children=[
+                                    html.Div('Valor final', className='metric-label'),
+                                    html.Div('$0', id='sim-final', className='metric-value', style={'color': '#F2EBE1'}),
+                                    html.Div('Resultado de la simulación', className='metric-note'),
+                                ],
+                            ),
+                            html.Div(
+                                className='metric-card',
+                                children=[
+                                    html.Div('Retorno', className='metric-label'),
+                                    html.Div('0.0%', id='sim-return', className='metric-value', style={'color': '#F2EBE1'}),
+                                    html.Div('Rentabilidad de la simulación', className='metric-note'),
+                                ],
+                            ),
+                            html.Div(
+                                className='metric-card',
+                                children=[
+                                    html.Div('Operaciones', className='metric-label'),
+                                    html.Div('0', id='sim-trades', className='metric-value', style={'color': '#F2EBE1'}),
+                                    html.Div('Número de señales ejecutadas', className='metric-note'),
+                                ],
+                            ),
                         ],
                     ),
                     dcc.Loading(type='dot', children=dcc.Graph(id='sim-chart', figure=build_simulation_placeholder(), config={'displayModeBar': False})),
@@ -742,9 +711,23 @@ def build_price_figure() -> go.Figure:
         line={'color': WANTED_COLORS['iron_mid'], 'dash': 'dash', 'width': 2},
     )
     
-    fig.update_layout(**PLOT_THEME, height=420, hovermode='x unified', 
+    fig.update_layout(**PLOT_THEME, height=420, hovermode='x unified',
                       title={'text': 'Precio del Oro y Señales del Modelo', 'font': {'family': 'Rye, Smokum, serif', 'color': WANTED_COLORS['gold']}})
-    fig.update_xaxes(**AXIS_THEME)
+    fig.update_xaxes(**AXIS_THEME, rangeselector={
+        'buttons': [
+            {'count': 1, 'label': '1M', 'step': 'month', 'stepmode': 'backward'},
+            {'count': 3, 'label': '3M', 'step': 'month', 'stepmode': 'backward'},
+            {'count': 6, 'label': '6M', 'step': 'month', 'stepmode': 'backward'},
+            {'count': 1, 'label': '1A', 'step': 'year', 'stepmode': 'backward'},
+            {'step': 'all', 'label': 'TODO'},
+        ],
+        'bgcolor': 'rgba(26, 16, 8, 0.8)',
+        'activecolor': 'rgba(232, 195, 74, 0.3)',
+        'borderwidth': 1,
+        'bordercolor': 'rgba(232, 195, 74, 0.3)',
+        'font': {'color': '#F2EBE1', 'size': 10, 'family': 'Space Mono, monospace'},
+    }, rangeslider={'visible': True, 'bgcolor': 'rgba(26, 16, 8, 0.4)', 'bordercolor': 'rgba(232, 195, 74, 0.15)'},
+       range=[df.index[-365], df.index[-1]])
     fig.update_yaxes(**AXIS_THEME, title_text='USD por onza')
     return fig
 
@@ -963,7 +946,6 @@ def build_learning_curve_figure() -> go.Figure:
     
     # Simular curva de aprendizaje basada en precisión acumulada
     cum_accuracy = []
-    cum_f1 = []
     correct = 0
     total = 0
     
@@ -1035,20 +1017,28 @@ def build_feature_importance_figure() -> go.Figure:
     fi = rf_result['model'].feature_importances_
     fi_indices = np.argsort(fi)[::-1]
     features = [FEATURE_COLUMNS[i] for i in fi_indices]
+    values = [fi[i] for i in fi_indices]
+    colors = [f'rgba(232, 195, 74, {0.4 + v * 0.6:.2f})' for v in values]
 
     fig = go.Figure()
     fig.add_trace(go.Bar(
-        x=[fi[i] for i in fi_indices],
+        x=values,
         y=features,
         orientation='h',
-        marker_color=WANTED_COLORS['gold'],
-        text=[f'{fi[i]:.1%}' for i in fi_indices],
+        marker={
+            'color': colors,
+            'line': {'color': WANTED_COLORS['gold'], 'width': 1.5},
+            'cornerradius': 4,
+        },
+        text=[f'{v:.1%}' for v in values],
         textposition='outside',
-        textfont={'color': '#F2EBE1', 'size': 10, 'family': 'Space Mono, monospace'},
+        textfont={'color': '#F2EBE1', 'size': 11, 'family': 'Space Mono, monospace'},
+        hovertemplate='%{y}: %{x:.1%}<extra></extra>',
     ))
     fig.update_layout(
         **PLOT_THEME,
         height=400,
+        xaxis={'range': [0, max(values) * 1.25], 'showgrid': True, 'gridcolor': 'rgba(242,235,225,0.08)'},
         title={'text': 'Importancia de Variables (Random Forest)', 'font': {'family': 'Rye, Smokum, serif', 'color': WANTED_COLORS['gold']}},
     )
     fig.update_xaxes(**AXIS_THEME, tickformat='.0%')
@@ -1160,33 +1150,51 @@ def build_model_comparison_table() -> html.Table:
 
 
 def build_metrics_tab() -> html.Div:
-    """Metrics tab with feature importance, confusion matrix, ROC curve, and model comparison."""
     return html.Div(
         className='section-panel',
         children=[
             html.Div(
                 className='section-copy',
                 children=[
-                    html.H2('Métricas de Modelo', className='section-title'),
+                    html.H2('M\u00e9tricas de Modelo', className='section-title'),
                     html.P(
-                        'Evaluación técnica del rendimiento de los modelos: importancia de variables, matriz de confusión, curva ROC y comparativa multi-modelo.',
+                        'Evaluaci\u00f3n t\u00e9cnica del rendimiento de los modelos: importancia de variables, matriz de confusi\u00f3n, curva ROC y comparativa multi-modelo.',
                         className='section-text',
                     ),
                 ],
             ),
-            html.Div(style={'color': WANTED_COLORS['gold'], 'fontFamily': 'Rye, Smokum, serif', 'fontSize': '1.1rem', 'marginBottom': '1rem'}, children='IMPORTANCIA DE VARIABLES'),
-            dcc.Loading(type='dot', children=dcc.Graph(id='fi-chart', figure=build_feature_importance_figure(), config={'displayModeBar': False})),
-            html.Div(style={'display': 'flex', 'gap': '2rem', 'marginTop': '2rem', 'flexWrap': 'wrap'}, children=[
-                html.Div(style={'flex': '1', 'minWidth': '380px'}, children=[
-                    html.Div(style={'color': WANTED_COLORS['gold'], 'fontFamily': 'Rye, Smokum, serif', 'fontSize': '1.1rem', 'marginBottom': '1rem'}, children='MATRIZ DE CONFUSIÓN'),
-                    dcc.Loading(type='dot', children=dcc.Graph(id='cm-chart', figure=build_confusion_matrix_figure(), config={'displayModeBar': False})),
-                ]),
-                html.Div(style={'flex': '1', 'minWidth': '380px'}, children=[
-                    html.Div(style={'color': WANTED_COLORS['gold'], 'fontFamily': 'Rye, Smokum, serif', 'fontSize': '1.1rem', 'marginBottom': '1rem'}, children='CURVA ROC'),
-                    dcc.Loading(type='dot', children=dcc.Graph(id='roc-chart', figure=build_roc_curve_figure(), config={'displayModeBar': False})),
-                ]),
-            ]),
-            html.Div(style={'color': WANTED_COLORS['gold'], 'fontFamily': 'Rye, Smokum, serif', 'fontSize': '1.1rem', 'margin': '2rem 0 1rem'}, children='COMPARATIVA DE MODELOS'),
-            build_model_comparison_table(),
+            html.Div(
+                className='wide-card',
+                children=[
+                    html.Div('Importancia de Variables', className='card-title'),
+                    dcc.Loading(type='dot', children=dcc.Graph(id='fi-chart', figure=build_feature_importance_figure(), config={'displayModeBar': False})),
+                ],
+            ),
+            html.Div(
+                className='chart-grid',
+                children=[
+                    html.Div(
+                        className='graph-card',
+                        children=[
+                            html.Div('Matriz de Confusi\u00f3n', className='card-title'),
+                            dcc.Loading(type='dot', children=dcc.Graph(id='cm-chart', figure=build_confusion_matrix_figure(), config={'displayModeBar': False})),
+                        ],
+                    ),
+                    html.Div(
+                        className='graph-card',
+                        children=[
+                            html.Div('Curva ROC', className='card-title'),
+                            dcc.Loading(type='dot', children=dcc.Graph(id='roc-chart', figure=build_roc_curve_figure(), config={'displayModeBar': False})),
+                        ],
+                    ),
+                ],
+            ),
+            html.Div(
+                className='wide-card',
+                children=[
+                    html.Div('Comparativa de Modelos', className='card-title'),
+                    build_model_comparison_table(),
+                ],
+            ),
         ],
     )

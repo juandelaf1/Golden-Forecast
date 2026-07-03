@@ -42,14 +42,10 @@ body {
   color: var(--text);
 }
 
-* {
-  box-sizing: border-box;
-}
-
 h1, h2, h3, h4, h5, h6, .hero-title, .section-title, .card-title, .section-title,
 .machine-title, .badge-label, .badge-value, .tab-button, .help-summary,
 .metric-label, .metric-value, .input-label, .footer-title, .audio-label,
-.ticker-label, .ticker-value, .machine-label, .button-wanted {
+.ticker-label, .ticker-value {
   font-family: 'Rye', 'Smokum', serif !important;
   font-weight: 400 !important;
 }
@@ -169,37 +165,6 @@ body {
   font-family: 'Inter', system-ui, sans-serif !important;
 }
 
-.button-wanted {
-  background: var(--signal-buy) !important;
-  color: var(--text) !important;
-  border: 2px solid var(--brass-glow) !important;
-  border-radius: 12px !important;
-  padding: 12px 24px !important;
-  font-family: 'Rye', 'Smokum', serif !important;
-  font-weight: 700 !important;
-  font-size: 1.1rem !important;
-  letter-spacing: 0.12em !important;
-  text-transform: uppercase !important;
-  cursor: pointer !important;
-  box-shadow: 
-    0 4px 8px rgba(0, 0, 0, 0.3),
-    inset 0 2px 4px rgba(255, 255, 255, 0.2) !important;
-  transition: all 0.2s ease !important;
-  text-shadow: 0 0 8px rgba(232, 195, 74, 0.3) !important;
-}
-
-.button-wanted:hover {
-  background: var(--brass-light) !important;
-  color: var(--iron-dark) !important;
-  transform: translateY(-2px) !important;
-  box-shadow: 
-    0 8px 16px rgba(0, 0, 0, 0.4),
-    inset 0 2px 4px rgba(255, 255, 255, 0.3) !important;
-}
-
-.button-wanted:active {
-  transform: translateY(0) !important;
-}
 
 /* Enhanced ticker styling */
 .wanted-ticker {
@@ -423,22 +388,6 @@ body {
   flex-shrink: 0;
 }
 
-.hero-copy {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.hero-logo {
-  flex-shrink: 0;
-}
-
-.hero-text {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
 .hero-title {
   margin: 0 0 12px;
   font-size: clamp(2.2rem, 3.5vw, 3.6rem);
@@ -494,22 +443,25 @@ body {
 
 .dashboard-tabs {
   display: flex;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
   padding: 0 2px;
 }
 
 .tab-button {
   border: 2px solid transparent;
   border-radius: 14px;
-  padding: 12px 20px;
-  font-size: 0.92rem;
-  letter-spacing: 0.12em;
+  padding: 12px 18px;
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--muted);
   background: rgba(232, 195, 74, 0.04);
   font-family: 'Rye', 'Smokum', serif;
   cursor: pointer;
   transition: all 0.15s ease;
+  white-space: nowrap;
+  min-width: fit-content;
 }
 
 .tab-button:hover {
@@ -714,12 +666,26 @@ body {
 .date-picker,
 .input-field {
   width: 100%;
-  padding: 12px 14px;
+  padding: 14px 16px;
   border-radius: 14px;
-  border: 1px solid rgba(242, 235, 225, 0.14);
-  background: rgba(255, 255, 255, 0.03);
+  border: 2px solid rgba(232, 195, 74, 0.3);
+  background: rgba(18, 8, 4, 0.9);
   color: var(--text);
-  font-family: 'Space Mono', monospace;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 1.05rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.date-picker:focus,
+.input-field:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(232, 195, 74, 0.15);
+}
+
+.date-picker::placeholder,
+.input-field::placeholder {
+  color: var(--muted);
 }
 
 .control-button {
@@ -790,57 +756,6 @@ body {
 }
 
 /* ============================================================
-   BASE DE LA MÁQUINA
-   ============================================================ */
-
-.machine-base {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  padding: 20px 24px 18px;
-  background: linear-gradient(180deg, rgba(232, 195, 74, 0.04), rgba(0, 0, 0, 0.20));
-  border-top: 2px solid rgba(232, 195, 74, 0.12);
-  border-bottom-left-radius: 28px;
-  border-bottom-right-radius: 28px;
-}
-
-.machine-lever {
-  position: relative;
-  width: 72px;
-  height: 170px;
-  margin-left: 12px;
-  border-radius: 40px;
-  background: linear-gradient(180deg, #5a3a1e, #2c180a);
-  box-shadow:
-    inset 0 4px 16px rgba(0, 0, 0, 0.5),
-    0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-.machine-handle {
-  position: absolute;
-  right: -18px;
-  top: 18px;
-  width: 38px;
-  height: 70px;
-  border-radius: 24px;
-  background: linear-gradient(180deg, #e8c34a, #b8902e);
-  border: 2px solid rgba(232, 195, 74, 0.30);
-  box-shadow:
-    0 8px 20px rgba(0, 0, 0, 0.40),
-    inset 0 2px 4px rgba(255, 255, 255, 0.20);
-}
-
-.machine-label {
-  font-size: 1rem;
-  letter-spacing: 0.20em;
-  text-transform: uppercase;
-  color: var(--accent);
-  font-family: 'Rye', 'Smokum', serif;
-  text-shadow: 0 0 12px rgba(232, 195, 74, 0.20);
-}
-
-/* ============================================================
    GOBERNANZA
    ============================================================ */
 
@@ -852,15 +767,6 @@ body {
 /* ============================================================
    RESPONSIVE
    ============================================================ */
-
-@media (max-width: 1024px) {
-  .overview-row,
-  .chart-grid,
-  .summary-grid,
-  .stats-grid,
-  .simulation-controls {
-    grid-template-columns: minmax(0, 1fr);
-  }
 
 .machine-shell {
   position: relative;
@@ -887,9 +793,13 @@ body {
   overflow: hidden;
 }
 
-  .machine-base {
-    flex-direction: column;
-    align-items: stretch;
+@media (max-width: 1024px) {
+  .overview-row,
+  .chart-grid,
+  .summary-grid,
+  .stats-grid,
+  .simulation-controls {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 

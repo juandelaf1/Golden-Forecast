@@ -109,6 +109,7 @@ def compute_indicators(data: pd.DataFrame) -> pd.DataFrame:
     delta = result['gold'].diff()
     gain = delta.where(delta > 0, 0).rolling(14).mean()
     loss = (-delta.where(delta < 0, 0)).rolling(14).mean()
+    loss = loss.replace(0, np.nan)
     rs = gain / loss
     result['rsi'] = 100 - (100 / (1 + rs))
 
