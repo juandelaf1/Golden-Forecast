@@ -29,6 +29,29 @@ FEATURE_LABELS = {
     'tnx': 'Tasa del Tesoro (TNX)',
 }
 
+FEATURE_CATEGORIES = {
+    'returns': 'Precio',
+    'ma_5': 'T\u00e9cnico',
+    'ma_10': 'T\u00e9cnico',
+    'ma_21': 'T\u00e9cnico',
+    'volatility_5': 'T\u00e9cnico',
+    'rsi': 'T\u00e9cnico',
+    'macd': 'T\u00e9cnico',
+    'macd_signal': 'T\u00e9cnico',
+    'dxy_return': 'Macro',
+    'vix_return': 'Macro',
+    'tnx_return': 'Macro',
+    'dxy': 'Macro',
+    'vix': 'Macro',
+    'tnx': 'Macro',
+}
+
+CATEGORY_COLORS = {
+    'Precio': '#22C55E',
+    'T\u00e9cnico': '#E8C34A',
+    'Macro': '#AC7D3D',
+}
+
 FEATURE_DESCRIPTIONS = {
     'returns': 'Cambio porcentual del precio del oro respecto al d\u00eda anterior',
     'ma_5': 'Precio promedio del oro en los \u00faltimos 5 d\u00edas h\u00e1biles',
@@ -50,8 +73,8 @@ PLOT_THEME = {
     'plot_bgcolor': 'rgba(0,0,0,0)',
     'paper_bgcolor': 'rgba(0,0,0,0)',
     'font': {'color': '#F2EBE1', 'family': 'Space Mono, monospace'},
-    'margin': {'t': 30, 'b': 30, 'l': 30, 'r': 30},
-    'legend': {'orientation': 'h', 'y': -0.2, 'font': {'color': '#F2EBE1'}},
+    'margin': {'t': 40, 'b': 50, 'l': 70, 'r': 50},
+    'legend': {'orientation': 'h', 'y': -0.25, 'font': {'color': '#F2EBE1'}},
     'hoverlabel': {
         'bgcolor': 'rgba(26, 16, 8, 0.95)',
         'bordercolor': '#D4AF37',
@@ -96,6 +119,7 @@ def _apply_rangeselector(fig, df):
         rangeslider={'visible': True, 'bgcolor': 'rgba(26, 16, 8, 0.4)', 'bordercolor': 'rgba(232, 195, 74, 0.15)'},
         range=[df.index[-last_idx], df.index[-1]],
     )
+
 
 # Colores estilo western/wanted
 WANTED_COLORS = {
@@ -257,6 +281,24 @@ def register_callbacks(app):
 
         return f'${final:,.0f}', f'{total_return:+.1f}%', str(trades), fig
 
+    @app.callback(Output('fi-chart', 'figure'), Input('fi-category-filter', 'value'))
+    def update_feature_importance(category):
+        return build_feature_importance_figure(category)
+
+    @app.callback(Output('fi-detail', 'children'), Input('fi-chart', 'clickData'))
+    def show_feature_detail(click_data):
+        if not click_data:
+            return 'Haz clic en una barra para ver m\u00e1s detalle sobre esa variable.'
+        point = click_data['points'][0]
+        label = point['y']
+        value = point['x']
+        desc = point['customdata'][0] if point.get('customdata') else ''
+        cat = point['customdata'][1] if point.get('customdata') else ''
+        return html.Span([
+            html.Strong(f'{label}', style={'color': '#D4AF37'}),
+            f' \u2014 Peso: {value:.1%}  |  Categor\u00eda: {cat}  |  {desc}',
+        ])
+
 
 def build_summary_tab() -> html.Div:
     return html.Div(
@@ -312,14 +354,34 @@ def build_summary_tab() -> html.Div:
                             html.Div(
                                 className='help-copy',
                                 children=[
-                                    html.P(html.Strong('Precio actual'), ' \u2014 Cotizaci\u00f3n spot del oro (GC=F) en USD/oz. Se actualiza con los datos de cierre diario.'),
-                                    html.P(html.Strong('Se\u00f1al de mercado'), ' \u2014 Predicci\u00f3n del modelo ensemble para la pr\u00f3xima sesi\u00f3n. ALZA = se espera subida, PRECAUCI\u00d3N = posible bajada, ESTABLE = se\u00f1al no concluyente.'),
-                                    html.P(html.Strong('Certeza'), ' \u2014 Probabilidad (%) que el modelo asigna a su predicci\u00f3n. Representa la confianza estad\u00edstica: a mayor porcentaje, m\u00e1s seguro est\u00e1 el modelo.'),
-                                    html.P(html.Strong('Aciertos'), ' \u2014 Precisi\u00f3n global (accuracy) del modelo: porcentaje de predicciones correctas sobre el total de operaciones en el per\u00edodo de test.'),
-                                    html.P(html.Strong('Fiabilidad (F1)'), ' \u2014 Media arm\u00f3nica entre precisi\u00f3n y sensibilidad. Mide el equilibrio del modelo para no generar falsas se\u00f1ales.'),
-                                    html.P(html.Strong('DXY, VIX, MA 21'), ' \u2014 Indicadores de contexto: el \u00edndice del d\u00f3lar (relaci\u00f3n inversa con el oro), la volatilidad del mercado (VIX) y la media m\u00f3vil de 21 sesiones (tendencia a corto plazo).'),
-                                    html.P('Los gr\u00e1ficos inferiores muestran: (1) precio hist\u00f3rico con se\u00f1ales del modelo como estrellas, (2) precisi\u00f3n acumulada del modelo operaci\u00f3n a operaci\u00f3n, (3) desviaci\u00f3n entre predicci\u00f3n y precio real, y (4) rendimiento de la estrategia ML frente a Buy & Hold.', className='help-note'),
-                                    html.P('Cambia entre las pesta\u00f1as superiores para ver an\u00e1lisis detallados: indicadores t\u00e9cnicos, correlaciones macro, backtest, simulaci\u00f3n y m\u00e9tricas del modelo.', className='help-note', style={'marginTop': '8px'}),
+                                    html.H4('Indicadores principales', style={'color': '#D4AF37', 'margin': '10px 0 4px', 'fontFamily': 'Rye, Smokum, serif', 'fontSize': '0.95rem'}),
+                                    html.Ul(style={'paddingLeft': '18px', 'margin': '4px 0'}, children=[
+                                        html.Li([html.Strong('Precio actual'), ' \u2014 Cotizaci\u00f3n spot del oro (GC=F) en USD/oz. Fuente: Yahoo Finance \u00faltimo cierre.']),
+                                        html.Li([html.Strong('Se\u00f1al de mercado'), ' \u2014 Predicci\u00f3n del ensemble (RF+LR+XGB). ALZA (\u226558% confianza), PRECAUCI\u00d3N (\u226442%), ESTABLE (entre 42-58%).']),
+                                        html.Li([html.Strong('Certeza'), ' \u2014 Probabilidad que el modelo asigna a su predicci\u00f3n. Ejemplo: 65% = 6.5/10 de acertar. No es la precisi\u00f3n hist\u00f3rica.']),
+                                        html.Li([html.Strong('Aciertos (Accuracy)'), ' \u2014 Porcentaje de predicciones correctas en el per\u00edodo de test (20% final de los datos).']),
+                                        html.Li([html.Strong('Fiabilidad (F1)'), ' \u2014 Media arm\u00f3nica entre precisi\u00f3n y sensibilidad. Valores >0.5 indican buen equilibrio.']),
+                                    ]),
+                                    html.H4('Indicadores de contexto', style={'color': '#D4AF37', 'margin': '10px 0 4px', 'fontFamily': 'Rye, Smokum, serif', 'fontSize': '0.95rem'}),
+                                    html.Ul(style={'paddingLeft': '18px', 'margin': '4px 0'}, children=[
+                                        html.Li([html.Strong('DXY (\u00cdndice del D\u00f3lar)'), ' \u2014 Se correlaciona inversamente con el oro. DXY sube \u2192 oro baja (generalmente).']),
+                                        html.Li([html.Strong('VIX (\u00cdndice de Volatilidad)'), ' \u2014 Mide el miedo del mercado. VIX alto \u2192 incertidumbre \u2192 el oro como refugio puede subir.']),
+                                        html.Li([html.Strong('MA 21 (Media M\u00f3vil 21d)'), ' \u2014 Tendencia a corto plazo. Precio > MA21 \u2192 tendencia alcista; Precio < MA21 \u2192 tendencia bajista.']),
+                                        html.Li([html.Strong('TNX (Bono USA 10a)'), ' \u2014 Rendimiento del tesoro. TNX alto \u2192 menor atractivo del oro (que no paga intereses).']),
+                                    ]),
+                                    html.H4('Gr\u00e1ficos del panel', style={'color': '#D4AF37', 'margin': '10px 0 4px', 'fontFamily': 'Rye, Smokum, serif', 'fontSize': '0.95rem'}),
+                                    html.Ul(style={'paddingLeft': '18px', 'margin': '4px 0'}, children=[
+                                        html.Li([html.Strong('Precio + se\u00f1ales'), ' \u2014 L\u00ednea dorada con estrellas verdes (ALZA) y rojas (PRECAUCI\u00d3N) del modelo.']),
+                                        html.Li([html.Strong('Predicci\u00f3n vs Realidad'), ' \u2014 Compara el precio real con la predicci\u00f3n del modelo. La banda de confianza muestra el rango esperado.']),
+                                        html.Li([html.Strong('Precisi\u00f3n acumulada'), ' \u2014 Evoluci\u00f3n del acierto del modelo operaci\u00f3n a operaci\u00f3n. Pendiente positiva = mejora continua.']),
+                                        html.Li([html.Strong('Rendimiento ML vs B&H'), ' \u2014 Compara la rentabilidad de seguir las se\u00f1ales del modelo vs comprar y mantener.']),
+                                    ]),
+                                    html.H4('C\u00f3mo usar el panel', style={'color': '#D4AF37', 'margin': '10px 0 4px', 'fontFamily': 'Rye, Smokum, serif', 'fontSize': '0.95rem'}),
+                                    html.P('1. Revisa la se\u00f1al del d\u00eda y la certeza en las tarjetas superiores.', style={'margin': '2px 0'}),
+                                    html.P('2. Observa los gr\u00e1ficos de precio y tendencia para contexto visual.', style={'margin': '2px 0'}),
+                                    html.P('3. Navega por las pesta\u00f1as superiores para ver indicadores t\u00e9cnicos, macro, backtest y simulaci\u00f3n.', style={'margin': '2px 0'}),
+                                    html.P('4. Usa los selectores de fecha (1D, 5D, 1M...) en cada gr\u00e1fico para ajustar el horizonte temporal.', style={'margin': '2px 0'}),
+                                    html.P(html.Em('Nota: Los datos se actualizan con cada cierre diario. El modelo se re-entrena autom\u00e1ticamente. No es asesor\u00eda financiera.'), style={'marginTop': '8px', 'fontSize': '0.8rem', 'color': '#8D6B34'}),
                                 ],
                             ),
                         ],
@@ -440,7 +502,7 @@ def build_methodology_tab() -> html.Div:
                             html.Div(
                                 className='governance-markdown',
                                 children=[
-                                    html.P(html.Strong('Random Forest'), ' \u2014 200 \u00e1rboles, max_depth=10, random_state=42 (modelo principal)'),
+                                    html.P(html.Strong('RF (Clasif.)'), ' \u2014 Random Forest, 200 \u00e1rboles, max_depth=10, random_state=42 (modelo principal)'),
                                     html.P(html.Strong('Logistic Regression'), ' \u2014 max_iter=1000, baseline lineal de referencia'),
                                     html.P(html.Strong('XGBoost'), ' \u2014 100 estimadores, max_depth=5, eval_metric=logloss (si est\u00e1 disponible)'),
                                 ],
@@ -578,6 +640,7 @@ def build_indicators_tab() -> html.Div:
 
 
 def build_macro_tab() -> html.Div:
+    latest = context['latest']
     return html.Div(
         className='section-panel',
         children=[
@@ -588,6 +651,41 @@ def build_macro_tab() -> html.Div:
                     html.P(
                         'Relación del oro con DXY (dólar), VIX (volatilidad) y TNX (bonos). Panel inferior: indicadores normalizados.',
                         className='section-text',
+                    ),
+                ],
+            ),
+            html.Div(
+                className='help-panel',
+                children=[
+                    html.Details(
+                        className='help-panel-details',
+                        children=[
+                            html.Summary('\u00bfC\u00f3mo interpretar los indicadores macro?', className='help-summary'),
+                            html.Div(
+                                className='help-copy',
+                                children=[
+                                    html.H4(f'DXY (\u00cdndice del D\u00f3lar) \u2014 Actual: {latest.get("dxy", 0):.2f}', style={'color': '#AC7D3D', 'margin': '10px 0 4px', 'fontFamily': 'Rye, Smokum, serif', 'fontSize': '0.9rem'}),
+                                    html.Ul(style={'paddingLeft': '18px', 'margin': '4px 0'}, children=[
+                                        html.Li('Mide el valor del d\u00f3lar frente a una cesta de 6 divisas (EUR, JPY, GBP, CAD, SEK, CHF).'),
+                                        html.Li('Relaci\u00f3n inversa con el oro: cuando el d\u00f3lar se fortalece (DXY sube), el oro tiende a bajar porque se encarece en otras divisas.'),
+                                        html.Li(f'Rango t\u00edpico: 90-110. Por encima de 105 se considera d\u00f3lar fuerte; por debajo de 95, d\u00f3lar d\u00e9bil.'),
+                                    ]),
+                                    html.H4(f'VIX (\u00cdndice de Volatilidad CBOE) \u2014 Actual: {latest.get("vix", 0):.2f}', style={'color': '#7A5C33', 'margin': '10px 0 4px', 'fontFamily': 'Rye, Smokum, serif', 'fontSize': '0.9rem'}),
+                                    html.Ul(style={'paddingLeft': '18px', 'margin': '4px 0'}, children=[
+                                        html.Li('Conocido como el "\u00edndice del miedo". Mide la volatilidad esperada del S&P 500 para los pr\u00f3ximos 30 d\u00edas.'),
+                                        html.Li('Relaci\u00f3n directa con el oro: VIX alto \u2192 incertidumbre en los mercados \u2192 inversores buscan refugio en el oro.'),
+                                        html.Li(f'Rango t\u00edpico: 12-20 en mercados estables. >30 indica p\u00e1nico; <12 indica complacencia.'),
+                                    ]),
+                                    html.H4(f'TNX (Bono del Tesoro USA a 10 a\u00f1os) \u2014 Actual: {latest.get("tnx", 0):.2f}%', style={'color': '#5C4732', 'margin': '10px 0 4px', 'fontFamily': 'Rye, Smokum, serif', 'fontSize': '0.9rem'}),
+                                    html.Ul(style={'paddingLeft': '18px', 'margin': '4px 0'}, children=[
+                                        html.Li('Rendimiento del bono del gobierno estadounidense a 10 a\u00f1os. Referencia global de tipos de inter\u00e9s.'),
+                                        html.Li('Relaci\u00f3n inversa con el oro: TNX alto \u2192 los bonos pagan m\u00e1s intereses \u2192 el oro (que no paga intereses) pierde atractivo.'),
+                                        html.Li(f'Rango t\u00edpico: 1.5-5.0%. Por encima de 4.5% presiona a la baja el oro; por debajo de 2.5% lo favorece.'),
+                                    ]),
+                                    html.P(html.Em('Interpretaci\u00f3n combinada: El movimiento del oro rara vez depende de un solo factor. Lo ideal es observar los tres indicadores juntos para detectar se\u00f1ales de consenso o divergencia.'), style={'marginTop': '10px', 'fontSize': '0.8rem', 'color': '#8D6B34'}),
+                                ],
+                            ),
+                        ],
                     ),
                 ],
             ),
@@ -815,7 +913,7 @@ def build_price_figure() -> go.Figure:
                       title={'text': 'Precio del Oro y Señales del Modelo', 'font': {'family': 'Rye, Smokum, serif', 'color': WANTED_COLORS['gold']}})
     fig.update_xaxes(**AXIS_THEME)
     _apply_rangeselector(fig, df)
-    fig.update_yaxes(**AXIS_THEME, title_text='USD por onza')
+    fig.update_yaxes(**AXIS_THEME, title_text='USD por onza', autorange=True)
     return fig
 
 
@@ -835,7 +933,7 @@ def build_rsi_figure() -> go.Figure:
     fig.update_layout(**PLOT_THEME, height=340, hovermode='x unified')
     fig.update_xaxes(**AXIS_THEME)
     _apply_rangeselector(fig, df)
-    fig.update_yaxes(**AXIS_THEME, title_text='RSI')
+    fig.update_yaxes(**AXIS_THEME, title_text='RSI', autorange=True)
     return fig
 
 
@@ -871,7 +969,7 @@ def build_macd_figure() -> go.Figure:
     fig.update_layout(**PLOT_THEME, height=340, hovermode='x unified')
     fig.update_xaxes(**AXIS_THEME)
     _apply_rangeselector(fig, df)
-    fig.update_yaxes(**AXIS_THEME, title_text='MACD')
+    fig.update_yaxes(**AXIS_THEME, title_text='MACD', autorange=True)
     return fig
 
 
@@ -892,9 +990,9 @@ def build_macro_figure() -> go.Figure:
 
 
 def build_model_figure() -> go.Figure:
-    metrics = ['Aciertos', 'Fiabilidad', 'Poder predictivo']
-    values = [context['accuracy'], context['f1'], context['auc']]
-    colors = [WANTED_COLORS['buy'], WANTED_COLORS['brass'], WANTED_COLORS['signal_neutral']]
+    metrics = ['Precisión', 'Precision', 'Recall', 'F1 Score', 'ROC-AUC']
+    values = [context['accuracy'], context['precision'], context['recall'], context['f1'], context['auc']]
+    colors = [WANTED_COLORS['buy'], WANTED_COLORS['signal_neutral'], WANTED_COLORS['signal_neutral'], WANTED_COLORS['brass'], WANTED_COLORS['gold']]
     
     fig = go.Figure()
     
@@ -912,7 +1010,7 @@ def build_model_figure() -> go.Figure:
     fig.update_layout(
         **PLOT_THEME, 
         height=380, 
-        yaxis={'range': [0, 1]}, 
+        yaxis={'range': [0, 1.15]}, 
         bargap=0.25,
         title={'text': 'Rendimiento del Modelo', 'font': {'family': 'Rye, Smokum, serif', 'color': WANTED_COLORS['gold']}}
     )
@@ -930,8 +1028,6 @@ def build_backtest_figure() -> go.Figure:
             y=context['cum_strategy'] * 100,
             name='Estrategia ML',
             line={'color': WANTED_COLORS['buy'], 'width': 3},
-            fill='tozeroy',
-            fillcolor='rgba(34, 197, 94, 0.12)',
         )
     )
     fig.add_trace(
@@ -952,14 +1048,14 @@ def build_backtest_figure() -> go.Figure:
         )
     )
     fig.update_layout(
-        **PLOT_THEME, 
-        height=400, 
-        hovermode='x unified', 
+        **{**PLOT_THEME, 'margin': {'t': 40, 'b': 50, 'l': 70, 'r': 70}},
+        height=400,
+        hovermode='x unified',
         title={'text': 'Backtest: Estrategia ML vs Buy & Hold', 'font': {'family': 'Rye, Smokum, serif', 'color': WANTED_COLORS['gold']}},
         yaxis2={'overlaying': 'y', 'side': 'right', 'showgrid': False, 'title': 'Alpha (%)'},
     )
     fig.update_xaxes(**AXIS_THEME)
-    fig.update_yaxes(**AXIS_THEME, title_text='Rendimiento acumulado (%)')
+    fig.update_yaxes(**AXIS_THEME, title_text='Rendimiento acumulado (%)', autorange=True)
     return fig
 
 
@@ -1024,7 +1120,7 @@ def build_prediction_deviation_figure() -> go.Figure:
         title={'text': 'Predicción vs Realidad', 'font': {'family': 'Rye, Smokum, serif', 'color': WANTED_COLORS['gold']}},
     )
     fig.update_xaxes(**AXIS_THEME)
-    fig.update_yaxes(**AXIS_THEME, title_text='USD por onza')
+    fig.update_yaxes(**AXIS_THEME, title_text='USD por onza', autorange=True)
     return fig
 
 
@@ -1074,7 +1170,7 @@ def build_learning_curve_figure() -> go.Figure:
         yaxis_title='Precisión Acumulada',
     )
     fig.update_xaxes(**AXIS_THEME)
-    fig.update_yaxes(**AXIS_THEME, range=[0.3, 1.0])
+    fig.update_yaxes(**AXIS_THEME, range=[0.3, 1.05])
     return fig
 
 
@@ -1093,10 +1189,10 @@ def build_simulation_placeholder() -> go.Figure:
     return fig
 
 
-def build_feature_importance_figure() -> go.Figure:
+def build_feature_importance_figure(category='all') -> go.Figure:
     """Feature importance chart for the Random Forest model."""
     model_results = context.get('model_results', {})
-    rf_result = model_results.get('Random Forest')
+    rf_result = model_results.get('RF (Clasif.)')
     if not rf_result or 'model' not in rf_result:
         fig = go.Figure()
         fig.update_layout(**PLOT_THEME, height=350)
@@ -1108,8 +1204,20 @@ def build_feature_importance_figure() -> go.Figure:
     raw_features = [FEATURE_COLUMNS[i] for i in fi_indices]
     labels = [FEATURE_LABELS.get(f, f) for f in raw_features]
     descs = [FEATURE_DESCRIPTIONS.get(f, '') for f in raw_features]
+    cats = [FEATURE_CATEGORIES.get(f, 'Otra') for f in raw_features]
     values = [fi[i] for i in fi_indices]
-    colors = [f'rgba(232, 195, 74, {0.4 + v * 0.6:.2f})' for v in values]
+
+    # Filter by category
+    if category != 'all':
+        pairs = [(l, v, d, c) for l, v, d, c in zip(labels, values, descs, cats) if c == category]
+        if pairs:
+            labels, values, descs, cats = zip(*pairs)
+        labels = list(labels)
+        values = list(values)
+        descs = list(descs)
+        cats = list(cats)
+
+    bar_colors = [CATEGORY_COLORS.get(c, '#E8C34A') for c in cats]
 
     fig = go.Figure()
     fig.add_trace(go.Bar(
@@ -1117,20 +1225,25 @@ def build_feature_importance_figure() -> go.Figure:
         y=labels,
         orientation='h',
         marker={
-            'color': colors,
-            'line': {'color': WANTED_COLORS['gold'], 'width': 1.5},
+            'color': bar_colors,
+            'line': {'color': WANTED_COLORS['gold'], 'width': 1},
             'cornerradius': 4,
         },
         text=[f'{v:.1%}' for v in values],
         textposition='outside',
-        textfont={'color': '#F2EBE1', 'size': 11, 'family': 'Space Mono, monospace'},
-        hovertemplate='%{y}: %{x:.1%}<br>%{customdata}<extra></extra>',
-        customdata=descs,
+        textfont={'color': '#F2EBE1', 'size': 10, 'family': 'Space Mono, monospace'},
+        cliponaxis=False,
+        hovertemplate='<b>%{y}</b><br>Peso: %{x:.1%}<br>Categor\u00eda: %{customdata[1]}<br>%{customdata[0]}<extra></extra>',
+        customdata=list(zip(descs, cats)),
+        selected={'marker': {'color': '#F5EDE0', 'opacity': 1}},
+        unselected={'marker': {'opacity': 0.4}},
     ))
+    max_val = max(values) if values else 0.1
     fig.update_layout(
-        **PLOT_THEME,
+        **{**PLOT_THEME, 'margin': {'t': 30, 'b': 30, 'l': 180, 'r': 60}},
         height=400,
-        xaxis={'range': [0, max(values) * 1.25], 'showgrid': True, 'gridcolor': 'rgba(242,235,225,0.08)'},
+        clickmode='event+select',
+        xaxis={'range': [0, max_val * 1.5], 'showgrid': True, 'gridcolor': 'rgba(242,235,225,0.08)'},
         title={'text': 'Factores que M\u00e1s Influyen en la Predicci\u00f3n', 'font': {'family': 'Rye, Smokum, serif', 'color': WANTED_COLORS['gold']}},
     )
     fig.update_xaxes(**AXIS_THEME, tickformat='.0%', title_text='Peso relativo en la decisi\u00f3n del modelo')
@@ -1141,7 +1254,7 @@ def build_feature_importance_figure() -> go.Figure:
 def build_confusion_matrix_figure() -> go.Figure:
     """Confusion matrix heatmap."""
     model_results = context.get('model_results', {})
-    rf_result = model_results.get('Random Forest')
+    rf_result = model_results.get('RF (Clasif.)')
     if not rf_result:
         fig = go.Figure()
         fig.update_layout(**PLOT_THEME, height=350)
@@ -1174,7 +1287,7 @@ def build_confusion_matrix_figure() -> go.Figure:
 def build_roc_curve_figure() -> go.Figure:
     """ROC curve for the Random Forest model."""
     model_results = context.get('model_results', {})
-    rf_result = model_results.get('Random Forest')
+    rf_result = model_results.get('RF (Clasif.)')
     if not rf_result:
         fig = go.Figure()
         fig.update_layout(**PLOT_THEME, height=350)
@@ -1210,35 +1323,73 @@ def build_roc_curve_figure() -> go.Figure:
     return fig
 
 
-def build_model_comparison_table() -> html.Table:
-    """Model comparison table with all trained models."""
+def build_model_comparison_table() -> html.Div:
+    """Model comparison tables for classification and regression."""
     model_results = context.get('model_results', {})
     if not model_results:
-        return html.Table(style={'width': '100%', 'borderCollapse': 'collapse'}, children=[
-            html.Tr([html.Th('No hay datos de modelos disponibles', style={'padding': '8px', 'color': '#D4AF37'})])
-        ])
+        return html.Div('No hay datos de modelos disponibles', style={'color': '#D4AF37', 'padding': '8px'})
 
-    rows = [
+    clf_models = {n: r for n, r in model_results.items() if r.get('type') == 'classification'}
+    reg_models = {n: r for n, r in model_results.items() if r.get('type') == 'regression'}
+
+    # Classification table
+    clf_rows = [
         html.Tr([
-            html.Th('Modelo', style={'borderBottom': '1px solid #2C1A0C', 'padding': '8px', 'textAlign': 'left', 'color': '#D4AF37'}),
-            html.Th('Precisión', style={'borderBottom': '1px solid #2C1A0C', 'padding': '8px', 'color': '#D4AF37'}),
-            html.Th('F1 Score', style={'borderBottom': '1px solid #2C1A0C', 'padding': '8px', 'color': '#D4AF37'}),
-            html.Th('ROC-AUC', style={'borderBottom': '1px solid #2C1A0C', 'padding': '8px', 'color': '#D4AF37'}),
-            html.Th('Rentabilidad', style={'borderBottom': '1px solid #2C1A0C', 'padding': '8px', 'color': '#D4AF37'}),
+            html.Th('Modelo', style=TH),
+            html.Th('Precisión', style=TH),
+            html.Th('Precision', style=TH),
+            html.Th('Recall', style=TH),
+            html.Th('F1', style=TH),
+            html.Th('ROC-AUC', style=TH),
+            html.Th('Rentab.', style=TH),
         ]),
     ]
-
-    for name, result in model_results.items():
-        profit_color = '#22C55E' if result['cum_strategy'][-1] > 0 else '#EF4444'
-        rows.append(html.Tr([
-            html.Td(name, style={'borderBottom': '1px solid rgba(44,26,12,0.3)', 'padding': '6px 8px'}),
-            html.Td(f'{result["accuracy"]:.1%}', style={'borderBottom': '1px solid rgba(44,26,12,0.3)', 'padding': '6px 8px'}),
-            html.Td(f'{result["f1"]:.3f}', style={'borderBottom': '1px solid rgba(44,26,12,0.3)', 'padding': '6px 8px'}),
-            html.Td(f'{result["auc"]:.3f}' if result['auc'] > 0 else '—', style={'borderBottom': '1px solid rgba(44,26,12,0.3)', 'padding': '6px 8px'}),
-            html.Td(f'{result["cum_strategy"][-1]:+.1%}', style={'borderBottom': '1px solid rgba(44,26,12,0.3)', 'padding': '6px 8px', 'color': profit_color}),
+    for name, r in clf_models.items():
+        profit_color = '#22C55E' if r['cum_strategy'][-1] > 0 else '#EF4444'
+        clf_rows.append(html.Tr([
+            html.Td(name, style=TD),
+            html.Td(f'{r["accuracy"]:.1%}', style=TD),
+            html.Td(f'{r["precision"]:.1%}', style=TD),
+            html.Td(f'{r["recall"]:.1%}', style=TD),
+            html.Td(f'{r["f1"]:.3f}', style=TD),
+            html.Td(f'{r["auc"]:.3f}' if r['auc'] > 0 else '—', style=TD),
+            html.Td(f'{r["cum_strategy"][-1]:+.1%}', style={**TD, 'color': profit_color}),
         ]))
 
-    return html.Table(style={'width': '100%', 'borderCollapse': 'collapse', 'color': '#F5EDE0', 'fontFamily': 'Space Mono, monospace', 'fontSize': '13px'}, children=rows)
+    # Regression table
+    reg_rows = [
+        html.Tr([
+            html.Th('Modelo', style=TH),
+            html.Th('MAE', style=TH),
+            html.Th('RMSE', style=TH),
+            html.Th('R²', style=TH),
+            html.Th('MAPE', style=TH),
+        ]),
+    ]
+    for name, r in reg_models.items():
+        reg_rows.append(html.Tr([
+            html.Td(name, style=TD),
+            html.Td(f'{r["mae"]:.4f}', style=TD),
+            html.Td(f'{r["rmse"]:.4f}', style=TD),
+            html.Td(f'{r["r2"]:.4f}', style=TD),
+            html.Td(f'{r["mape"]:.1f}%', style=TD),
+        ]))
+
+    children = []
+    if clf_rows:
+        children.append(html.Div('Clasificación (sube/baja)', style={'color': '#D4AF37', 'fontFamily': 'Rye, Smokum, serif', 'fontSize': '0.9rem', 'marginBottom': '6px'}))
+        children.append(html.Table(style=TABLE, children=clf_rows))
+    if reg_rows:
+        children.append(html.Div('Regresión (retorno esperado)', style={'color': '#D4AF37', 'fontFamily': 'Rye, Smokum, serif', 'fontSize': '0.9rem', 'margin': '16px 0 6px'}))
+        children.append(html.Table(style=TABLE, children=reg_rows))
+
+    return html.Div(children=children)
+
+
+TH = {'borderBottom': '1px solid #2C1A0C', 'padding': '8px', 'color': '#D4AF37', 'fontFamily': 'Space Mono, monospace', 'fontSize': '12px', 'textAlign': 'center'}
+TD = {'borderBottom': '1px solid rgba(44,26,12,0.3)', 'padding': '6px 8px', 'color': '#F5EDE0', 'fontFamily': 'Space Mono, monospace', 'fontSize': '12px', 'textAlign': 'center'}
+TD_LEFT = {**TD, 'textAlign': 'left'}
+TABLE = {'width': '100%', 'borderCollapse': 'collapse'}
 
 
 def build_metrics_tab() -> html.Div:
@@ -1258,8 +1409,26 @@ def build_metrics_tab() -> html.Div:
             html.Div(
                 className='wide-card',
                 children=[
-                    html.Div('Importancia de Variables', className='card-title'),
+                    html.Div([
+                        html.Span('Factores que Influyen en la Predicci\u00f3n', className='card-title'),
+                        dcc.Dropdown(
+                            id='fi-category-filter',
+                            options=[
+                                {'label': 'Todas las variables', 'value': 'all'},
+                                {'label': 'T\u00e9cnicas (RSI, MACD, Medias...)', 'value': 'T\u00e9cnico'},
+                                {'label': 'Macro (DXY, VIX, TNX...)', 'value': 'Macro'},
+                                {'label': 'Precio (Rendimiento Diario)', 'value': 'Precio'},
+                            ],
+                            value='all',
+                            clearable=False,
+                            style={
+                                'width': '280px', 'marginLeft': 'auto', 'background': '#2C2620', 'color': '#F2EBE1',
+                                'border': '1px solid rgba(232,195,74,0.3)', 'borderRadius': '6px', 'fontSize': '0.75rem',
+                            },
+                        ),
+                    ], style={'display': 'flex', 'alignItems': 'center', 'gap': '12px', 'flexWrap': 'wrap'}),
                     dcc.Loading(type='dot', children=dcc.Graph(id='fi-chart', figure=build_feature_importance_figure(), config={'displayModeBar': False})),
+                    html.Div(id='fi-detail', style={'color': '#8D6B34', 'fontSize': '0.8rem', 'marginTop': '6px', 'fontFamily': 'Space Mono, monospace', 'minHeight': '20px'}),
                 ],
             ),
             html.Div(

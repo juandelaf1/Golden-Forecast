@@ -4,13 +4,17 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 import yfinance as yf
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import confusion_matrix, f1_score, roc_auc_score, roc_curve
+from sklearn.metrics import (
+    accuracy_score, confusion_matrix, f1_score, precision_score, recall_score,
+    roc_auc_score, roc_curve,
+    mean_absolute_error, mean_squared_error, r2_score,
+)
 from sklearn.preprocessing import StandardScaler
 
 try:
-    from xgboost import XGBClassifier
+    from xgboost import XGBClassifier, XGBRegressor
     XGB_AVAILABLE = True
 except ImportError:
     XGB_AVAILABLE = False
@@ -142,37 +146,40 @@ def train_models(data: pd.DataFrame) -> dict:
 
     models = {}
 
-    # Logistic Regression
+    # === CLASSIFICATION MODELS ===
     lr = LogisticRegression(max_iter=1000, random_state=42)
     lr.fit(X_train, y_train)
-    models['Logistic Regression'] = lr
+    models['LR (Clasif.)'] = lr
 
-    # Random Forest (main model)
-    rf = RandomForestClassifier(n_estimators=200, max_depth=10, random_state=42)
-    rf.fit(X_train, y_train)
-    models['Random Forest'] = rf
+    rf_clf = RandomForestClassifier(n_estimators=200, max_depth=10, random_state=42)
+    rf_clf.fit(X_train, y_train)
+    models['RF (Clasif.)'] = rf_clf
 
-    # XGBoost
     if XGB_AVAILABLE:
-        xgb = XGBClassifier(n_estimators=100, max_depth=5, random_state=42, eval_metric='logloss')
-        xgb.fit(X_train, y_train)
-        models['XGBoost'] = xgb
+        xgb_clf = XGBClassifier(n_estimators=100, max_depth=5, random_state=42, eval_metric='logloss')
+        xgb_clf.fit(X_train, y_train)
+        models['XGB (Clasif.)'] = xgb_clf
 
-    # Evaluate all models
+    # Evaluate classification models
     cum_bh = np.cumprod(1 + test['returns'].values) - 1
     model_results = {}
     for name, model in models.items():
         preds = model.predict(X_test)
         probas = model.predict_proba(X_test)[:, 1] if hasattr(model, 'predict_proba') else np.full_like(preds, 0.5)
-        acc = (preds == y_test.values).mean()
+        acc = accuracy_score(y_test, preds)
         f1 = f1_score(y_test, preds)
+        prec = precision_score(y_test, preds)
+        rec = recall_score(y_test, preds)
         auc = roc_auc_score(y_test, probas) if len(np.unique(probas)) > 1 else 0.5
         strat_ret = test['returns'].values * preds
         cum_strat = np.cumprod(1 + strat_ret) - 1
         model_results[name] = {
             'model': model,
+            'type': 'classification',
             'accuracy': acc,
             'f1': f1,
+            'precision': prec,
+            'recall': rec,
             'auc': auc,
             'predictions': preds,
             'probabilities': probas,
@@ -180,28 +187,61 @@ def train_models(data: pd.DataFrame) -> dict:
             'cum_bh': cum_bh,
         }
 
-    # Use Random Forest as primary model for signals
-    primary_model = models['Random Forest']
+    # === REGRESSION MODELS ===
+    y_reg_train = train['returns'].values
+    y_reg_test = test['returns'].values
+
+    reg_models = {}
+    rf_reg = RandomForestRegressor(n_estimators=200, max_depth=10, random_state=42)
+    rf_reg.fit(X_train, y_reg_train)
+    reg_models['RF (Regr.)'] = rf_reg
+
+    if XGB_AVAILABLE:
+        xgb_reg = XGBRegressor(n_estimators=100, max_depth=5, random_state=42)
+        xgb_reg.fit(X_train, y_reg_train)
+        reg_models['XGB (Regr.)'] = xgb_reg
+
+    for name, model in reg_models.items():
+        preds = model.predict(X_test)
+        mae = mean_absolute_error(y_reg_test, preds)
+        mse = mean_squared_error(y_reg_test, preds)
+        rmse = np.sqrt(mse)
+        r2 = r2_score(y_reg_test, preds)
+        mape = np.mean(np.abs((y_reg_test - preds) / (np.abs(y_reg_test) + 1e-8))) * 100
+        model_results[name] = {
+            'model': model,
+            'type': 'regression',
+            'mae': mae,
+            'mse': mse,
+            'rmse': rmse,
+            'r2': r2,
+            'mape': mape,
+        }
+
+    # Use Random Forest classifier as primary model for signals
+    primary_model = models['RF (Clasif.)']
     X_full = scaler.transform(data[FEATURE_COLUMNS])
     data['signal'] = primary_model.predict(X_full)
     data['signal_proba'] = primary_model.predict_proba(X_full)[:, 1]
 
-    # Feature importance (from Random Forest)
-    fi = rf.feature_importances_
+    # Feature importance (from Random Forest classifier)
+    fi = rf_clf.feature_importances_
     fi_indices = np.argsort(fi)[::-1]
     feature_importance = {
         'features': [FEATURE_COLUMNS[i] for i in fi_indices],
         'importance': fi[fi_indices].tolist(),
     }
 
+    rf_clf_result = model_results['RF (Clasif.)']
+
     # Confusion matrix
-    cm = confusion_matrix(y_test, model_results['Random Forest']['predictions'])
+    cm = confusion_matrix(y_test, rf_clf_result['predictions'])
 
     # ROC curve
-    fpr, tpr, _ = roc_curve(y_test, model_results['Random Forest']['probabilities'])
+    fpr, tpr, _ = roc_curve(y_test, rf_clf_result['probabilities'])
 
     # Last 20 days performance
-    last20_pred = model_results['Random Forest']['predictions'][-20:]
+    last20_pred = rf_clf_result['predictions'][-20:]
     last20_actual = y_test.values[-20:]
     last20_acc = (last20_pred == last20_actual).mean()
     last20_hits = int(last20_pred.sum())
@@ -211,12 +251,12 @@ def train_models(data: pd.DataFrame) -> dict:
     latest_proba = float(data['signal_proba'].iloc[-1])
     signal_text = 'SUBIRÁ' if latest_signal == 1 else 'BAJARÁ'
 
-    if model_results['Random Forest']['cum_strategy'][-1] > model_results['Random Forest']['cum_bh'][-1]:
+    if rf_clf_result['cum_strategy'][-1] > rf_clf_result['cum_bh'][-1]:
         vs_bh = 'supera'
-        diff = model_results['Random Forest']['cum_strategy'][-1] - model_results['Random Forest']['cum_bh'][-1]
+        diff = rf_clf_result['cum_strategy'][-1] - rf_clf_result['cum_bh'][-1]
     else:
         vs_bh = 'está por detrás de'
-        diff = model_results['Random Forest']['cum_strategy'][-1] - model_results['Random Forest']['cum_bh'][-1]
+        diff = rf_clf_result['cum_strategy'][-1] - rf_clf_result['cum_bh'][-1]
 
     natural_text = (
         f'El modelo predice que el oro {signal_text} mañana con una confianza del {max(0.5, latest_proba):.0%}. '
@@ -228,7 +268,7 @@ def train_models(data: pd.DataFrame) -> dict:
         'scaler': scaler,
         'train': train,
         'test': test,
-        'models': models,
+        'models': {**models, **reg_models},
         'model_results': model_results,
         'feature_importance': feature_importance,
         'confusion_matrix': cm,
@@ -239,7 +279,7 @@ def train_models(data: pd.DataFrame) -> dict:
         'last20_hits': last20_hits,
         'natural_text': natural_text,
         'split_index': split_index,
-        'primary_model_name': 'Random Forest',
+        'primary_model_name': 'RF (Clasif.)',
     }
 
 
@@ -266,15 +306,29 @@ def build_context() -> dict:
         signal_color = '#e6b84c'
 
     # Build model comparison table data
+    rf_clf_key = 'RF (Clasif.)'
+    rf_clf_result = model_results['model_results'][rf_clf_key]
+
     model_table_data = []
     for name, res in model_results['model_results'].items():
-        model_table_data.append({
-            'name': name,
-            'accuracy': res['accuracy'],
-            'f1': res['f1'],
-            'auc': res['auc'],
-            'cum_return': res['cum_strategy'][-1],
-        })
+        entry = {'name': name, 'type': res.get('type', 'classification')}
+        if entry['type'] == 'classification':
+            entry.update({
+                'accuracy': res['accuracy'],
+                'precision': res['precision'],
+                'recall': res['recall'],
+                'f1': res['f1'],
+                'auc': res['auc'],
+                'cum_return': res['cum_strategy'][-1],
+            })
+        else:
+            entry.update({
+                'mae': res['mae'],
+                'rmse': res['rmse'],
+                'r2': res['r2'],
+                'mape': res['mape'],
+            })
+        model_table_data.append(entry)
 
     return {
         'data': data,
@@ -286,20 +340,21 @@ def build_context() -> dict:
         'confidence': signal_probability,
         'train': model_results['train'],
         'test': model_results['test'],
-        'accuracy': model_results['model_results']['Random Forest']['accuracy'],
-        'f1': model_results['model_results']['Random Forest']['f1'],
-        'auc': model_results['model_results']['Random Forest']['auc'],
-        'predictions': model_results['model_results']['Random Forest']['predictions'],
-        'probabilities': model_results['model_results']['Random Forest']['probabilities'],
+        'accuracy': rf_clf_result['accuracy'],
+        'f1': rf_clf_result['f1'],
+        'precision': rf_clf_result['precision'],
+        'recall': rf_clf_result['recall'],
+        'auc': rf_clf_result['auc'],
+        'predictions': rf_clf_result['predictions'],
+        'probabilities': rf_clf_result['probabilities'],
         'split_index': model_results['split_index'],
         'split_date': data.index[model_results['split_index']],
         'test_data': model_results['test'],
-        'cum_strategy': model_results['model_results']['Random Forest']['cum_strategy'],
-        'cum_bh': model_results['model_results']['Random Forest']['cum_bh'],
+        'cum_strategy': rf_clf_result['cum_strategy'],
+        'cum_bh': rf_clf_result['cum_bh'],
         'load_source': source,
         'loaded_at': datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC'),
         'signal_series': data['signal'],
-        # New additions
         'model_results': model_results['model_results'],
         'feature_importance': model_results['feature_importance'],
         'confusion_matrix': model_results['confusion_matrix'],
