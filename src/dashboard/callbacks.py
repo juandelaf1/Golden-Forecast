@@ -37,7 +37,10 @@ RANGESELECTOR = {
     'activecolor': 'rgba(232, 195, 74, 0.3)',
     'borderwidth': 1,
     'bordercolor': 'rgba(232, 195, 74, 0.3)',
-    'font': {'color': '#F2EBE1', 'size': 10, 'family': 'Space Mono, monospace'},
+    'font': {'color': '#F2EBE1', 'size': 9, 'family': 'Space Mono, monospace'},
+    'yanchor': 'top',
+    'x': 1.02,
+    'xanchor': 'right',
 }
 
 RANGE_BUTTONS = [
@@ -366,11 +369,11 @@ def build_methodology_tab() -> html.Div:
                             html.Div(
                                 className='governance-markdown',
                                 children=[
-                                    html.P('1. Extracci\u00f3n: Datos diarios v\u00eda Yahoo Finance desde 2015 (gold, DXY, VIX, TNX).'),
-                                    html.P('2. Preprocesamiento: Limpieza, normalizaci\u00f3n y tratamiento de NaN.'),
+                                    html.P('1. Extracci\u00f3n: Datos diarios v\u00eda Yahoo Finance desde 2015 (GC=F, DXY, VIX, TNX).'),
+                                    html.P('2. Preprocesamiento: Limpieza, normalizaci\u00f3n y tratamiento de valores faltantes.'),
                                     html.P('3. Feature Engineering: RSI, MACD, medias m\u00f3viles, volatilidad, retornos macro.'),
-                                    html.P('4. Modelado: Ensemble con validaci\u00f3n temporal (80/20).'),
-                                    html.P('5. Evaluaci\u00f3n: Precisi\u00f3n, F1, ROC-AUC, backtest vs Buy & Hold.'),
+                                    html.P('4. Modelado: Ensemble con validaci\u00f3n temporal (80% train / 20% test).'),
+                                    html.P('5. Evaluaci\u00f3n: Precisi\u00f3n, F1-Score, ROC-AUC, backtest vs Buy & Hold.'),
                                 ],
                             ),
                         ],
@@ -378,13 +381,14 @@ def build_methodology_tab() -> html.Div:
                     html.Div(
                         className='narrow-card',
                         children=[
-                            html.Div('Modelos Implementados', className='card-title'),
+                            html.Div('Stack Tecnol\u00f3gico', className='card-title'),
                             html.Div(
                                 className='governance-markdown',
                                 children=[
-                                    html.P(html.Strong('Random Forest'), ' \u2014 200 \u00e1rboles, max_depth=10 (principal)'),
-                                    html.P(html.Strong('Logistic Regression'), ' \u2014 baseline lineal'),
-                                    html.P(html.Strong('XGBoost'), ' \u2014 gradient boosting (si disponible)'),
+                                    html.P(html.Strong('Python'), ' 3.10+ \u2014 pandas, numpy, scikit-learn'),
+                                    html.P(html.Strong('Modelos'), ' \u2014 Random Forest, Logistic Regression, XGBoost'),
+                                    html.P(html.Strong('Frontend'), ' \u2014 Plotly Dash, CSS Grid, Plotly.js'),
+                                    html.P(html.Strong('Datos'), ' \u2014 Yahoo Finance (yfinance)'),
                                 ],
                             ),
                         ],
@@ -392,15 +396,66 @@ def build_methodology_tab() -> html.Div:
                 ],
             ),
             html.Div(
-                className='wide-card',
+                className='overview-row',
                 children=[
-                    html.Div('Se\u00f1ales de Trading', className='card-title'),
                     html.Div(
-                        className='governance-markdown',
+                        className='wide-card',
                         children=[
-                            html.P(html.Strong('ALZA'), ' \u2014 Se espera que el precio suba en la pr\u00f3xima sesi\u00f3n (confianza \u2265 58%)'),
-                            html.P(html.Strong('PRECAUCI\u00d3N'), ' \u2014 Se anticipa una posible ca\u00edda (confianza \u2264 42%)'),
-                            html.P(html.Strong('ESTABLE'), ' \u2014 Se\u00f1al no concluyente, se recomienda esperar'),
+                            html.Div('Modelos Implementados', className='card-title'),
+                            html.Div(
+                                className='governance-markdown',
+                                children=[
+                                    html.P(html.Strong('Random Forest'), ' \u2014 200 \u00e1rboles, max_depth=10, random_state=42 (modelo principal)'),
+                                    html.P(html.Strong('Logistic Regression'), ' \u2014 max_iter=1000, baseline lineal de referencia'),
+                                    html.P(html.Strong('XGBoost'), ' \u2014 100 estimadores, max_depth=5, eval_metric=logloss (si est\u00e1 disponible)'),
+                                ],
+                            ),
+                        ],
+                    ),
+                    html.Div(
+                        className='narrow-card',
+                        children=[
+                            html.Div('Se\u00f1ales de Trading', className='card-title'),
+                            html.Div(
+                                className='governance-markdown',
+                                children=[
+                                    html.P(html.Strong('ALZA'), ' \u2014 Subida esperada (confianza \u2265 58%)'),
+                                    html.P(html.Strong('PRECAUCI\u00d3N'), ' \u2014 Ca\u00edda anticipada (confianza \u2264 42%)'),
+                                    html.P(html.Strong('ESTABLE'), ' \u2014 Se\u00f1al no concluyente (42-58%)'),
+                                ],
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+            html.Div(
+                className='overview-row',
+                children=[
+                    html.Div(
+                        className='wide-card',
+                        children=[
+                            html.Div('Equipo DataScope Solutions', className='card-title'),
+                            html.Div(
+                                className='governance-markdown',
+                                children=[
+                                    html.P(html.Strong('Maria'), ' \u2014 Product Owner'),
+                                    html.P(html.Strong('Juan'), ' \u2014 Scrum Master'),
+                                    html.P(html.Strong('Jose, Gema, Joel'), ' \u2014 Development Team'),
+                                ],
+                            ),
+                        ],
+                    ),
+                    html.Div(
+                        className='narrow-card',
+                        style={'display': 'flex', 'flexDirection': 'column', 'alignItems': 'center', 'justifyContent': 'center'},
+                        children=[
+                            html.Div('Repositorio', className='card-title'),
+                            html.Img(
+                                src='https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https://github.com/juandelaf1/Golden-Forecast',
+                                style={'width': '120px', 'height': '120px', 'borderRadius': '8px', 'border': '2px solid rgba(232,195,74,0.3)'},
+                                alt='QR GitHub',
+                            ),
+                            html.P('github.com/juandelaf1/Golden-Forecast', style={'color': 'var(--muted)', 'fontSize': '0.75rem', 'marginTop': '8px', 'textAlign': 'center'}),
                         ],
                     ),
                 ],
@@ -408,14 +463,15 @@ def build_methodology_tab() -> html.Div:
             html.Div(
                 className='wide-card',
                 children=[
-                    html.Div('Supuestos y Limitaciones', className='card-title'),
+                    html.Div('Limitaciones y Buenas Pr\u00e1cticas', className='card-title'),
                     html.Div(
                         className='governance-markdown',
                         children=[
-                            html.P('Datos de cierre diario (no HFT).'),
-                            html.P('Se\u00f1ales probabil\u00edsticas, no certezas absolutas.'),
+                            html.P('Datos de cierre diario \u2014 no apto para trading de alta frecuencia.'),
+                            html.P('Se\u00f1ales probabil\u00edsticas \u2014 no certezas absolutas. El modelo asigna una confianza, no una garant\u00eda.'),
                             html.P('Rendimiento pasado no garantiza resultados futuros.'),
-                            html.P('Modelos re-entrenados con cada actualizaci\u00f3n de datos.'),
+                            html.P('Modelos re-entrenados autom\u00e1ticamente con cada actualizaci\u00f3n de datos.'),
+                            html.P('Gobernanza Scrum \u2014 ramas feature/, PRs con revisi\u00f3n por pares, main protegido.'),
                         ],
                     ),
                 ],
@@ -674,6 +730,10 @@ def build_price_figure() -> go.Figure:
     df = context['data']
     fig = go.Figure()
     
+    y_min = df['gold'].min()
+    y_max = df['gold'].max()
+    y_pad = (y_max - y_min) * 0.05
+    
     # Línea principal del precio
     fig.add_trace(
         go.Scatter(
@@ -727,7 +787,7 @@ def build_price_figure() -> go.Figure:
                       title={'text': 'Precio del Oro y Señales del Modelo', 'font': {'family': 'Rye, Smokum, serif', 'color': WANTED_COLORS['gold']}})
     fig.update_xaxes(**AXIS_THEME)
     _apply_rangeselector(fig, df)
-    fig.update_yaxes(**AXIS_THEME, title_text='USD por onza')
+    fig.update_yaxes(**AXIS_THEME, title_text='USD por onza', range=[y_min - y_pad, y_max + y_pad])
     return fig
 
 
