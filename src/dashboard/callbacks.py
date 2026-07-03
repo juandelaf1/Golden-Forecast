@@ -12,6 +12,40 @@ from src.dashboard import data
 context = data.context
 FEATURE_COLUMNS = data.FEATURE_COLUMNS
 
+FEATURE_LABELS = {
+    'returns': 'Rendimiento Diario',
+    'ma_5': 'Media M\u00f3vil 5 d\u00edas',
+    'ma_10': 'Media M\u00f3vil 10 d\u00edas',
+    'ma_21': 'Media M\u00f3vil 21 d\u00edas',
+    'volatility_5': 'Volatilidad (5d)',
+    'rsi': '\u00cdndice RSI (Fuerza Relativa)',
+    'macd': 'MACD (Tendencia)',
+    'macd_signal': 'Se\u00f1al MACD',
+    'dxy_return': 'Retorno DXY (D\u00f3lar)',
+    'vix_return': 'Retorno VIX (Volatilidad)',
+    'tnx_return': 'Retorno TNX (Bonos)',
+    'dxy': '\u00cdndice del D\u00f3lar (DXY)',
+    'vix': '\u00cdndice de Volatilidad (VIX)',
+    'tnx': 'Tasa del Tesoro (TNX)',
+}
+
+FEATURE_DESCRIPTIONS = {
+    'returns': 'Cambio porcentual del precio del oro respecto al d\u00eda anterior',
+    'ma_5': 'Precio promedio del oro en los \u00faltimos 5 d\u00edas h\u00e1biles',
+    'ma_10': 'Precio promedio del oro en los \u00faltimos 10 d\u00edas h\u00e1biles',
+    'ma_21': 'Precio promedio del oro en los \u00faltimos 21 d\u00edas h\u00e1biles (aprox. 1 mes)',
+    'volatility_5': 'Variabilidad del precio en los \u00faltimos 5 d\u00edas',
+    'rsi': 'Indicador de sobrecompra (>70) o sobreventa (<30)',
+    'macd': 'Diferencia entre medias m\u00f3viles r\u00e1pida y lenta',
+    'macd_signal': 'Media m\u00f3vil de la l\u00ednea MACD, se\u00f1al de cambio de tendencia',
+    'dxy_return': 'Retorno diario del \u00edndice del d\u00f3lar (correlaci\u00f3n inversa con el oro)',
+    'vix_return': 'Retorno diario del \u00edndice de volatilidad (miedo del mercado)',
+    'tnx_return': 'Retorno diario de los bonos del tesoro a 10 a\u00f1os',
+    'dxy': 'Valor del \u00edndice del d\u00f3lar estadounidense',
+    'vix': 'Valor del \u00edndice de volatilidad CBOE',
+    'tnx': 'Rendimiento del bono del tesoro USA a 10 a\u00f1os',
+}
+
 PLOT_THEME = {
     'plot_bgcolor': 'rgba(0,0,0,0)',
     'paper_bgcolor': 'rgba(0,0,0,0)',
@@ -274,17 +308,18 @@ def build_summary_tab() -> html.Div:
                     html.Details(
                         className='help-panel-details',
                         children=[
-                            html.Summary('Claves para interpretar el panel', className='help-summary'),
+                            html.Summary('Gu\u00eda r\u00e1pida del panel', className='help-summary'),
                             html.Div(
                                 className='help-copy',
                                 children=[
-                                    html.P(html.Strong('Precio actual:'), ' cotizaci\u00f3n spot del oro (GC=F) en USD/oz.'),
-                                    html.P(html.Strong('Se\u00f1al del modelo:'), ' predicci\u00f3n del algoritmo ensemble para la pr\u00f3xima sesi\u00f3n.'),
-                                    html.P(html.Strong('Certeza:'), ' probabilidad asignada por el modelo a su predicci\u00f3n. Mide la confianza estad\u00edstica, no la precisi\u00f3n real.'),
-                                    html.P(html.Strong('Aciertos / Fiabilidad:'), ' precisi\u00f3n global (accuracy) y F1-score del modelo en datos de test.'),
-                                    html.P(html.Strong('Indicadores macro (DXY, VIX):'), ' el precio del oro se correlaciona inversamente con el d\u00f3lar y directamente con la volatilidad.'),
-                                    html.P(html.Strong('MA 21:'), ' media m\u00f3vil de 21 sesiones. Si el precio est\u00e1 por encima, la tendencia es alcista a corto plazo.'),
-                                    html.P('Los gr\u00e1ficos inferiores del panel comparan: (1) la evoluci\u00f3n del precio con las se\u00f1ales del modelo, (2) la precisi\u00f3n acumulada, (3) la desviaci\u00f3n entre predicci\u00f3n y realidad, y (4) el rendimiento de la estrategia ML versus Buy & Hold.', className='help-note'),
+                                    html.P(html.Strong('Precio actual'), ' \u2014 Cotizaci\u00f3n spot del oro (GC=F) en USD/oz. Se actualiza con los datos de cierre diario.'),
+                                    html.P(html.Strong('Se\u00f1al de mercado'), ' \u2014 Predicci\u00f3n del modelo ensemble para la pr\u00f3xima sesi\u00f3n. ALZA = se espera subida, PRECAUCI\u00d3N = posible bajada, ESTABLE = se\u00f1al no concluyente.'),
+                                    html.P(html.Strong('Certeza'), ' \u2014 Probabilidad (%) que el modelo asigna a su predicci\u00f3n. Representa la confianza estad\u00edstica: a mayor porcentaje, m\u00e1s seguro est\u00e1 el modelo.'),
+                                    html.P(html.Strong('Aciertos'), ' \u2014 Precisi\u00f3n global (accuracy) del modelo: porcentaje de predicciones correctas sobre el total de operaciones en el per\u00edodo de test.'),
+                                    html.P(html.Strong('Fiabilidad (F1)'), ' \u2014 Media arm\u00f3nica entre precisi\u00f3n y sensibilidad. Mide el equilibrio del modelo para no generar falsas se\u00f1ales.'),
+                                    html.P(html.Strong('DXY, VIX, MA 21'), ' \u2014 Indicadores de contexto: el \u00edndice del d\u00f3lar (relaci\u00f3n inversa con el oro), la volatilidad del mercado (VIX) y la media m\u00f3vil de 21 sesiones (tendencia a corto plazo).'),
+                                    html.P('Los gr\u00e1ficos inferiores muestran: (1) precio hist\u00f3rico con se\u00f1ales del modelo como estrellas, (2) precisi\u00f3n acumulada del modelo operaci\u00f3n a operaci\u00f3n, (3) desviaci\u00f3n entre predicci\u00f3n y precio real, y (4) rendimiento de la estrategia ML frente a Buy & Hold.', className='help-note'),
+                                    html.P('Cambia entre las pesta\u00f1as superiores para ver an\u00e1lisis detallados: indicadores t\u00e9cnicos, correlaciones macro, backtest, simulaci\u00f3n y m\u00e9tricas del modelo.', className='help-note', style={'marginTop': '8px'}),
                                 ],
                             ),
                         ],
@@ -730,11 +765,6 @@ def build_price_figure() -> go.Figure:
     df = context['data']
     fig = go.Figure()
     
-    y_min = df['gold'].min()
-    y_max = df['gold'].max()
-    y_pad = (y_max - y_min) * 0.05
-    
-    # Línea principal del precio
     fig.add_trace(
         go.Scatter(
             x=df.index,
@@ -742,8 +772,6 @@ def build_price_figure() -> go.Figure:
             name='Precio Oro',
             mode='lines',
             line={'color': WANTED_COLORS['gold'], 'width': 3},
-            fill='tozeroy',
-            fillcolor='rgba(232, 195, 74, 0.15)',
         )
     )
     
@@ -787,7 +815,7 @@ def build_price_figure() -> go.Figure:
                       title={'text': 'Precio del Oro y Señales del Modelo', 'font': {'family': 'Rye, Smokum, serif', 'color': WANTED_COLORS['gold']}})
     fig.update_xaxes(**AXIS_THEME)
     _apply_rangeselector(fig, df)
-    fig.update_yaxes(**AXIS_THEME, title_text='USD por onza', range=[y_min - y_pad, y_max + y_pad])
+    fig.update_yaxes(**AXIS_THEME, title_text='USD por onza')
     return fig
 
 
@@ -1077,14 +1105,16 @@ def build_feature_importance_figure() -> go.Figure:
 
     fi = rf_result['model'].feature_importances_
     fi_indices = np.argsort(fi)[::-1]
-    features = [FEATURE_COLUMNS[i] for i in fi_indices]
+    raw_features = [FEATURE_COLUMNS[i] for i in fi_indices]
+    labels = [FEATURE_LABELS.get(f, f) for f in raw_features]
+    descs = [FEATURE_DESCRIPTIONS.get(f, '') for f in raw_features]
     values = [fi[i] for i in fi_indices]
     colors = [f'rgba(232, 195, 74, {0.4 + v * 0.6:.2f})' for v in values]
 
     fig = go.Figure()
     fig.add_trace(go.Bar(
         x=values,
-        y=features,
+        y=labels,
         orientation='h',
         marker={
             'color': colors,
@@ -1094,15 +1124,16 @@ def build_feature_importance_figure() -> go.Figure:
         text=[f'{v:.1%}' for v in values],
         textposition='outside',
         textfont={'color': '#F2EBE1', 'size': 11, 'family': 'Space Mono, monospace'},
-        hovertemplate='%{y}: %{x:.1%}<extra></extra>',
+        hovertemplate='%{y}: %{x:.1%}<br>%{customdata}<extra></extra>',
+        customdata=descs,
     ))
     fig.update_layout(
         **PLOT_THEME,
         height=400,
         xaxis={'range': [0, max(values) * 1.25], 'showgrid': True, 'gridcolor': 'rgba(242,235,225,0.08)'},
-        title={'text': 'Importancia de Variables (Random Forest)', 'font': {'family': 'Rye, Smokum, serif', 'color': WANTED_COLORS['gold']}},
+        title={'text': 'Factores que M\u00e1s Influyen en la Predicci\u00f3n', 'font': {'family': 'Rye, Smokum, serif', 'color': WANTED_COLORS['gold']}},
     )
-    fig.update_xaxes(**AXIS_THEME, tickformat='.0%')
+    fig.update_xaxes(**AXIS_THEME, tickformat='.0%', title_text='Peso relativo en la decisi\u00f3n del modelo')
     fig.update_yaxes(**AXIS_THEME, autorange='reversed')
     return fig
 
