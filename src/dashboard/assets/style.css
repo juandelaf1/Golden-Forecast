@@ -252,7 +252,7 @@ body {
 
 .ticker-label {
   font-size: 0.9rem;
-  color: var(--muted);
+  color: #d4c4a8;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   font-family: 'Space Mono', monospace;
@@ -803,6 +803,19 @@ body {
   }
 }
 
+.volume-slider {
+  width: 100px !important;
+}
+.volume-slider .rc-slider-track {
+  background: #D4AF37 !important;
+}
+.volume-slider .rc-slider-handle {
+  border-color: #D4AF37 !important;
+  background: #D4AF37 !important;
+}
+.volume-slider .rc-slider-rail {
+  background: rgba(242,235,225,0.15) !important;
+}
 @media (max-width: 640px) {
   .scene-shell {
     padding: 24px 16px 36px;

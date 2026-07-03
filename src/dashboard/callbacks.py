@@ -299,6 +299,67 @@ def register_callbacks(app):
             f' \u2014 Peso: {value:.1%}  |  Categor\u00eda: {cat}  |  {desc}',
         ])
 
+    app.clientside_callback(
+        '''
+        function(volume) {
+            const audio = document.getElementById('ambient-audio');
+            if (audio) audio.volume = volume / 100;
+            return window.dash_clientside.no_update;
+        }
+        ''',
+        Output('ambient-audio', 'id'),
+        Input('vol-slider', 'value'),
+    )
+
+    @app.callback(Output('summary-price', 'figure'), Input('price-unit', 'value'))
+    def update_price_chart(unit):
+        df = context['data']
+        fig = go.Figure()
+
+        if unit == 'usd':
+            y_data = df['gold']
+            y_title = 'USD por onza'
+        elif unit == 'pct':
+            y_data = df['returns'] * 100
+            y_title = 'Variaci\u00f3n diaria (%)'
+        else:
+            y_data = df['gold'] / df['gold'].iloc[0] * 100
+            y_title = 'Indexado (base 100)'
+
+        fig.add_trace(go.Scatter(
+            x=df.index, y=y_data, name='Oro',
+            mode='lines', line={'color': WANTED_COLORS['gold'], 'width': 3},
+        ))
+        if unit == 'usd':
+            fig.add_trace(go.Scatter(
+                x=df.index, y=df['ma_21'],
+                name='MA 21', mode='lines',
+                line={'color': WANTED_COLORS['brass'], 'dash': 'dot', 'width': 2},
+            ))
+            test = context['test_data']
+            signals = context['data']['signal'].iloc[len(context['data'])-len(test):]
+            fig.add_trace(go.Scatter(
+                x=test.index, y=test['gold'],
+                mode='markers', name='Se\u00f1al',
+                marker={
+                    'color': [WANTED_COLORS['buy'] if s == 1 else WANTED_COLORS['sell'] for s in signals],
+                    'size': 8, 'symbol': 'star',
+                },
+            ))
+            fig.add_shape(
+                type='line',
+                x0=context['split_date'], x1=context['split_date'],
+                y0=df['gold'].min(), y1=df['gold'].max(),
+                line={'color': WANTED_COLORS['iron_mid'], 'dash': 'dash', 'width': 2},
+            )
+
+        fig.update_layout(**PLOT_THEME, height=420, hovermode='x unified',
+                          title={'text': 'Precio del Oro y Se\u00f1ales del Modelo', 'font': {'family': 'Rye, Smokum, serif', 'color': WANTED_COLORS['gold']}})
+        fig.update_xaxes(**AXIS_THEME)
+        _apply_rangeselector(fig, df)
+        fig.update_yaxes(**AXIS_THEME, title_text=y_title, autorange=True)
+        return fig
+
 
 def build_summary_tab() -> html.Div:
     return html.Div(
@@ -394,11 +455,27 @@ def build_summary_tab() -> html.Div:
                     html.Div(
                         className='wide-card',
                         children=[
-                            html.Div('Precio y tendencia del oro', className='card-title'),
-                            dcc.Loading(
-                                type='dot',
-                                children=dcc.Graph(id='summary-price', figure=build_price_figure(), config={'displayModeBar': False}),
-                            ),
+                    html.Div([
+                        html.Span('Precio y tendencia del oro', className='card-title'),
+                        dcc.Dropdown(
+                            id='price-unit',
+                            options=[
+                                {'label': 'USD/oz', 'value': 'usd'},
+                                {'label': '% Variaci\u00f3n diaria', 'value': 'pct'},
+                                {'label': 'Indexado (base=100)', 'value': 'index'},
+                            ],
+                            value='usd',
+                            clearable=False,
+                            style={
+                                'width': '180px', 'marginLeft': 'auto', 'background': '#2C2620', 'color': '#F2EBE1',
+                                'border': '1px solid rgba(232,195,74,0.3)', 'borderRadius': '6px', 'fontSize': '0.75rem',
+                            },
+                        ),
+                    ], style={'display': 'flex', 'alignItems': 'center', 'gap': '12px', 'flexWrap': 'wrap'}),
+                    dcc.Loading(
+                        type='dot',
+                        children=dcc.Graph(id='summary-price', config={'displayModeBar': False}),
+                    ),
                         ],
                     ),
                     html.Div(

@@ -110,7 +110,20 @@ def build_layout() -> html.Div:
                                             html.Div(
                                                 className='footer-audio',
                                                 children=[
-                                                    html.Div('Ambientaci\u00f3n sonora', className='audio-label'),
+                                                    html.Div([
+                                                        html.Span('Ambientaci\u00f3n sonora', className='audio-label'),
+                                                        html.Span([
+                                                            html.Span('Vol: ', style={'fontSize': '0.7rem', 'color': '#a89070', 'marginRight': '4px'}),
+                                                            dcc.Slider(
+                                                                id='vol-slider',
+                                                                min=0, max=100, value=30,
+                                                                marks=None,
+                                                                tooltip={'placement': 'top', 'always_visible': False},
+                                                                step=5,
+                                                                className='volume-slider',
+                                                            ),
+                                                        ], style={'display': 'flex', 'alignItems': 'center', 'gap': '4px'}),
+                                                    ], style={'display': 'flex', 'alignItems': 'center', 'gap': '12px', 'flexWrap': 'wrap'}),
                                                     html.Audio(
                                                         id='ambient-audio',
                                                         src='/assets/saloon.mp3',
