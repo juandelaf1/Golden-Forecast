@@ -13,37 +13,55 @@ context = data.context
 FEATURE_COLUMNS = data.FEATURE_COLUMNS
 
 FEATURE_LABELS = {
-    'returns': 'Rendimiento Diario',
-    'ma_5': 'Media M\u00f3vil 5 d\u00edas',
-    'ma_10': 'Media M\u00f3vil 10 d\u00edas',
-    'ma_21': 'Media M\u00f3vil 21 d\u00edas',
-    'volatility_5': 'Volatilidad (5d)',
-    'rsi': '\u00cdndice RSI (Fuerza Relativa)',
-    'macd': 'MACD (Tendencia)',
-    'macd_signal': 'Se\u00f1al MACD',
+    'gold_volume': 'Volumen Operaciones',
+    'gold_return': 'Rendimiento Diario Oro',
     'dxy_return': 'Retorno DXY (D\u00f3lar)',
     'vix_return': 'Retorno VIX (Volatilidad)',
     'tnx_return': 'Retorno TNX (Bonos)',
-    'dxy': '\u00cdndice del D\u00f3lar (DXY)',
-    'vix': '\u00cdndice de Volatilidad (VIX)',
-    'tnx': 'Tasa del Tesoro (TNX)',
+    'gold_daily_range': 'Rango Diario Oro',
+    'dxy_daily_range': 'Rango Diario DXY',
+    'vix_daily_range': 'Rango Diario VIX',
+    'tnx_daily_range': 'Rango Diario TNX',
+    'gold_open_close_return': 'Retorno Intra-d\u00eda Oro',
+    'dxy_open_close_return': 'Retorno Intra-d\u00eda DXY',
+    'vix_open_close_return': 'Retorno Intra-d\u00eda VIX',
+    'tnx_open_close_return': 'Retorno Intra-d\u00eda TNX',
+    'gold_ma_5': 'Media M\u00f3vil 5 d\u00edas',
+    'gold_ma_20': 'Media M\u00f3vil 20 d\u00edas',
+    'gold_close_vs_ma_5': 'Precio vs MA5',
+    'gold_close_vs_ma_20': 'Precio vs MA20',
+    'gold_rsi_14': 'RSI 14 d\u00edas',
+    'gold_macd': 'MACD',
+    'gold_macd_signal': 'Se\u00f1al MACD',
+    'gold_volatility_14': 'Volatilidad 14 d\u00edas',
+    'gold_return_lag_1': 'Retorno d\u00eda anterior',
+    'gold_return_lag_2': 'Retorno hace 2 d\u00edas',
 }
 
 FEATURE_CATEGORIES = {
-    'returns': 'Precio',
-    'ma_5': 'T\u00e9cnico',
-    'ma_10': 'T\u00e9cnico',
-    'ma_21': 'T\u00e9cnico',
-    'volatility_5': 'T\u00e9cnico',
-    'rsi': 'T\u00e9cnico',
-    'macd': 'T\u00e9cnico',
-    'macd_signal': 'T\u00e9cnico',
+    'gold_volume': 'T\u00e9cnico',
+    'gold_return': 'Precio',
     'dxy_return': 'Macro',
     'vix_return': 'Macro',
     'tnx_return': 'Macro',
-    'dxy': 'Macro',
-    'vix': 'Macro',
-    'tnx': 'Macro',
+    'gold_daily_range': 'T\u00e9cnico',
+    'dxy_daily_range': 'T\u00e9cnico',
+    'vix_daily_range': 'T\u00e9cnico',
+    'tnx_daily_range': 'T\u00e9cnico',
+    'gold_open_close_return': 'T\u00e9cnico',
+    'dxy_open_close_return': 'T\u00e9cnico',
+    'vix_open_close_return': 'T\u00e9cnico',
+    'tnx_open_close_return': 'T\u00e9cnico',
+    'gold_ma_5': 'T\u00e9cnico',
+    'gold_ma_20': 'T\u00e9cnico',
+    'gold_close_vs_ma_5': 'T\u00e9cnico',
+    'gold_close_vs_ma_20': 'T\u00e9cnico',
+    'gold_rsi_14': 'T\u00e9cnico',
+    'gold_macd': 'T\u00e9cnico',
+    'gold_macd_signal': 'T\u00e9cnico',
+    'gold_volatility_14': 'T\u00e9cnico',
+    'gold_return_lag_1': 'Precio',
+    'gold_return_lag_2': 'Precio',
 }
 
 CATEGORY_COLORS = {
@@ -53,20 +71,29 @@ CATEGORY_COLORS = {
 }
 
 FEATURE_DESCRIPTIONS = {
-    'returns': 'Cambio porcentual del precio del oro respecto al d\u00eda anterior',
-    'ma_5': 'Precio promedio del oro en los \u00faltimos 5 d\u00edas h\u00e1biles',
-    'ma_10': 'Precio promedio del oro en los \u00faltimos 10 d\u00edas h\u00e1biles',
-    'ma_21': 'Precio promedio del oro en los \u00faltimos 21 d\u00edas h\u00e1biles (aprox. 1 mes)',
-    'volatility_5': 'Variabilidad del precio en los \u00faltimos 5 d\u00edas',
-    'rsi': 'Indicador de sobrecompra (>70) o sobreventa (<30)',
-    'macd': 'Diferencia entre medias m\u00f3viles r\u00e1pida y lenta',
-    'macd_signal': 'Media m\u00f3vil de la l\u00ednea MACD, se\u00f1al de cambio de tendencia',
+    'gold_volume': 'N\u00famero de contratos operados en la sesi\u00f3n',
+    'gold_return': 'Cambio porcentual del precio del oro respecto al d\u00eda anterior',
     'dxy_return': 'Retorno diario del \u00edndice del d\u00f3lar (correlaci\u00f3n inversa con el oro)',
     'vix_return': 'Retorno diario del \u00edndice de volatilidad (miedo del mercado)',
     'tnx_return': 'Retorno diario de los bonos del tesoro a 10 a\u00f1os',
-    'dxy': 'Valor del \u00edndice del d\u00f3lar estadounidense',
-    'vix': 'Valor del \u00edndice de volatilidad CBOE',
-    'tnx': 'Rendimiento del bono del tesoro USA a 10 a\u00f1os',
+    'gold_daily_range': '(M\u00e1ximo - M\u00ednimo) / Apertura del oro en el d\u00eda',
+    'dxy_daily_range': '(M\u00e1ximo - M\u00ednimo) / Apertura del DXY en el d\u00eda',
+    'vix_daily_range': '(M\u00e1ximo - M\u00ednimo) / Apertura del VIX en el d\u00eda',
+    'tnx_daily_range': '(M\u00e1ximo - M\u00ednimo) / Apertura del TNX en el d\u00eda',
+    'gold_open_close_return': '(Cierre - Apertura) / Apertura del oro, movimiento intra-d\u00eda',
+    'dxy_open_close_return': '(Cierre - Apertura) / Apertura del DXY, movimiento intra-d\u00eda',
+    'vix_open_close_return': '(Cierre - Apertura) / Apertura del VIX, movimiento intra-d\u00eda',
+    'tnx_open_close_return': '(Cierre - Apertura) / Apertura del TNX, movimiento intra-d\u00eda',
+    'gold_ma_5': 'Precio promedio del oro en los \u00faltimos 5 d\u00edas h\u00e1biles',
+    'gold_ma_20': 'Precio promedio del oro en los \u00faltimos 20 d\u00edas h\u00e1biles',
+    'gold_close_vs_ma_5': 'Distancia porcentual del precio actual respecto a su MA5',
+    'gold_close_vs_ma_20': 'Distancia porcentual del precio actual respecto a su MA20',
+    'gold_rsi_14': 'Indicador de sobrecompra (>70) o sobreventa (<30)',
+    'gold_macd': 'Diferencia entre medias m\u00f3viles exponenciales de 12 y 26 d\u00edas',
+    'gold_macd_signal': 'Media m\u00f3vil de 9 d\u00edas de la l\u00ednea MACD',
+    'gold_volatility_14': 'Desviaci\u00f3n t\u00edpica de los retornos en 14 d\u00edas',
+    'gold_return_lag_1': 'Retorno del oro del d\u00eda anterior',
+    'gold_return_lag_2': 'Retorno del oro de hace dos d\u00edas',
 }
 
 PLOT_THEME = {
@@ -584,9 +611,10 @@ def build_methodology_tab() -> html.Div:
                             html.Div(
                                 className='governance-markdown',
                                 children=[
-                                    html.P(html.Strong('RF (Clasif.)'), ' \u2014 Random Forest, 200 \u00e1rboles, max_depth=10, random_state=42 (modelo principal)'),
-                                    html.P(html.Strong('Logistic Regression'), ' \u2014 max_iter=1000, baseline lineal de referencia'),
-                                    html.P(html.Strong('XGBoost'), ' \u2014 100 estimadores, max_depth=5, eval_metric=logloss (si est\u00e1 disponible)'),
+                                    html.P(html.Strong('lr_strong_reg_binary'), ' \u2014 Logistic Regression (C=0.1), modelo principal con mejor F1 (0.70)'),
+                                    html.P(html.Strong('rf_binary'), ' \u2014 Random Forest, 100 \u00e1rboles, max_depth=5'),
+                                    html.P(html.Strong('xgb_binary'), ' \u2014 XGBoost, 100 estimadores, max_depth=3'),
+                                    html.P(html.Strong('lr_multiclass'), ' \u2014 Logistic Regression multiclase (compra/mant\u00e9n/vende)'),
                                 ],
                             ),
                         ],
@@ -1218,7 +1246,7 @@ def build_learning_curve_figure() -> go.Figure:
     
     for i, (_, row) in enumerate(test.iterrows()):
         pred = context['predictions'][i] if i < len(context['predictions']) else 0
-        actual = row['target_bin']
+        actual = row.get('target_binary', row.get('target_bin', 0))
         total += 1
         if pred == actual:
             correct += 1
@@ -1272,13 +1300,20 @@ def build_simulation_placeholder() -> go.Figure:
 
 
 def build_feature_importance_figure(category='all') -> go.Figure:
-    """Feature importance chart for the Random Forest model."""
+    """Feature importance chart from Random Forest."""
     model_results = context.get('model_results', {})
-    rf_result = model_results.get('RF (Clasif.)')
-    if not rf_result or 'model' not in rf_result:
+    rf_result = model_results.get('rf_binary') or model_results.get(data.PRIMARY_MODEL)
+    if not rf_result or 'model' not in rf_result or rf_result['model'] is None:
         fig = go.Figure()
         fig.update_layout(**PLOT_THEME, height=350)
         fig.add_annotation(x=0.5, y=0.5, xref='paper', yref='paper', text='No hay datos de importancia de variables', showarrow=False, font={'color': '#D4AF37', 'size': 14})
+        return fig
+
+    if not hasattr(rf_result['model'], 'feature_importances_'):
+        from sklearn.linear_model import LogisticRegression
+        fig = go.Figure()
+        fig.update_layout(**PLOT_THEME, height=350)
+        fig.add_annotation(x=0.5, y=0.5, xref='paper', yref='paper', text='Importancia no disponible para este tipo de modelo', showarrow=False, font={'color': '#D4AF37', 'size': 14})
         return fig
 
     fi = rf_result['model'].feature_importances_
@@ -1336,15 +1371,14 @@ def build_feature_importance_figure(category='all') -> go.Figure:
 def build_confusion_matrix_figure() -> go.Figure:
     """Confusion matrix heatmap."""
     model_results = context.get('model_results', {})
-    rf_result = model_results.get('RF (Clasif.)')
+    rf_result = model_results.get(data.PRIMARY_MODEL)
     if not rf_result:
         fig = go.Figure()
         fig.update_layout(**PLOT_THEME, height=350)
-        fig.add_annotation(x=0.5, y=0.5, xref='paper', yref='paper', text='No hay datos de matriz de confusión', showarrow=False, font={'color': '#D4AF37', 'size': 14})
+        fig.add_annotation(x=0.5, y=0.5, xref='paper', yref='paper', text='No hay datos de matriz de confusi\u00f3n', showarrow=False, font={'color': '#D4AF37', 'size': 14})
         return fig
 
-    test = context['test_data']
-    cm = confusion_matrix(test['target_bin'], rf_result['predictions'])
+    cm = confusion_matrix(context['test_data']['target_binary'], rf_result['predictions'])
 
     fig = go.Figure(data=go.Heatmap(
         z=cm,
@@ -1367,17 +1401,22 @@ def build_confusion_matrix_figure() -> go.Figure:
 
 
 def build_roc_curve_figure() -> go.Figure:
-    """ROC curve for the Random Forest model."""
+    """ROC curve for the primary model."""
     model_results = context.get('model_results', {})
-    rf_result = model_results.get('RF (Clasif.)')
+    rf_result = model_results.get(data.PRIMARY_MODEL)
     if not rf_result:
         fig = go.Figure()
         fig.update_layout(**PLOT_THEME, height=350)
         fig.add_annotation(x=0.5, y=0.5, xref='paper', yref='paper', text='No hay datos de curva ROC', showarrow=False, font={'color': '#D4AF37', 'size': 14})
         return fig
 
-    test = context['test_data']
-    fpr, tpr, _ = roc_curve(test['target_bin'], rf_result['probabilities'])
+    if len(np.unique(rf_result['probabilities'])) < 2:
+        fig = go.Figure()
+        fig.update_layout(**PLOT_THEME, height=350)
+        fig.add_annotation(x=0.5, y=0.5, xref='paper', yref='paper', text='ROC no disponible (probabilidades constantes)', showarrow=False, font={'color': '#D4AF37', 'size': 14})
+        return fig
+
+    fpr, tpr, _ = roc_curve(context['test_data']['target_binary'], rf_result['probabilities'])
     auc_score = rf_result['auc']
 
     fig = go.Figure()
