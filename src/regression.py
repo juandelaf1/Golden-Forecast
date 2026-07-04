@@ -395,6 +395,18 @@ def run_all_targets(
 
 
 # --------------------------
+# Wrapper para dashboard
+# --------------------------
+def train_and_evaluate_regression(
+    features_path='data/processed/gold-features.csv',
+    clean_path='data/processed/gold-clean.csv',
+    test_size=0.2,
+) -> dict:
+    """Wrapper para que data.py importe sin cambios. Delega en run_all_targets."""
+    return run_all_targets(features_path, clean_path, test_size)
+
+
+# --------------------------
 # CLI
 # --------------------------
 if __name__ == '__main__':

@@ -182,6 +182,8 @@ def register_callbacks(app):
             return build_simulation_tab()
         if active_tab == 'tab-metrics':
             return build_metrics_tab()
+        if active_tab == 'tab-regression':
+            return build_regression_tab()
         if active_tab == 'tab-governance':
             return build_methodology_tab()
         raise PreventUpdate
@@ -1646,5 +1648,134 @@ def build_metrics_tab() -> html.Div:
                 ],
             ),
             build_experimental_section(),
+        ],
+    )
+
+
+def build_regression_tab() -> html.Div:
+    reg = context.get('regression')
+
+    targets = [
+        {
+            'title': 'Valor Justo',
+            'key': 'fair_value_dist',
+            'metric': 'Distancia a media 200d',
+            'unit': 'desviaciones estándar',
+            'explanation': (
+                'Compara el precio actual del oro con su media de 200 días. '
+                'Valor positivo = el oro está por encima de su media histórica (más caro de lo habitual). '
+                'Negativo = está por debajo (más barato). Ayuda a decidir si es buen momento de compra.'
+            ),
+        },
+        {
+            'title': 'Volatilidad Esperada',
+            'key': 'realized_vol_20d',
+            'metric': 'Volatilidad 20d forward',
+            'unit': '% anualizado',
+            'explanation': (
+                'Mide la volatilidad esperada del oro a 20 días vista. '
+                'Alta = movimientos bruscos (oportunidad y riesgo). '
+                'Baja = mercado estable. Expresada en términos anualizados para comparar con otros activos.'
+            ),
+        },
+        {
+            'title': 'Rango de Precio (ATR)',
+            'key': 'future_atr_20d',
+            'metric': 'Rango medio 20d forward',
+            'unit': 'fracción del precio',
+            'explanation': (
+                'Estima cuánto puede moverse el oro cada día de media en las próximas semanas. '
+                'Útil para calcular stops de protección y objetivos de precio con fundamento estadístico.'
+            ),
+        },
+        {
+            'title': 'Riesgo de Caída',
+            'key': 'max_drawdown_20d',
+            'metric': 'Máximo drawdown 20d forward',
+            'unit': '% desde pico',
+            'explanation': (
+                'Calcula la mayor caída esperada desde un pico en las próximas 4 semanas. '
+                'Fundamental para entender el riesgo real de una inversión en oro y dimensionar posiciones.'
+            ),
+        },
+    ]
+
+    cards = []
+    for t in targets:
+        best = None
+        if reg and t['key'] in reg:
+            r = reg[t['key']]
+            cv = r.get('cv_results')
+            if cv is not None and len(cv) > 0:
+                best_idx = cv['R²_mean'].idxmax()
+                best = cv.loc[best_idx]
+
+        if best is not None:
+            value_text = f'R²: {best["R²_mean"]:.3f}'
+            detail = f'Mejor modelo: {best["Modelo"]} — MAE: {best["MAE_mean"]:.5f}'
+        else:
+            value_text = '\u2014'
+            detail = 'Disponible tras ejecutar pipeline de regresión'
+
+        cards.append(
+            html.Div(
+                className='metric-card',
+                children=[
+                    html.Div(t['title'], style={'color': '#D4AF37', 'fontFamily': 'Rye, Smokum, serif', 'fontSize': '1rem'}),
+                    html.Div(t['metric'], className='metric-note'),
+                    html.Div(value_text, className='metric-value', style={'color': '#D4AF37'}),
+                    html.Div(detail, style={'color': '#a89070', 'fontSize': '0.75rem', 'marginBottom': '8px'}),
+                    html.Details(
+                        className='metric-help',
+                        children=[
+                            html.Summary('\u00bfQu\u00e9 significa?', className='metric-help-summary'),
+                            html.Div(t['explanation'], className='metric-help-text'),
+                        ],
+                    ),
+                ],
+            )
+        )
+
+    return html.Div(
+        className='section-panel',
+        children=[
+            html.Div(
+                className='section-copy',
+                children=[
+                    html.H2('Valor y Riesgo', className='section-title'),
+                    html.P(
+                        'An\u00e1lisis complementario de valoraci\u00f3n y riesgo del oro. '
+                        'Mientras el modelo principal de clasificaci\u00f3n predice si el precio subir\u00e1 o bajar\u00e1, '
+                        'este m\u00f3dulo responde a preguntas diferentes: \u00bfest\u00e1 caro o barato? '
+                        '\u00bfcu\u00e1nto puede moverse? \u00bfcu\u00e1l es el riesgo real de ca\u00edda?',
+                        className='section-text',
+                    ),
+                ],
+            ),
+            html.Div(className='summary-grid', children=cards),
+            html.Div(
+                className='help-panel',
+                children=[
+                    html.Details(
+                        className='help-panel-details',
+                        children=[
+                            html.Summary('C\u00f3mo usar esta informaci\u00f3n', className='help-summary'),
+                            html.Div(
+                                className='help-copy',
+                                children=[
+                                    html.H4('Complementa, no compite', style={'color': '#D4AF37', 'margin': '10px 0 4px', 'fontFamily': 'Rye, Smokum, serif'}),
+                                    html.P('El modelo de clasificaci\u00f3n predice la direcci\u00f3n del precio (sube/baja). Este an\u00e1lisis de Valor y Riesgo responde a:'),
+                                    html.Ul(children=[
+                                        html.Li('\u00bfEst\u00e1 el oro en zona de sobrevaloraci\u00f3n o infravaloraci\u00f3n hist\u00f3rica?'),
+                                        html.Li('\u00bfCu\u00e1nto riesgo de ca\u00edda existe en las pr\u00f3ximas semanas?'),
+                                        html.Li('\u00bfCu\u00e1l es el rango de movimiento esperado?'),
+                                    ]),
+                                    html.P('Juntos ofrecen una visi\u00f3n completa: saber hacia d\u00f3nde va el precio y entender el contexto de valor y riesgo.'),
+                                ],
+                            ),
+                        ],
+                    ),
+                ],
+            ),
         ],
     )

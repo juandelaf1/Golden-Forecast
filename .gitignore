@@ -221,3 +221,29 @@ __marimo__/
 data/raw/gold-data.csv
 temp_app.py
 *.backup
+
+# Cache modelos
+models/*_cache.pkl
+
+# Scripts temporales
+check_samples.py
+featimp.py
+walkforward.py
+
+# Backups
+src/_dashboard_backup/
+
+# Artefactos diseño
+art_direction/
+generation/
+prompts/
+screenshots/
+mock_server/
+
+# Assets duplicados (solo raíz)
+/assets/
+
+# Python
+*.pyc
+__pycache__/
+.DS_Store

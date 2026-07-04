@@ -76,21 +76,22 @@ def build_layout() -> html.Div:
                                         ],
                                     ),
 
-                                    dcc.Tabs(
-                                        id='dashboard-tabs',
-                                        value='tab-summary',
-                                        className='dashboard-tabs',
-                                        children=[
-                                            dcc.Tab(label='Panel de Control', value='tab-summary', className='tab-button', selected_className='tab-button--selected'),
-                                            dcc.Tab(label='Precio y Se\u00f1ales', value='tab-price', className='tab-button', selected_className='tab-button--selected'),
-                                            dcc.Tab(label='Indicadores T\u00e9cnicos', value='tab-indicators', className='tab-button', selected_className='tab-button--selected'),
-                                            dcc.Tab(label='Correlaciones Macro', value='tab-macro', className='tab-button', selected_className='tab-button--selected'),
-                                            dcc.Tab(label='Backtest y Estrategia', value='tab-backtest', className='tab-button', selected_className='tab-button--selected'),
-                                            dcc.Tab(label='Simulaci\u00f3n', value='tab-sim', className='tab-button', selected_className='tab-button--selected'),
-                                            dcc.Tab(label='M\u00e9tricas', value='tab-metrics', className='tab-button', selected_className='tab-button--selected'),
-                                            dcc.Tab(label='Metodolog\u00eda', value='tab-governance', className='tab-button', selected_className='tab-button--selected'),
-                                        ],
-                                    ),
+dcc.Tabs(
+            id='dashboard-tabs',
+            value='tab-summary',
+            className='dashboard-tabs',
+            children=[
+                dcc.Tab(label='Panel de Control', value='tab-summary', className='tab-button', selected_className='tab-button--selected'),
+                dcc.Tab(label='Precio y Señales', value='tab-price', className='tab-button', selected_className='tab-button--selected'),
+                dcc.Tab(label='Indicadores Técnicos', value='tab-indicators', className='tab-button', selected_className='tab-button--selected'),
+                dcc.Tab(label='Correlaciones Macro', value='tab-macro', className='tab-button', selected_className='tab-button--selected'),
+                dcc.Tab(label='Backtest y Estrategia', value='tab-backtest', className='tab-button', selected_className='tab-button--selected'),
+                dcc.Tab(label='Simulación', value='tab-sim', className='tab-button', selected_className='tab-button--selected'),
+                dcc.Tab(label='Métricas', value='tab-metrics', className='tab-button', selected_className='tab-button--selected'),
+                dcc.Tab(label='Valor y Riesgo', value='tab-regression', className='tab-button', selected_className='tab-button--selected'),
+                dcc.Tab(label='Metodología', value='tab-governance', className='tab-button', selected_className='tab-button--selected'),
+            ],
+        ),
 
                                     html.Div(id='tab-content', className='tab-content'),
 

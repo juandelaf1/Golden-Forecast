@@ -36,3 +36,12 @@
 | 03/07/2026 | Dashboard: desplegables explicativos | Guia rapida en Panel de Control, explicacion de DXY/VIX/TNX en pestana Macro |
 | 03/07/2026 | Dashboard: control de volumen | Slider de volumen para ambientacion sonora (30% por defecto) |
 | 03/07/2026 | Merge de main en `feature/classification` | Integrados pipeline de modelos pre-entrenados en la rama de dashboard |
+| 04/07/2026 | Joel prioriza clasificación sobre regresión | Datos disponibles (returns, técnicos, macro) más adecuados para predicción direccional. Juan crea `src/regression.py` como módulo complementario explorando targets continuos (volatilidad, ATR, drawdown, fair value) |
+| 04/07/2026 | Pestaña "Regresión" renombrada a "Valor y Riesgo" | Narrativa B2B: el módulo de Juan responde a "¿está caro o barato? ¿cuánto riesgo?" vs el modelo de clasificación de Joel que predice sube/baja |
+| 04/07/2026 | `assets/` en .gitignore restringido a solo raíz (`/assets/`) | El patrón genérico `assets/` ignoraba también `src/dashboard/assets/`, impidiendo trackear `background.png` para el fondo del dashboard |
+| 04/07/2026 | `assets_folder` explícito en `app.py` | Dash debe servir desde `src/dashboard/assets/` para evitar 404 del fondo ASSAY |
+| 04/07/2026 | Pestaña Simulación duplicada eliminada en `layout.py` | Dos pestañas con mismo `value='tab-sim'` causaban comportamiento impredecible en el navegador |
+| 04/07/2026 | `run_pipeline.py` corregido: paso clasificación apunta a `src/models/train.py` | Anteriormente apuntaba a `src/classification.py` (Juan, sin `__main__`). Por defecto se salta porque los 12 modelos .pkl ya existen |
+| 04/07/2026 | Python unificado a 3.12 en CI (`ci.yml`) | Dockerfile ya usaba 3.12, CI usaba 3.10. Alineado para evitar discrepancias |
+| 04/07/2026 | `requirements.txt`: añadidos `xgboost` y `pytest` | Dependencias necesarias para modelos XGBoost y tests respectivamente |
+| 04/07/2026 | Stashes limpiados (4) | Correspondían a WIP en ramas `feature/classification` y `feature/pr-template`, ya integradas |

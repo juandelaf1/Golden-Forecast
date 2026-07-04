@@ -85,9 +85,9 @@ def main():
          None if args.force else ROOT / data_cfg["processed_dir"] / data_cfg["features_file"],
          args.skip_features),
 
-        ("CLASIFICACIÓN (Joel)", "src/classification.py",
+        ("CLASIFICACIÓN (Joel) — modelos ya entrenados, retrain con --force", "src/models/train.py",
          None if args.force else ROOT / config["models"]["dir"] / "evaluation_results.json",
-         args.skip_classification),
+         args.skip_classification or not args.force),
 
         ("REGRESIÓN (Juan)", "src/regression.py",
          None if args.force else ROOT / config["models"]["dir"] / config["regression"]["cache_file"],

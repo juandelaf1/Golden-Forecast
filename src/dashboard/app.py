@@ -5,7 +5,8 @@ from flask import jsonify
 
 from src.dashboard import data, layout, callbacks
 
-app = dash.Dash(__name__, title='Golden Forecast', suppress_callback_exceptions=True, update_title=None)
+app = dash.Dash(__name__, title='Golden Forecast', suppress_callback_exceptions=True, update_title=None,
+                assets_folder=os.path.join(os.path.dirname(__file__), 'assets'))
 server = app.server
 
 # Health endpoint for Render monitoring
