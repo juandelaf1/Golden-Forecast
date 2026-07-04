@@ -95,14 +95,14 @@ dashboard:
 
 # Docker parameters
 docker:
-  base_image: "python:3.10-slim"
+  base_image: "python:3.12-slim"
   port: 8050
   workdir: "/app"
   requirements: "requirements.txt"
 
 # CI/CD parameters
 ci:
-  python_version: "3.10"
+  python_version: "3.12"
   lint: true
   test: true
   build_docker: true

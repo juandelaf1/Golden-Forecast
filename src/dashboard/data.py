@@ -1,4 +1,5 @@
 import os
+import warnings
 from datetime import datetime
 
 import numpy as np
@@ -43,12 +44,19 @@ PRIMARY_MODEL = 'lr_strong_reg_binary'
 
 
 def load_feature_data() -> pd.DataFrame:
-    """Load gold-features.csv and merge with gold_close for charting."""
+    """Load gold-features.csv and merge with gold_close + macro closes for charting."""
     features = load_features()
     clean = pd.read_csv(CLEAN_PATH, parse_dates=['Date'])
-    merged = features.merge(clean[['Date', 'gold_close']], on='Date', how='left')
-    merged = merged.rename(columns={'gold_close': 'gold'})
+    merged = features.merge(clean[['Date', 'gold_close', 'dxy_close', 'vix_close', 'tnx_close']],
+                            on='Date', how='left')
+    merged = merged.rename(columns={
+        'gold_close': 'gold',
+        'dxy_close': 'dxy',
+        'vix_close': 'vix',
+        'tnx_close': 'tnx',
+    })
     merged['returns'] = merged['gold_return']
+    merged['ma_21'] = merged['gold_ma_20']
     return merged
 
 
@@ -235,7 +243,9 @@ def build_context() -> dict:
     regression_results = None
     if REGRESSION_AVAILABLE:
         try:
-            regression_results = train_and_evaluate_regression()
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore')
+                regression_results = train_and_evaluate_regression()
         except Exception:
             regression_results = None
 

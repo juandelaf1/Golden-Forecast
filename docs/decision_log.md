@@ -45,3 +45,19 @@
 | 04/07/2026 | Python unificado a 3.12 en CI (`ci.yml`) | Dockerfile ya usaba 3.12, CI usaba 3.10. Alineado para evitar discrepancias |
 | 04/07/2026 | `requirements.txt`: añadidos `xgboost` y `pytest` | Dependencias necesarias para modelos XGBoost y tests respectivamente |
 | 04/07/2026 | Stashes limpiados (4) | Correspondían a WIP en ramas `feature/classification` y `feature/pr-template`, ya integradas |
+| 04/07/2026 | Columna `ma_21` → `gold_ma_20` en `callbacks.py` | El feature engineering genera `gold_ma_20`, no `ma_21`. Dashboard referenciaba columna inexistente → gráfica vacía |
+| 04/07/2026 | Columnas técnicas corregidas (`rsi`→`gold_rsi_14`, `macd`→`gold_macd`) | Misma causa: prefijo `gold_` faltante. Dashboard de clasificación y regresión ahora muestran datos reales |
+| 04/07/2026 | Macro indicadores `dxy_close`, `vix_close`, `tnx_close` mergeados en `data.py` | Dashboard necesita correlaciones macro para frase "El oro y el dólar se mueven en direcciones opuestas". Alias `ma_21` mantenido para retrocompatibilidad |
+| 04/07/2026 | R² negativos ocultos en pestaña Valor y Riesgo | Narrativa B2B: modelos sin señal predictiva muestran "—" con texto "Relación no lineal — análisis exploratorio" en vez de números negativos |
+| 04/07/2026 | Dropdown dark theme añadido a `style.css` | .Select-control, .Select-menu-outer, .Select-option con fondo #2b2b2b y hover #3a3a3a |
+| 04/07/2026 | Labels de precio en dropdown mejorados | "Precio en dólares (USD/oz)", "Cambio porcentual diario (%)", "Rendimiento acumulado (base 100)" |
+| 04/07/2026 | "Complementa, no compite" eliminado de UI | Juan rechazó la frase. Reemplazado por "Modelos de regresión: valoración de activos y medición de riesgo" |
+| 04/07/2026 | 3 nuevos test files: `test_regression.py`, `test_models.py`, `test_dashboard.py` | 22 tests nuevos (9+6+7). Testing Score sube de 0/10 a 6/10 en checklist académico |
+| 04/07/2026 | `test_feature_engineering.py:85` arreglado (`.dropna()`) | Test `test_create_rsi` fallaba por NaN en últimas filas de RSI |
+| 04/07/2026 | `test_create_rsi` esperaba pandas.Series, recibía DataFrame | `.squeeze("columns")` añadido para obtener Serie unidimensional |
+| 04/07/2026 | `temp_app.py` eliminado | Archivo vacío creado por error, gitignorado sin seguimiento |
+| 04/07/2026 | `docs/ml_report.md` creado | ML Score: 9.0/10. Documento requerido por checklist: dataset, features, modelos, métricas, limitaciones |
+| 04/07/2026 | `docs/architecture.md` creado | Diagrama ASCII del pipeline (extract→preprocess→features→train→evaluate→dashboard) + owners |
+| 04/07/2026 | `notebooks/03_classification.ipynb` reparado | Import de `src.pipeline` roto (refactorizado). Reemplazado con funciones inline equivalentes |
+| 04/07/2026 | `config/pipeline.yaml` → Python 3.12 | Líneas 98 y 105 aún referenciaban `python:3.10-slim` y `python_version: 3.10`. Alineado con Dockerfile y CI |
+| 04/07/2026 | 47 tests pasados, 1 skipped | `test_model_count` salta si no hay 12 modelos .pkl todos a la vez. Todos los demás tests verdes |

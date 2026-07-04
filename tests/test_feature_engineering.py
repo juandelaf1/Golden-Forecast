@@ -84,7 +84,7 @@ class TestFeatureEngineering:
     def test_create_rsi(self, sample_ohlc):
         df = create_rsi(sample_ohlc.copy())
         assert 'gold_rsi_14' in df.columns
-        assert df['gold_rsi_14'].between(0, 100).all()
+        assert df['gold_rsi_14'].dropna().between(0, 100).all()
 
     def test_create_macd(self, sample_ohlc):
         df = create_macd(sample_ohlc.copy())

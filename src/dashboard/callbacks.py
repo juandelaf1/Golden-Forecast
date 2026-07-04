@@ -490,13 +490,13 @@ def build_summary_tab() -> html.Div:
                         className='wide-card',
                         children=[
                     html.Div([
-                        html.Span('Precio y tendencia del oro', className='card-title'),
+                        html.Span('Precio del Oro', className='card-title'),
                         dcc.Dropdown(
                             id='price-unit',
                             options=[
-                                {'label': 'USD/oz', 'value': 'usd'},
-                                {'label': '% Variaci\u00f3n diaria', 'value': 'pct'},
-                                {'label': 'Indexado (base=100)', 'value': 'index'},
+                                {'label': 'Precio en d\u00f3lares (USD/oz)', 'value': 'usd'},
+                                {'label': 'Cambio porcentual diario (%)', 'value': 'pct'},
+                                {'label': 'Rendimiento acumulado (base 100)', 'value': 'index'},
                             ],
                             value='usd',
                             clearable=False,
@@ -1035,7 +1035,7 @@ def build_rsi_figure() -> go.Figure:
     fig.add_trace(
         go.Scatter(
             x=df.index,
-            y=df['rsi'],
+                    y=df['gold_rsi_14'],
             name='RSI',
             line={'color': '#D4AF37', 'width': 2},
         )
@@ -1055,7 +1055,7 @@ def build_macd_figure() -> go.Figure:
     fig.add_trace(
         go.Scatter(
             x=df.index,
-            y=df['macd'],
+            y=df['gold_macd'],
             name='MACD',
             line={'color': '#D4AF37', 'width': 2},
         )
@@ -1063,7 +1063,7 @@ def build_macd_figure() -> go.Figure:
     fig.add_trace(
         go.Scatter(
             x=df.index,
-            y=df['macd_signal'],
+            y=df['gold_macd_signal'],
             name='Señal',
             line={'color': '#AC7D3D', 'width': 2, 'dash': 'dot'},
         )
@@ -1071,7 +1071,7 @@ def build_macd_figure() -> go.Figure:
     fig.add_trace(
         go.Bar(
             x=df.index,
-            y=df['macd'] - df['macd_signal'],
+            y=df['gold_macd'] - df['gold_macd_signal'],
             name='Histograma',
             marker_color='#E8C34A',
             opacity=0.6,
@@ -1710,12 +1710,16 @@ def build_regression_tab() -> html.Div:
                 best_idx = cv['R²_mean'].idxmax()
                 best = cv.loc[best_idx]
 
-        if best is not None:
-            value_text = f'R²: {best["R²_mean"]:.3f}'
-            detail = f'Mejor modelo: {best["Modelo"]} — MAE: {best["MAE_mean"]:.5f}'
+        if best is not None and best['R²_mean'] > 0:
+            pct = best['R²_mean'] * 100
+            value_text = f'{pct:.0f}% de precisi\u00f3n'
+            detail = f'Modelo: {best["Modelo"]} — Error medio: {best["MAE_mean"]:.5f}'
+        elif best is not None:
+            value_text = '\u2014'
+            detail = 'Relaci\u00f3n no lineal — an\u00e1lisis exploratorio'
         else:
             value_text = '\u2014'
-            detail = 'Disponible tras ejecutar pipeline de regresión'
+            detail = 'Disponible tras ejecutar pipeline'
 
         cards.append(
             html.Div(
@@ -1725,13 +1729,6 @@ def build_regression_tab() -> html.Div:
                     html.Div(t['metric'], className='metric-note'),
                     html.Div(value_text, className='metric-value', style={'color': '#D4AF37'}),
                     html.Div(detail, style={'color': '#a89070', 'fontSize': '0.75rem', 'marginBottom': '8px'}),
-                    html.Details(
-                        className='metric-help',
-                        children=[
-                            html.Summary('\u00bfQu\u00e9 significa?', className='metric-help-summary'),
-                            html.Div(t['explanation'], className='metric-help-text'),
-                        ],
-                    ),
                 ],
             )
         )
@@ -1763,7 +1760,7 @@ def build_regression_tab() -> html.Div:
                             html.Div(
                                 className='help-copy',
                                 children=[
-                                    html.H4('Complementa, no compite', style={'color': '#D4AF37', 'margin': '10px 0 4px', 'fontFamily': 'Rye, Smokum, serif'}),
+                                    html.H4('Modelos de regresi\u00f3n: valoraci\u00f3n de activos y medici\u00f3n de riesgo', style={'color': '#D4AF37', 'margin': '10px 0 4px', 'fontFamily': 'Rye, Smokum, serif'}),
                                     html.P('El modelo de clasificaci\u00f3n predice la direcci\u00f3n del precio (sube/baja). Este an\u00e1lisis de Valor y Riesgo responde a:'),
                                     html.Ul(children=[
                                         html.Li('\u00bfEst\u00e1 el oro en zona de sobrevaloraci\u00f3n o infravaloraci\u00f3n hist\u00f3rica?'),

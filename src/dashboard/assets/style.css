@@ -850,3 +850,44 @@ body {
     right: auto;
   }
 }
+
+/* Dark dropdown styling for Dash dcc.Dropdown */
+.Select-control {
+  background-color: #2C2620 !important;
+  border-color: rgba(232, 195, 74, 0.3) !important;
+  color: #F2EBE1 !important;
+}
+.Select-value-label {
+  color: #F2EBE1 !important;
+}
+.Select-menu-outer {
+  background-color: #1A1613 !important;
+  border: 1px solid rgba(232, 195, 74, 0.3) !important;
+  z-index: 9999;
+}
+.Select-option {
+  background-color: #1A1613 !important;
+  color: #F2EBE1 !important;
+}
+.Select-option:hover {
+  background-color: #2C2620 !important;
+  color: #D4AF37 !important;
+}
+.Select-option.is-focused {
+  background-color: #3D352C !important;
+  color: #D4AF37 !important;
+}
+.Select-option.is-selected {
+  background-color: #2C1A0C !important;
+  color: #E8C34A !important;
+}
+.Select-arrow {
+  border-color: #D4AF37 transparent transparent !important;
+}
+.Select-clear {
+  color: #a89070 !important;
+}
+.has-value.Select--single > .Select-control .Select-value .Select-value-label,
+.has-value.is-pseudo-focused.Select--single > .Select-control .Select-value .Select-value-label {
+  color: #F2EBE1 !important;
+}
