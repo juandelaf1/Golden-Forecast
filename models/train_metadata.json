@@ -6,8 +6,6 @@
     "lr_strong_reg_multiclass",
     "rf_binary",
     "rf_multiclass",
-    "rf_deep_binary",
-    "rf_deep_multiclass",
     "xgb_binary",
     "xgb_multiclass",
     "xgb_deep_binary",

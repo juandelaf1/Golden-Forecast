@@ -9,7 +9,7 @@ from sklearn.preprocessing import StandardScaler
 from xgboost import XGBClassifier
 
 """
-Entrena 6 modelos de clasificación (3 algoritmos x 2 targets):
+Entrena 5 modelos de clasificación (3 algoritmos x 2 targets):
     Algoritmos:
         - Logistic Regression  (baseline)
         - Random Forest Classifier
@@ -48,12 +48,8 @@ MODELS = {
     ),
     "rf": RandomForestClassifier(
         n_estimators=100,
-        max_depth=5,
-        random_state=42
-    ),
-    "rf_deep": RandomForestClassifier(
-        n_estimators=200,
-        max_depth=10,
+        max_depth=3,      
+        min_samples_leaf=20,
         random_state=42
     ),
     "xgb": XGBClassifier(
@@ -114,7 +110,7 @@ def scale(X_train: pd.DataFrame, X_test: pd.DataFrame):
     X_test_scaled = scaler.transform(X_test)
     return X_train_scaled, X_test_scaled, scaler
 
-#Entrenamiendo de los modelos, tenemos 6 x 2 targets
+#Entrenamiendo de los modelos, tenemos 5 x 2 targets
 def train_models(X_train, y_binary_train, y_multiclass_train):
     trained = {}
 

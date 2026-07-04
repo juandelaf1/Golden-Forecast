@@ -9,7 +9,9 @@ COLUMNAS_ABSOLUTAS = [
     "dxy_close", "dxy_high", "dxy_low", "dxy_open",
     "vix_close", "vix_high", "vix_low", "vix_open",
     "tnx_close", "tnx_high", "tnx_low", "tnx_open",
-    "gold_return_next_day"
+    "gold_return_next_day", "gvz_close", "gvz_high", "gvz_low", "gvz_open",
+    "oil_close", "oil_high", "oil_low", "oil_open",
+    "sp500_close", "sp500_high", "sp500_low", "sp500_open"
 ]
 
 
@@ -26,6 +28,9 @@ def create_daily_returns(df):
     df["dxy_return"] = df["dxy_close"].pct_change()
     df["vix_return"] = df["vix_close"].pct_change()
     df["tnx_return"] = df["tnx_close"].pct_change()
+    df["gvz_return"] = df["gvz_close"].pct_change()
+    df["oil_return"] = df["oil_close"].pct_change()
+    df["sp500_return"] = df["sp500_close"].pct_change()
 
     return df
 
@@ -45,6 +50,9 @@ def create_daily_ranges(df):
     df["dxy_daily_range"] = (df["dxy_high"] - df["dxy_low"]) / df["dxy_open"]
     df["vix_daily_range"] = (df["vix_high"] - df["vix_low"]) / df["vix_open"]
     df["tnx_daily_range"] = (df["tnx_high"] - df["tnx_low"]) / df["tnx_open"]
+    df["gvz_daily_range"] = (df["gvz_high"] - df["gvz_low"]) / df["gvz_open"]
+    df["oil_daily_range"] = (df["oil_high"] - df["oil_low"]) / df["oil_open"]
+    df["sp500_daily_range"] = (df["sp500_high"] - df["sp500_low"]) / df["sp500_open"]
 
     return df
 
@@ -64,6 +72,9 @@ def create_open_close_returns(df):
     df["dxy_open_close_return"] = (df["dxy_close"] - df["dxy_open"]) / df["dxy_open"]
     df["vix_open_close_return"] = (df["vix_close"] - df["vix_open"]) / df["vix_open"]
     df["tnx_open_close_return"] = (df["tnx_close"] - df["tnx_open"]) / df["tnx_open"]
+    df["gvz_open_close_return"] = (df["gvz_close"] - df["gvz_open"]) / df["gvz_open"]
+    df["oil_open_close_return"] = (df["oil_close"] - df["oil_open"]) / df["oil_open"]
+    df["sp500_open_close_return"] = (df["sp500_close"] - df["sp500_open"]) / df["sp500_open"]
 
     return df
 
@@ -180,11 +191,24 @@ def create_return_lags(df):
 
     df["gold_return_lag_1"] = df["gold_return"].shift(1)
     df["gold_return_lag_2"] = df["gold_return"].shift(2)
+    df["gvz_return_lag1"] = df["gvz_return"].shift(1)
+    df["oil_return_lag1"] = df["oil_return"].shift(1)
+    df["sp500_return_lag1"] = df["sp500_return"].shift(1)
 
     return df
 
+def create_calendar_features(df):
+    """
+    Crea features de calendario.
+    El oro tiene patrones estacionales reales — ciertos días
+    de la semana y meses del año tienen comportamiento distinto.
+    """
+    df = df.copy()
+    df["day_of_week"] = pd.to_datetime(df["Date"]).dt.dayofweek  # 0=lunes, 4=viernes
+    df["month"] = pd.to_datetime(df["Date"]).dt.month
+    return df
 
-def create_targets(df, threshold=0.005):
+def create_targets(df, threshold=0.003):
     """
     Crea las variables objetivo del proyecto.
 
@@ -230,6 +254,7 @@ def create_features(df):
     6. MACD.
     7. Volatilidad rolling.
     8. Lags del retorno del oro.
+    9. Patrones estacionales reales
     """
     df = df.copy()
 
@@ -241,7 +266,8 @@ def create_features(df):
     df = create_macd(df)
     df = create_rolling_volatility(df)
     df = create_return_lags(df)
-
+    df = create_calendar_features(df)
+    
     return df
 
 
@@ -260,7 +286,7 @@ def run_feature_engineering(input_path, output_path):
     df = pd.read_csv(input_path, parse_dates=["Date"])
 
     df = create_features(df)
-    df = create_targets(df, threshold=0.005)
+    df = create_targets(df, threshold=0.003)
 
     df = df.drop(columns=COLUMNAS_ABSOLUTAS, errors="ignore")
     df = df.dropna()

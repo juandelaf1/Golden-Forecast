@@ -2,118 +2,100 @@
   "resultados": [
     {
       "modelo": "lr_binary",
-      "accuracy_train": 0.5471,
-      "accuracy_test": 0.562,
-      "precision_test": 0.5799,
-      "recall_test": 0.8602,
-      "f1_test": 0.6928,
-      "overfitting_gap": -0.0148
+      "accuracy_train": 0.5606,
+      "accuracy_test": 0.5654,
+      "precision_test": 0.5881,
+      "recall_test": 0.8116,
+      "f1_test": 0.682,
+      "overfitting_gap": -0.0048
     },
     {
       "modelo": "lr_multiclass",
-      "accuracy_train": 0.5419,
-      "accuracy_test": 0.3805,
-      "precision_test": 0.3769,
-      "recall_test": 0.3805,
-      "f1_test": 0.3149,
-      "overfitting_gap": 0.1614
+      "accuracy_train": 0.4184,
+      "accuracy_test": 0.4049,
+      "precision_test": 0.381,
+      "recall_test": 0.4049,
+      "f1_test": 0.3872,
+      "overfitting_gap": 0.0135
     },
     {
       "modelo": "lr_strong_reg_binary",
-      "accuracy_train": 0.5406,
-      "accuracy_test": 0.5689,
-      "precision_test": 0.583,
-      "recall_test": 0.8754,
-      "f1_test": 0.6999,
-      "overfitting_gap": -0.0284
+      "accuracy_train": 0.5567,
+      "accuracy_test": 0.5742,
+      "precision_test": 0.5922,
+      "recall_test": 0.8298,
+      "f1_test": 0.6911,
+      "overfitting_gap": -0.0175
     },
     {
       "modelo": "lr_strong_reg_multiclass",
-      "accuracy_train": 0.5419,
-      "accuracy_test": 0.3839,
-      "precision_test": 0.3792,
-      "recall_test": 0.3839,
-      "f1_test": 0.3082,
-      "overfitting_gap": 0.1579
+      "accuracy_train": 0.4114,
+      "accuracy_test": 0.4119,
+      "precision_test": 0.3749,
+      "recall_test": 0.4119,
+      "f1_test": 0.3797,
+      "overfitting_gap": -0.0004
     },
     {
       "modelo": "rf_binary",
-      "accuracy_train": 0.7565,
-      "accuracy_test": 0.5515,
-      "precision_test": 0.5845,
-      "recall_test": 0.7568,
-      "f1_test": 0.6596,
-      "overfitting_gap": 0.2051
+      "accuracy_train": 0.623,
+      "accuracy_test": 0.5707,
+      "precision_test": 0.5863,
+      "recall_test": 0.8571,
+      "f1_test": 0.6963,
+      "overfitting_gap": 0.0524
     },
     {
       "modelo": "rf_multiclass",
-      "accuracy_train": 0.5768,
-      "accuracy_test": 0.3752,
-      "precision_test": 0.3998,
-      "recall_test": 0.3752,
-      "f1_test": 0.2534,
-      "overfitting_gap": 0.2016
-    },
-    {
-      "modelo": "rf_deep_binary",
-      "accuracy_train": 0.9948,
-      "accuracy_test": 0.5358,
-      "precision_test": 0.5868,
-      "recall_test": 0.6474,
-      "f1_test": 0.6156,
-      "overfitting_gap": 0.459
-    },
-    {
-      "modelo": "rf_deep_multiclass",
-      "accuracy_train": 0.764,
-      "accuracy_test": 0.37,
-      "precision_test": 0.367,
-      "recall_test": 0.37,
-      "f1_test": 0.2843,
-      "overfitting_gap": 0.394
+      "accuracy_train": 0.4873,
+      "accuracy_test": 0.3822,
+      "precision_test": 0.4013,
+      "recall_test": 0.3822,
+      "f1_test": 0.3823,
+      "overfitting_gap": 0.1051
     },
     {
       "modelo": "xgb_binary",
-      "accuracy_train": 0.7906,
-      "accuracy_test": 0.5654,
-      "precision_test": 0.5962,
-      "recall_test": 0.7538,
-      "f1_test": 0.6658,
-      "overfitting_gap": 0.2251
+      "accuracy_train": 0.812,
+      "accuracy_test": 0.5358,
+      "precision_test": 0.5831,
+      "recall_test": 0.6717,
+      "f1_test": 0.6243,
+      "overfitting_gap": 0.2762
     },
     {
       "modelo": "xgb_multiclass",
-      "accuracy_train": 0.164,
-      "accuracy_test": 0.2269,
-      "precision_test": 0.1824,
-      "recall_test": 0.2269,
-      "f1_test": 0.1734,
-      "overfitting_gap": -0.0628
+      "accuracy_train": 0.1095,
+      "accuracy_test": 0.164,
+      "precision_test": 0.1543,
+      "recall_test": 0.164,
+      "f1_test": 0.1514,
+      "overfitting_gap": -0.0545
     },
     {
       "modelo": "xgb_deep_binary",
-      "accuracy_train": 0.9725,
-      "accuracy_test": 0.5393,
-      "precision_test": 0.5886,
-      "recall_test": 0.6565,
-      "f1_test": 0.6207,
-      "overfitting_gap": 0.4332
+      "accuracy_train": 0.9812,
+      "accuracy_test": 0.5218,
+      "precision_test": 0.5788,
+      "recall_test": 0.614,
+      "f1_test": 0.5959,
+      "overfitting_gap": 0.4594
     },
     {
       "modelo": "xgb_deep_multiclass",
-      "accuracy_train": 0.062,
-      "accuracy_test": 0.2251,
-      "precision_test": 0.1977,
-      "recall_test": 0.2251,
-      "f1_test": 0.1866,
-      "overfitting_gap": -0.1632
+      "accuracy_train": 0.0122,
+      "accuracy_test": 0.1553,
+      "precision_test": 0.1845,
+      "recall_test": 0.1553,
+      "f1_test": 0.1508,
+      "overfitting_gap": -0.1431
     }
   ],
   "mejor_multiclase": "lr_multiclass",
   "backtesting": {
     "modelo": "lr_multiclass",
-    "retorno_estrategia_pct": -49.2,
+    "retorno_estrategia_pct": -46.32,
     "retorno_buyhold_pct": 87.49,
-    "num_operaciones": 43
+    "num_operaciones": 314
   }
 }

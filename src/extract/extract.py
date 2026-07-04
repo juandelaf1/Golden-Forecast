@@ -12,6 +12,9 @@ TICKERS = {
     "DXY": "DX-Y.NYB",
     "VIX": "^VIX",
     "TNX": "^TNX",
+    "GVZ": "^GVZ",       # Volatilidad implícita del oro (VIX del oro)
+    "Oil": "CL=F",       # Futuros del petróleo WTI
+    "SP500": "^GSPC", 
 }
  
  
@@ -37,7 +40,7 @@ def download_ticker(name: str, ticker: str, start: str, interval: str) -> pd.Dat
  
 #Unimos las series por fechas
 def merge_series(dfs: dict) -> pd.DataFrame:
-    df_merged = pd.concat(dfs.values(), axis=1)
+    df_merged = pd.concat(dfs.values(), axis=1, sort=False)
     return df_merged
  
 def save_dataset(df: pd.DataFrame, OUTPUT: str) -> None:
