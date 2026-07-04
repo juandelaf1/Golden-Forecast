@@ -92,10 +92,11 @@ def evaluate_model(model, model_name: str, X_train, X_test, y_train, y_test) -> 
 
     # Si es XGBoost multiclase, decodificar predicciones (0,1,2) -> (-1,0,1)
     if is_xgb_multi:
+        # Decodificar predicciones de (0,1,2) a (-1,0,1)
         y_pred_train = np.array([MULTICLASS_DECODE[p] for p in y_pred_train])
         y_pred_test = np.array([MULTICLASS_DECODE[p] for p in y_pred_test])
-        y_train = y_train.map(MULTICLASS_ENCODE)
-        y_test_eval = y_test.map(MULTICLASS_ENCODE)
+        # El target ya está en (-1,0,1), no hay que tocarlo
+        y_test_eval = y_test
     else:
         y_test_eval = y_test
 

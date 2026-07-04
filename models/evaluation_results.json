@@ -65,12 +65,12 @@
     },
     {
       "modelo": "xgb_multiclass",
-      "accuracy_train": 0.1095,
-      "accuracy_test": 0.164,
-      "precision_test": 0.1543,
-      "recall_test": 0.164,
-      "f1_test": 0.1514,
-      "overfitting_gap": -0.0545
+      "accuracy_train": 0.7352,
+      "accuracy_test": 0.3647,
+      "precision_test": 0.3805,
+      "recall_test": 0.3647,
+      "f1_test": 0.3685,
+      "overfitting_gap": 0.3704
     },
     {
       "modelo": "xgb_deep_binary",
@@ -83,12 +83,12 @@
     },
     {
       "modelo": "xgb_deep_multiclass",
-      "accuracy_train": 0.0122,
-      "accuracy_test": 0.1553,
-      "precision_test": 0.1845,
-      "recall_test": 0.1553,
-      "f1_test": 0.1508,
-      "overfitting_gap": -0.1431
+      "accuracy_train": 0.9699,
+      "accuracy_test": 0.3874,
+      "precision_test": 0.3939,
+      "recall_test": 0.3874,
+      "f1_test": 0.3838,
+      "overfitting_gap": 0.5825
     }
   ],
   "mejor_multiclase": "lr_multiclass",
