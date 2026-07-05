@@ -9,7 +9,7 @@
 | 30/06/2026 | Ramas feature/ con PR a main protegida | Flujo profesional GitHub Flow con revisión de código |
 | 30/06/2026 | Ticker: GC=F (futuros del oro) + DXY + VIX + TNX | Precio real del oro y 3 macroindicadores para enriquecer features |
 | 30/06/2026 | Fecha inicio: 2015-01-01 | ~10 años de datos históricos (~2894 registros diarios) |
-| 30/06/2026 | Documentación bilingüe | README, ROADMAP y PR template en inglés |
+| 30/06/2026 | Convención de idioma definida | Código/comentarios/docstrings en inglés. UI dashboard, prints, docs internos (README, ROADMAP, handbook, decision_log) en español. Docs técnicos (ml_report, architecture) en inglés. Config/YAML en inglés. Notebooks en español. |
 | 30/06/2026 | Repositorio profesional estructurado | README, ROADMAP, PR template, decision_log, project_handbook incluidos |
 | 30/06/2026 | Kanban en GitHub Projects | Seguimiento visual del sprint con columnas To Do / In Progress / Done |
 | 30/06/2026 | Data lineage documentado en `data/README.md` | Trazabilidad del origen y transformación de datos |

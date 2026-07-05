@@ -15,7 +15,7 @@ from src.feature_engineering import (
     create_targets,
     create_features,
     run_feature_engineering,
-    COLUMNAS_ABSOLUTAS,
+    ABSOLUTE_COLUMNS,
 )
 
 
@@ -136,6 +136,6 @@ class TestFeatureEngineering:
         df = pd.read_csv(output_path)
         assert 'target_binary' in df.columns
         assert 'target_multiclass' in df.columns
-        for col in COLUMNAS_ABSOLUTAS:
+        for col in ABSOLUTE_COLUMNS:
             assert col not in df.columns, f"Absolute column {col} should be dropped"
         assert df.isna().sum().sum() == 0, "No NaN values should remain"

@@ -57,6 +57,7 @@ def load_feature_data() -> pd.DataFrame:
     })
     merged['returns'] = merged['gold_return']
     merged['ma_21'] = merged['gold_ma_20']
+    merged = merged.set_index('Date').sort_index()
     return merged
 
 
@@ -267,7 +268,7 @@ def build_context() -> dict:
         'predictions': primary_result['predictions'],
         'probabilities': primary_result['probabilities'],
         'split_index': split_index,
-        'split_date': data['Date'].iloc[split_index] if 'Date' in data.columns else data.iloc[split_index:].index[0],
+        'split_date': data.index[split_index],
         'test_data': data.iloc[split_index:],
         'cum_strategy': primary_result['cum_strategy'],
         'cum_bh': primary_result['cum_bh'],

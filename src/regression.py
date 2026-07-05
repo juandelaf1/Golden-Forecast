@@ -37,6 +37,7 @@ except ImportError:
 # Configuración de caché
 # --------------------------
 CACHE_PATH = 'models/regression_exp_cache.pkl'
+RESULTS_CACHE_PATH = 'models/regression_results_cache.pkl'
 CACHE_THRESHOLD_HOURS = 24
 
 TARGET_SPECS = {
@@ -101,6 +102,36 @@ def _save_cache(target_name: str, models: dict, scaler, feature_columns, data_ha
     }
     with open(CACHE_PATH, 'wb') as f:
         pickle.dump(cache, f)
+
+
+def _load_results_cache() -> dict | None:
+    """Carga el caché de resultados completos (todos los targets)."""
+    if not os.path.exists(RESULTS_CACHE_PATH):
+        return None
+    try:
+        with open(RESULTS_CACHE_PATH, 'rb') as f:
+            return pickle.load(f)
+    except Exception:
+        return None
+
+
+def _save_results_cache(results: dict, data_hash: str = ''):
+    """Guarda el caché de resultados completos para carga instantánea del dashboard."""
+    os.makedirs(os.path.dirname(RESULTS_CACHE_PATH), exist_ok=True)
+    try:
+        # Strip fitted models from cache (only keep metrics + metadata)
+        stripped = {}
+        for target, r in results.items():
+            stripped[target] = {k: v for k, v in r.items() if k != 'best_model' and k != 'scaler'}
+        with open(RESULTS_CACHE_PATH, 'wb') as f:
+            pickle.dump({
+                'timestamp': datetime.now().isoformat(),
+                'data_hash': data_hash,
+                'results': stripped,
+                'targets': list(results.keys()),
+            }, f)
+    except Exception:
+        pass
 
 
 # --------------------------
@@ -384,13 +415,23 @@ def run_all_targets(
     clean_path='data/processed/gold-clean.csv',
     test_size=0.2,
 ) -> dict:
-    """Ejecuta pipeline completo para todos los targets."""
+    """Ejecuta pipeline completo para todos los targets.
+    Usa caché de resultados si los datos no han cambiado."""
+    data_hash = _compute_data_hash([features_path, clean_path])
+
+    cached = _load_results_cache()
+    if cached is not None and cached.get('data_hash') == data_hash:
+        print('  Usando resultados cacheados (carga instantánea)')
+        return cached['results']
+
     results = {}
     for target in TARGET_SPECS.keys():
         print(f'\n=== Entrenando: {target} ===')
         results[target] = train_and_evaluate_target(target, features_path, clean_path, test_size)
         r = results[target]
         print(f"  Mejor: {r['best_model_name']} | R²={r['eval_results'].loc[r['eval_results']['R²'].idxmax(), 'R²']:.4f} | IC={r['eval_results'].loc[r['eval_results']['R²'].idxmax(), 'IC (Pearson)']:.4f}")
+
+    _save_results_cache(results, data_hash)
     return results
 
 

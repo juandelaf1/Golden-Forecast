@@ -65,9 +65,9 @@ FEATURE_CATEGORIES = {
 }
 
 CATEGORY_COLORS = {
-    'Precio': '#22C55E',
-    'T\u00e9cnico': '#E8C34A',
-    'Macro': '#AC7D3D',
+    'Precio': '#00E676',
+    'T\u00e9cnico': '#42A5F5',
+    'Macro': '#AB47BC',
 }
 
 FEATURE_DESCRIPTIONS = {
@@ -139,8 +139,8 @@ RANGE_BUTTONS = [
 
 
 def _apply_rangeselector(fig, df):
-    """Apply date range selector and slider to a figure's x-axis (default: last 5 days)."""
-    last_idx = min(len(df) - 1, 5)
+    """Apply date range selector and slider to a figure's x-axis (default: last 90 days)."""
+    last_idx = min(len(df) - 1, 90)
     fig.update_xaxes(
         rangeselector={'buttons': RANGE_BUTTONS, **RANGESELECTOR},
         rangeslider={'visible': True, 'bgcolor': 'rgba(26, 16, 8, 0.4)', 'bordercolor': 'rgba(232, 195, 74, 0.15)'},
@@ -148,20 +148,28 @@ def _apply_rangeselector(fig, df):
     )
 
 
-# Colores estilo western/wanted
+# Colores por tipo de serie
 WANTED_COLORS = {
-    'gold': '#E8C34A',
+    'gold': '#FFD700',
+    'ma': '#29B6F6',
+    'ma_short': '#4FC3F7',
+    'signal_buy': '#00C853',
+    'signal_sell': '#FF5252',
+    'signal_neutral': '#FFD700',
+    'buy': '#00C853',
+    'sell': '#FF5252',
+    'hold': '#FFB74D',
+    'prediction': '#00E676',
     'brass': '#D4AF37',
     'brass_light': '#F5DC8A',
     'iron': '#1A1613',
     'iron_mid': '#2C2620',
     'iron_light': '#3D352C',
-    'signal_buy': '#4ADE80',
-    'signal_sell': '#F2554D',
-    'signal_neutral': '#E8C34A',
-    'buy': '#22C55E',
-    'sell': '#EF4444',
-    'hold': '#F59E0B',
+    'macro_dxy': '#42A5F5',
+    'macro_vix': '#AB47BC',
+    'macro_tnx': '#FFA726',
+    'rsi_overbought': '#FF5252',
+    'rsi_oversold': '#4CAF50',
 }
 
 
@@ -305,7 +313,7 @@ def register_callbacks(app):
             annotation_font={'color': '#F2EBE1', 'family': 'Space Mono, monospace', 'size': 11},
         )
         fig.update_layout(**PLOT_THEME, height=420, hovermode='x unified')
-        fig.update_xaxes(**AXIS_THEME)
+        fig.update_xaxes(**AXIS_THEME, title_text='Fecha')
         fig.update_yaxes(**AXIS_THEME, title_text='Valor de cartera ($)')
 
         return f'${final:,.0f}', f'{total_return:+.1f}%', str(trades), fig
@@ -385,11 +393,12 @@ def register_callbacks(app):
                 x0=context['split_date'], x1=context['split_date'],
                 y0=df['gold'].min(), y1=df['gold'].max(),
                 line={'color': WANTED_COLORS['iron_mid'], 'dash': 'dash', 'width': 2},
+                annotation={'text': 'Inicio test set', 'font': {'color': '#a89070', 'size': 10, 'family': 'Space Mono, monospace'}},
             )
 
         fig.update_layout(**PLOT_THEME, height=420, hovermode='x unified',
                           title={'text': 'Precio del Oro y Se\u00f1ales del Modelo', 'font': {'family': 'Rye, Smokum, serif', 'color': WANTED_COLORS['gold']}})
-        fig.update_xaxes(**AXIS_THEME)
+        fig.update_xaxes(**AXIS_THEME, title_text='Fecha')
         _apply_rangeselector(fig, df)
         fig.update_yaxes(**AXIS_THEME, title_text=y_title, autorange=True)
         return fig
@@ -498,7 +507,7 @@ def build_summary_tab() -> html.Div:
                                 {'label': 'Cambio porcentual diario (%)', 'value': 'pct'},
                                 {'label': 'Rendimiento acumulado (base 100)', 'value': 'index'},
                             ],
-                            value='usd',
+                            value='index',
                             clearable=False,
                             style={
                                 'width': '180px', 'marginLeft': 'auto', 'background': '#2C2620', 'color': '#F2EBE1',
@@ -992,7 +1001,7 @@ def build_price_figure() -> go.Figure:
             y=df['ma_21'],
             name='MA 21',
             mode='lines',
-            line={'color': WANTED_COLORS['brass'], 'dash': 'dot', 'width': 2},
+            line={'color': WANTED_COLORS['ma'], 'dash': 'dot', 'width': 2},
         )
     )
     
@@ -1006,8 +1015,9 @@ def build_price_figure() -> go.Figure:
             name='Señal Modelo',
             marker={
                 'color': [WANTED_COLORS['buy'] if s == 1 else WANTED_COLORS['sell'] for s in context['data']['signal'].iloc[len(context['data'])-len(test):]],
-                'size': 8,
+                'size': 12,
                 'symbol': 'star',
+                'line': {'width': 1, 'color': '#FFFFFF'},
             },
         )
     )
@@ -1019,11 +1029,12 @@ def build_price_figure() -> go.Figure:
         y0=df['gold'].min(),
         y1=df['gold'].max(),
         line={'color': WANTED_COLORS['iron_mid'], 'dash': 'dash', 'width': 2},
+        annotation={'text': 'Inicio test set', 'font': {'color': '#a89070', 'size': 10, 'family': 'Space Mono, monospace'}},
     )
     
     fig.update_layout(**PLOT_THEME, height=420, hovermode='x unified',
                       title={'text': 'Precio del Oro y Señales del Modelo', 'font': {'family': 'Rye, Smokum, serif', 'color': WANTED_COLORS['gold']}})
-    fig.update_xaxes(**AXIS_THEME)
+    fig.update_xaxes(**AXIS_THEME, title_text='Fecha')
     _apply_rangeselector(fig, df)
     fig.update_yaxes(**AXIS_THEME, title_text='USD por onza', autorange=True)
     return fig
@@ -1037,15 +1048,15 @@ def build_rsi_figure() -> go.Figure:
             x=df.index,
                     y=df['gold_rsi_14'],
             name='RSI',
-            line={'color': '#D4AF37', 'width': 2},
+            line={'color': WANTED_COLORS['prediction'], 'width': 2},
         )
     )
-    fig.add_hline(y=70, line_dash='dash', line_color='#AC7D3D')
-    fig.add_hline(y=30, line_dash='dash', line_color='#7A5C33')
+    fig.add_hline(y=70, line_dash='dash', line_color=WANTED_COLORS['rsi_overbought'], annotation_text='Sobrecompra (70)', annotation_position='top left')
+    fig.add_hline(y=30, line_dash='dash', line_color=WANTED_COLORS['rsi_oversold'], annotation_text='Sobreventa (30)', annotation_position='bottom left')
     fig.update_layout(**PLOT_THEME, height=340, hovermode='x unified')
-    fig.update_xaxes(**AXIS_THEME)
+    fig.update_xaxes(**AXIS_THEME, title_text='Fecha')
     _apply_rangeselector(fig, df)
-    fig.update_yaxes(**AXIS_THEME, title_text='RSI', autorange=True)
+    fig.update_yaxes(**AXIS_THEME, title_text='RSI', range=[15, 85])
     return fig
 
 
@@ -1057,7 +1068,7 @@ def build_macd_figure() -> go.Figure:
             x=df.index,
             y=df['gold_macd'],
             name='MACD',
-            line={'color': '#D4AF37', 'width': 2},
+            line={'color': WANTED_COLORS['prediction'], 'width': 2},
         )
     )
     fig.add_trace(
@@ -1065,7 +1076,7 @@ def build_macd_figure() -> go.Figure:
             x=df.index,
             y=df['gold_macd_signal'],
             name='Señal',
-            line={'color': '#AC7D3D', 'width': 2, 'dash': 'dot'},
+            line={'color': WANTED_COLORS['sell'], 'width': 2, 'dash': 'dot'},
         )
     )
     fig.add_trace(
@@ -1073,13 +1084,13 @@ def build_macd_figure() -> go.Figure:
             x=df.index,
             y=df['gold_macd'] - df['gold_macd_signal'],
             name='Histograma',
-            marker_color='#E8C34A',
-            opacity=0.6,
+            marker_color=WANTED_COLORS['ma'],
+            opacity=0.8,
         )
     )
-    fig.add_hline(y=0, line_color='#5C4732', line_width=1)
+    fig.add_hline(y=0, line_color='rgba(255,255,255,0.3)', line_width=1)
     fig.update_layout(**PLOT_THEME, height=340, hovermode='x unified')
-    fig.update_xaxes(**AXIS_THEME)
+    fig.update_xaxes(**AXIS_THEME, title_text='Fecha')
     _apply_rangeselector(fig, df)
     fig.update_yaxes(**AXIS_THEME, title_text='MACD', autorange=True)
     return fig
@@ -1087,17 +1098,38 @@ def build_macd_figure() -> go.Figure:
 
 def build_macro_figure() -> go.Figure:
     df = context['data']
-    fig = make_subplots(rows=2, cols=2, subplot_titles=('Oro vs DXY', 'Oro vs VIX', 'Oro vs TNX', 'Indicadores normalizados'))
-    fig.add_trace(go.Scatter(x=df['dxy'], y=df['gold'], mode='markers', marker={'color': '#D4AF37', 'size': 4}), row=1, col=1)
-    fig.add_trace(go.Scatter(x=df['vix'], y=df['gold'], mode='markers', marker={'color': '#AC7D3D', 'size': 4}), row=1, col=2)
-    fig.add_trace(go.Scatter(x=df['tnx'], y=df['gold'], mode='markers', marker={'color': '#8D6B34', 'size': 4}), row=2, col=1)
-    fig.add_trace(go.Scatter(x=df.index, y=df['gold'] / df['gold'].iloc[0] * 100, name='Gold', line={'color': '#D4AF37', 'width': 2}), row=2, col=2)
-    fig.add_trace(go.Scatter(x=df.index, y=df['dxy'] / df['dxy'].iloc[0] * 100, name='DXY', line={'color': '#AC7D3D', 'width': 2}), row=2, col=2)
-    fig.add_trace(go.Scatter(x=df.index, y=df['vix'] / df['vix'].iloc[0] * 100, name='VIX', line={'color': '#7A5C33', 'width': 2}), row=2, col=2)
-    fig.add_trace(go.Scatter(x=df.index, y=df['tnx'] / df['tnx'].iloc[0] * 100, name='TNX', line={'color': '#5C4732', 'width': 2}), row=2, col=2)
+    from numpy import polyfit, polyval
+    fig = make_subplots(rows=2, cols=2, subplot_titles=('Oro vs DXY', 'Oro vs VIX', 'Oro vs TNX', 'Indicadores normalizados (base 100)'))
+
+    def scatter_with_trend(x, y, color, row, col, x_label):
+        valid = x.notna() & y.notna()
+        xv, yv = x[valid].values, y[valid].values
+        corr = float(pd.Series(xv).corr(pd.Series(yv)))
+        fig.add_trace(go.Scatter(x=xv, y=yv, mode='markers', name=f'ρ={corr:.2f}',
+            marker={'color': color, 'size': 4, 'opacity': 0.25}), row=row, col=col)
+        if len(xv) > 2:
+            slope, intercept = polyfit(xv, yv, 1)
+            x_sorted = np.sort(xv)
+            fig.add_trace(go.Scatter(x=x_sorted, y=polyval([slope, intercept], x_sorted),
+                mode='lines', name='Tendencia', line={'color': color, 'width': 2, 'dash': 'dash'}), row=row, col=col)
+        fig.update_xaxes(**AXIS_THEME, title_text=x_label, row=row, col=col)
+        fig.update_yaxes(**AXIS_THEME, title_text='Oro (USD/oz)', row=row, col=col)
+
+    scatter_with_trend(df['dxy'], df['gold'], WANTED_COLORS['macro_dxy'], 1, 1, 'DXY (Dólar)')
+    scatter_with_trend(df['vix'], df['gold'], WANTED_COLORS['macro_vix'], 1, 2, 'VIX (Volatilidad)')
+    scatter_with_trend(df['tnx'], df['gold'], WANTED_COLORS['macro_tnx'], 2, 1, 'TNX (%)')
+
+    fig.add_trace(go.Scatter(x=df.index, y=df['gold'] / df['gold'].iloc[0] * 100,
+        name='Oro', line={'color': WANTED_COLORS['gold'], 'width': 2}), row=2, col=2)
+    fig.add_trace(go.Scatter(x=df.index, y=df['dxy'] / df['dxy'].iloc[0] * 100,
+        name='DXY', line={'color': WANTED_COLORS['macro_dxy'], 'width': 2}), row=2, col=2)
+    fig.add_trace(go.Scatter(x=df.index, y=df['vix'] / df['vix'].iloc[0] * 100,
+        name='VIX', line={'color': WANTED_COLORS['macro_vix'], 'width': 2}), row=2, col=2)
+    fig.add_trace(go.Scatter(x=df.index, y=df['tnx'] / df['tnx'].iloc[0] * 100,
+        name='TNX', line={'color': WANTED_COLORS['macro_tnx'], 'width': 2}), row=2, col=2)
+    fig.update_xaxes(**AXIS_THEME, title_text='Fecha', row=2, col=2)
+    fig.update_yaxes(**AXIS_THEME, title_text='Índice (base 100)', row=2, col=2)
     fig.update_layout(**PLOT_THEME, height=520, hovermode='x unified', showlegend=True)
-    fig.update_xaxes(**AXIS_THEME)
-    fig.update_yaxes(**AXIS_THEME)
     return fig
 
 
@@ -1159,14 +1191,23 @@ def build_backtest_figure() -> go.Figure:
             yaxis='y2',
         )
     )
+    final_alpha = (context['cum_strategy'][-1] - context['cum_bh'][-1]) * 100
+    if final_alpha < 0:
+        fig.add_annotation(
+            x=0.5, y=0.95, xref='paper', yref='paper',
+            text=f'⚠ Alpha negativa ({final_alpha:.1f}%) — La estrategia no supera al benchmark',
+            showarrow=False,
+            font={'color': WANTED_COLORS['sell'], 'size': 11, 'family': 'Space Mono, monospace'},
+            bgcolor='rgba(255,82,82,0.15)', bordercolor=WANTED_COLORS['sell'], borderwidth=1,
+        )
     fig.update_layout(
-        **{**PLOT_THEME, 'margin': {'t': 40, 'b': 50, 'l': 70, 'r': 70}},
+        **{**PLOT_THEME, 'margin': {'t': 50, 'b': 50, 'l': 70, 'r': 70}},
         height=400,
         hovermode='x unified',
         title={'text': 'Backtest: Estrategia ML vs Buy & Hold', 'font': {'family': 'Rye, Smokum, serif', 'color': WANTED_COLORS['gold']}},
         yaxis2={'overlaying': 'y', 'side': 'right', 'showgrid': False, 'title': 'Alpha (%)'},
     )
-    fig.update_xaxes(**AXIS_THEME)
+    fig.update_xaxes(**AXIS_THEME, title_text='Fecha')
     fig.update_yaxes(**AXIS_THEME, title_text='Rendimiento acumulado (%)', autorange=True)
     return fig
 
@@ -1190,14 +1231,12 @@ def build_prediction_deviation_figure() -> go.Figure:
         )
     )
     
-    # Precio predicho (aproximado usando señales)
-    predicted_prices = []
-    for i, (idx, row) in enumerate(test.iterrows()):
-        if i > 0:
-            pred_change = row['returns'] * (1 if predictions[i-1] == 1 else -1)
-            predicted_prices.append(test.iloc[i-1]['gold'] * (1 + pred_change))
-        else:
-            predicted_prices.append(row['gold'])
+    # Precio predicho (usa movimiento fijo basado en media histórica, NO retorno real)
+    avg_move = float(test['returns'].abs().mean())
+    predicted_prices = [test['gold'].iloc[0]]
+    for i in range(1, len(test)):
+        direction = 1 if predictions[i-1] == 1 else -1 if predictions[i-1] == 0 else 0
+        predicted_prices.append(predicted_prices[-1] * (1 + direction * avg_move))
     
     fig.add_trace(
         go.Scatter(
@@ -1209,16 +1248,18 @@ def build_prediction_deviation_figure() -> go.Figure:
         )
     )
     
-    # Área de confianza
-    prob_high = [p * test.iloc[i]['gold'] * 1.02 for i, p in enumerate(probabilities[:len(test)])]
-    prob_low = [p * test.iloc[i]['gold'] * 0.98 for i, p in enumerate(probabilities[:len(test)])]
+    # Área de confianza (mayor opacidad, basada en probabilidad del modelo)
+    confidence = np.array(probabilities[:len(test)])
+    band_width = 1.0 - confidence
+    band_high = test['gold'].values * (1 + band_width * 0.03)
+    band_low = test['gold'].values * (1 - band_width * 0.03)
     
     fig.add_trace(
         go.Scatter(
             x=list(test.index) + list(test.index)[::-1],
-            y=prob_high + prob_low[::-1],
+            y=list(band_high) + list(band_low)[::-1],
             fill='toself',
-            fillcolor='rgba(232, 195, 74, 0.1)',
+            fillcolor='rgba(0, 230, 118, 0.25)',
             line={'color': 'rgba(0,0,0,0)'},
             name='Banda de Confianza (95%)',
             showlegend=True,
@@ -1231,7 +1272,7 @@ def build_prediction_deviation_figure() -> go.Figure:
         hovermode='x unified',
         title={'text': 'Predicción vs Realidad', 'font': {'family': 'Rye, Smokum, serif', 'color': WANTED_COLORS['gold']}},
     )
-    fig.update_xaxes(**AXIS_THEME)
+    fig.update_xaxes(**AXIS_THEME, title_text='Fecha')
     fig.update_yaxes(**AXIS_THEME, title_text='USD por onza', autorange=True)
     return fig
 
@@ -1449,7 +1490,18 @@ def build_roc_curve_figure() -> go.Figure:
 def build_model_comparison_table() -> html.Div:
     """Model comparison tables for classification and regression."""
     model_results = context.get('model_results', {})
-    regression_results = context.get('regression', {}).get('eval_results') if context.get('regression') else None
+    reg_raw = context.get('regression')
+    regression_results = None
+    if reg_raw:
+        rows = []
+        for t_name, t_res in reg_raw.items():
+            ev = t_res.get('eval_results')
+            if ev is not None:
+                for _, r in ev.iterrows():
+                    rows.append({**r.to_dict(), 'Target': t_name})
+        if rows:
+            from pandas import DataFrame
+            regression_results = DataFrame(rows)
     
     clf_models = {n: r for n, r in model_results.items() if r.get('type') == 'classification'}
 
@@ -1480,21 +1532,21 @@ def build_model_comparison_table() -> html.Div:
     # Regression table
     reg_rows = [
         html.Tr([
+            html.Th('Target', style=TH),
             html.Th('Modelo', style=TH),
             html.Th('MAE', style=TH),
             html.Th('RMSE', style=TH),
             html.Th('R²', style=TH),
-            html.Th('MAPE', style=TH),
         ]),
     ]
     if regression_results is not None:
         for _, row in regression_results.iterrows():
             reg_rows.append(html.Tr([
+                html.Td(row['Target'], style=TD),
                 html.Td(row['Modelo'], style=TD),
                 html.Td(f'{row["MAE"]:.4f}', style=TD),
                 html.Td(f'{row["RMSE"]:.4f}', style=TD),
                 html.Td(f'{row["R²"]:.4f}', style=TD),
-                html.Td(f'{row["MAPE (%)"]:.1f}%', style=TD),
             ]))
 
     children = []
@@ -1660,7 +1712,8 @@ def build_regression_tab() -> html.Div:
             'title': 'Valor Justo',
             'key': 'fair_value_dist',
             'metric': 'Distancia a media 200d',
-            'unit': 'desviaciones estándar',
+            'unit': 'desv. estándar',
+            'value_prefix': '',
             'explanation': (
                 'Compara el precio actual del oro con su media de 200 días. '
                 'Valor positivo = el oro está por encima de su media histórica (más caro de lo habitual). '
@@ -1672,6 +1725,7 @@ def build_regression_tab() -> html.Div:
             'key': 'realized_vol_20d',
             'metric': 'Volatilidad 20d forward',
             'unit': '% anualizado',
+            'value_prefix': '',
             'explanation': (
                 'Mide la volatilidad esperada del oro a 20 días vista. '
                 'Alta = movimientos bruscos (oportunidad y riesgo). '
@@ -1683,6 +1737,7 @@ def build_regression_tab() -> html.Div:
             'key': 'future_atr_20d',
             'metric': 'Rango medio 20d forward',
             'unit': 'fracción del precio',
+            'value_prefix': '',
             'explanation': (
                 'Estima cuánto puede moverse el oro cada día de media en las próximas semanas. '
                 'Útil para calcular stops de protección y objetivos de precio con fundamento estadístico.'
@@ -1693,6 +1748,7 @@ def build_regression_tab() -> html.Div:
             'key': 'max_drawdown_20d',
             'metric': 'Máximo drawdown 20d forward',
             'unit': '% desde pico',
+            'value_prefix': '-',
             'explanation': (
                 'Calcula la mayor caída esperada desde un pico en las próximas 4 semanas. '
                 'Fundamental para entender el riesgo real de una inversión en oro y dimensionar posiciones.'
@@ -1711,27 +1767,28 @@ def build_regression_tab() -> html.Div:
                 best = cv.loc[best_idx]
 
         if best is not None and best['R²_mean'] > 0:
-            pct = best['R²_mean'] * 100
-            value_text = f'{pct:.0f}% de precisi\u00f3n'
-            detail = f'Modelo: {best["Modelo"]} — Error medio: {best["MAE_mean"]:.5f}'
+            value_text = f'{t["value_prefix"]}{best["MAE_mean"]:.4f} {t["unit"]}'
+            detail = f'Modelo: {best["Modelo"]} — R²: {best["R²_mean"]:.2f} — IC: {best["IC_mean"]:.2f}'
         elif best is not None:
-            value_text = '\u2014'
-            detail = 'Relaci\u00f3n no lineal — an\u00e1lisis exploratorio'
+            continue
         else:
-            value_text = '\u2014'
-            detail = 'Disponible tras ejecutar pipeline'
+            continue
 
         cards.append(
             html.Div(
                 className='metric-card',
                 children=[
-                    html.Div(t['title'], style={'color': '#D4AF37', 'fontFamily': 'Rye, Smokum, serif', 'fontSize': '1rem'}),
+                    html.Div(t['title'], style={'color': WANTED_COLORS['gold'], 'fontFamily': 'Rye, Smokum, serif', 'fontSize': '1rem'}),
                     html.Div(t['metric'], className='metric-note'),
-                    html.Div(value_text, className='metric-value', style={'color': '#D4AF37'}),
+                    html.Div(value_text, className='metric-value', style={'color': WANTED_COLORS['gold']}),
                     html.Div(detail, style={'color': '#a89070', 'fontSize': '0.75rem', 'marginBottom': '8px'}),
                 ],
             )
         )
+
+    if not cards:
+        cards = [html.Div('No hay datos disponibles. Ejecuta el pipeline completo para ver el análisis de Valor y Riesgo.',
+            style={'color': '#a89070', 'fontSize': '0.9rem', 'textAlign': 'center', 'padding': '40px', 'gridColumn': '1 / -1'})]
 
     return html.Div(
         className='section-panel',
@@ -1760,7 +1817,7 @@ def build_regression_tab() -> html.Div:
                             html.Div(
                                 className='help-copy',
                                 children=[
-                                    html.H4('Modelos de regresi\u00f3n: valoraci\u00f3n de activos y medici\u00f3n de riesgo', style={'color': '#D4AF37', 'margin': '10px 0 4px', 'fontFamily': 'Rye, Smokum, serif'}),
+                                    html.H4('Modelos de regresi\u00f3n: valoraci\u00f3n de activos y medici\u00f3n de riesgo', style={'color': WANTED_COLORS['gold'], 'margin': '10px 0 4px', 'fontFamily': 'Rye, Smokum, serif'}),
                                     html.P('El modelo de clasificaci\u00f3n predice la direcci\u00f3n del precio (sube/baja). Este an\u00e1lisis de Valor y Riesgo responde a:'),
                                     html.Ul(children=[
                                         html.Li('\u00bfEst\u00e1 el oro en zona de sobrevaloraci\u00f3n o infravaloraci\u00f3n hist\u00f3rica?'),

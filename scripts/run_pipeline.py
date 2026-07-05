@@ -2,9 +2,9 @@
 """
 Golden Forecast - Pipeline Orchestrator
 
-Ejecuta la pipeline completa: preprocesamiento -> features -> clasificación -> regresión -> validación.
-Idempotente: valida salidas antes de ejecutar cada paso.
-Uso: python scripts/run_pipeline.py [--skip-prepro] [--skip-features] [--skip-classification] [--skip-regression]
+Runs the full ML pipeline: preprocessing -> features -> classification -> regression -> validation.
+Idempotent: validates outputs before executing each step.
+Usage: python scripts/run_pipeline.py [--skip-prepro] [--skip-features] [--skip-classification] [--skip-regression]
 """
 
 import sys
@@ -24,7 +24,7 @@ def load_config():
 
 
 def run_step(name: str, script: str, check_output: str = None, skip: bool = False) -> bool:
-    """Ejecuta un paso si su salida esperada no existe o si no se salta."""
+    """Run a pipeline step if its output does not exist and it is not skipped."""
     if skip:
         print(f"\n{'='*60}\n⏭️  {name} - SKIPPED\n{'='*60}")
         return True
