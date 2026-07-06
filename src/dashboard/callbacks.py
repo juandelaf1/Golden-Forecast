@@ -176,27 +176,32 @@ WANTED_COLORS = {
 
 
 def register_callbacks(app):
+    _tab_cache: dict[str, html.Div] = {}
+
     @app.callback(Output('tab-content', 'children'), Input('dashboard-tabs', 'value'))
     def render_tab(active_tab):
-        if active_tab == 'tab-summary':
-            return build_summary_tab()
-        if active_tab == 'tab-price':
-            return build_price_tab()
-        if active_tab == 'tab-indicators':
-            return build_indicators_tab()
-        if active_tab == 'tab-macro':
-            return build_macro_tab()
-        if active_tab == 'tab-backtest':
-            return build_backtest_tab()
-        if active_tab == 'tab-sim':
-            return build_simulation_tab()
-        if active_tab == 'tab-metrics':
-            return build_metrics_tab()
-        if active_tab == 'tab-regression':
-            return build_regression_tab()
-        if active_tab == 'tab-governance':
-            return build_methodology_tab()
-        raise PreventUpdate
+        if active_tab not in _tab_cache:
+            if active_tab == 'tab-summary':
+                _tab_cache[active_tab] = build_summary_tab()
+            elif active_tab == 'tab-price':
+                _tab_cache[active_tab] = build_price_tab()
+            elif active_tab == 'tab-indicators':
+                _tab_cache[active_tab] = build_indicators_tab()
+            elif active_tab == 'tab-macro':
+                _tab_cache[active_tab] = build_macro_tab()
+            elif active_tab == 'tab-backtest':
+                _tab_cache[active_tab] = build_backtest_tab()
+            elif active_tab == 'tab-sim':
+                _tab_cache[active_tab] = build_simulation_tab()
+            elif active_tab == 'tab-metrics':
+                _tab_cache[active_tab] = build_metrics_tab()
+            elif active_tab == 'tab-regression':
+                _tab_cache[active_tab] = build_regression_tab()
+            elif active_tab == 'tab-governance':
+                _tab_cache[active_tab] = build_methodology_tab()
+            else:
+                raise PreventUpdate
+        return _tab_cache[active_tab]
 
     @app.callback(Output('ticker-content', 'children'), Input('ticker-content', 'id'))
     def update_ticker(_):
@@ -356,63 +361,6 @@ def register_callbacks(app):
         Input('vol-slider', 'value'),
     )
 
-    @app.callback(Output('summary-price', 'figure'), Input('price-unit', 'value'))
-    def update_price_chart(unit):
-        df = context['data']
-        fig = go.Figure()
-
-        if unit == 'usd':
-            y_data = df['gold']
-            y_title = 'USD por onza'
-        elif unit == 'pct':
-            y_data = df['returns'] * 100
-            y_title = 'Variaci\u00f3n diaria (%)'
-        else:
-            y_data = df['gold'] / df['gold'].iloc[0] * 100
-            y_title = 'Indexado (base 100)'
-
-        fig.add_trace(go.Scatter(
-            x=df.index, y=y_data, name='Oro',
-            mode='lines', line={'color': WANTED_COLORS['gold'], 'width': 3},
-        ))
-        if unit == 'usd':
-            fig.add_trace(go.Scatter(
-                x=df.index, y=df['ma_21'],
-                name='MA 21', mode='lines',
-                line={'color': WANTED_COLORS['brass'], 'dash': 'dot', 'width': 2},
-            ))
-            test = context['test_data']
-            signals = context['data']['signal'].iloc[len(context['data'])-len(test):]
-            fig.add_trace(go.Scatter(
-                x=test.index, y=test['gold'],
-                mode='markers', name='Se\u00f1al',
-                marker={
-                    'color': [WANTED_COLORS['buy'] if s == 1 else WANTED_COLORS['sell'] for s in signals],
-                    'size': 8, 'symbol': 'star',
-                },
-            ))
-            fig.add_shape(
-                type='line',
-                x0=context['split_date'], x1=context['split_date'],
-                y0=df['gold'].min(), y1=df['gold'].max(),
-                line={'color': WANTED_COLORS['iron_mid'], 'dash': 'dash', 'width': 2},
-            )
-            fig.add_annotation(
-                x=context['split_date'],
-                y=df['gold'].max(),
-                text='Inicio test set',
-                font={'color': '#a89070', 'size': 10, 'family': 'Space Mono, monospace'},
-                showarrow=False,
-                yshift=10,
-            )
-
-        fig.update_layout(**PLOT_THEME, height=420, hovermode='x unified')
-        fig.update_xaxes(**AXIS_THEME, title_text='Fecha')
-        _apply_rangeselector(fig, df)
-        fig.update_yaxes(**AXIS_THEME, title_text=y_title, autorange=True)
-        return fig
-
-
 def build_summary_tab() -> html.Div:
     return html.Div(
         className='section-panel',
@@ -502,59 +450,17 @@ def build_summary_tab() -> html.Div:
                                     ]),
                                     html.H4('Gr\u00e1ficos del panel', style={'color': '#D4AF37', 'margin': '10px 0 4px', 'fontFamily': 'Rye, Smokum, serif', 'fontSize': '0.95rem'}),
                                     html.Ul(style={'paddingLeft': '18px', 'margin': '4px 0'}, children=[
-                                        html.Li([html.Strong('Precio + se\u00f1ales'), ' \u2014 L\u00ednea dorada con estrellas verdes (ALZA) y rojas (PRECAUCI\u00d3N) del modelo.']),
-                                        html.Li([html.Strong('Predicci\u00f3n vs Realidad'), ' \u2014 Compara el precio real con la predicci\u00f3n del modelo. La banda de confianza muestra el rango esperado.']),
-                                        html.Li([html.Strong('Precisi\u00f3n acumulada'), ' \u2014 Evoluci\u00f3n del acierto del modelo operaci\u00f3n a operaci\u00f3n. Pendiente positiva = mejora continua.']),
-                                        html.Li([html.Strong('Rendimiento ML vs B&H'), ' \u2014 Compara la rentabilidad de seguir las se\u00f1ales del modelo vs comprar y mantener.']),
+                                        html.Li([html.Strong('Aciertos y Confianza'), ' \u2014 Barras de retorno diario en verde (aciertos) y rojo (fallos), con l\u00ednea de confianza del modelo.']),
+                                        html.Li([html.Strong('Rendimiento del Modelo'), ' \u2014 Accuracy, Precisi\u00f3n, Recall, F1 y ROC-AUC en barras con color seg\u00fan valor.']),
+                                        html.Li([html.Strong('Precisi\u00f3n acumulada'), ' \u2014 Evoluci\u00f3n del acierto del modelo operaci\u00f3n a operaci\u00f3n.']),
+                                        html.Li([html.Strong('Rendimiento ML vs B&H'), ' \u2014 Backtest detallado en la pesta\u00f1a correspondiente.']),
                                     ]),
                                     html.H4('C\u00f3mo usar el panel', style={'color': '#D4AF37', 'margin': '10px 0 4px', 'fontFamily': 'Rye, Smokum, serif', 'fontSize': '0.95rem'}),
                                     html.P('1. Revisa la se\u00f1al del d\u00eda y la certeza en las tarjetas superiores.', style={'margin': '2px 0'}),
-                                    html.P('2. Observa los gr\u00e1ficos de precio y tendencia para contexto visual.', style={'margin': '2px 0'}),
-                                    html.P('3. Navega por las pesta\u00f1as superiores para ver indicadores t\u00e9cnicos, macro, backtest y simulaci\u00f3n.', style={'margin': '2px 0'}),
-                                    html.P('4. Usa los selectores de fecha (1D, 5D, 1M...) en cada gr\u00e1fico para ajustar el horizonte temporal.', style={'margin': '2px 0'}),
+                                    html.P('2. Los gr\u00e1ficos inferiores muestran el rendimiento del modelo, no el precio del oro.', style={'margin': '2px 0'}),
+                                    html.P('3. Navega por las pesta\u00f1as superiores para ver precio, indicadores t\u00e9cnicos, macro, backtest y simulaci\u00f3n.', style={'margin': '2px 0'}),
                                     html.P(html.Em('Nota: Los datos se actualizan con cada cierre diario. El modelo se re-entrena autom\u00e1ticamente. No es asesor\u00eda financiera.'), style={'marginTop': '8px', 'fontSize': '0.8rem', 'color': '#8D6B34'}),
                                 ],
-                            ),
-                        ],
-                    ),
-                ],
-            ),
-            html.Div(
-                className='overview-row',
-                children=[
-                    html.Div(
-                        className='wide-card',
-                        children=[
-                    html.Div([
-                        html.Span('Precio del Oro', className='card-title'),
-                        dcc.Dropdown(
-                            id='price-unit',
-                            options=[
-                                {'label': 'Precio en d\u00f3lares (USD/oz)', 'value': 'usd'},
-                                {'label': 'Cambio porcentual diario (%)', 'value': 'pct'},
-                                {'label': 'Rendimiento acumulado (base 100)', 'value': 'index'},
-                            ],
-                            value='index',
-                            clearable=False,
-                            style={
-                                'width': '180px', 'marginLeft': 'auto', 'background': '#2C2620', 'color': '#F2EBE1',
-                                'border': '1px solid rgba(232,195,74,0.3)', 'borderRadius': '6px', 'fontSize': '0.75rem',
-                            },
-                        ),
-                    ], style={'display': 'flex', 'alignItems': 'center', 'gap': '12px', 'flexWrap': 'wrap'}),
-                    dcc.Loading(
-                        type='dot',
-                        children=dcc.Graph(id='summary-price', config={'displayModeBar': False}),
-                    ),
-                        ],
-                    ),
-                    html.Div(
-                        className='narrow-card',
-                        children=[
-                            html.Div('Precisión del pronosticador', className='card-title'),
-                            dcc.Loading(
-                                type='dot',
-                                children=dcc.Graph(id='summary-model', figure=build_model_figure(), config={'displayModeBar': False}),
                             ),
                         ],
                     ),
@@ -576,10 +482,41 @@ def build_summary_tab() -> html.Div:
                     html.Div(
                         className='narrow-card',
                         children=[
+                            html.Div('Rendimiento del Modelo', className='card-title'),
+                            dcc.Loading(
+                                type='dot',
+                                children=dcc.Graph(id='summary-model', figure=build_model_figure(), config={'displayModeBar': False}),
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+            html.Div(
+                className='overview-row',
+                children=[
+                    html.Div(
+                        className='wide-card',
+                        children=[
                             html.Div('Rendimiento Acumulado', className='card-title'),
                             dcc.Loading(
                                 type='dot',
                                 children=dcc.Graph(id='summary-learning', figure=build_learning_curve_figure(), config={'displayModeBar': False}),
+                            ),
+                        ],
+                    ),
+                    html.Div(
+                        className='narrow-card',
+                        children=[
+                            html.Div('Resumen del Modelo', className='card-title'),
+                            html.Div(
+                                className='summary-grid',
+                                style={'gridTemplateColumns': '1fr 1fr', 'gap': '10px'},
+                                children=[
+                                    build_stat_card('Accuracy', f'{context["accuracy"]:.1%}', 'Aciertos totales', ''),
+                                    build_stat_card('Precision', f'{context["precision"]:.1%}', 'Calidad de aciertos ALZA', ''),
+                                    build_stat_card('Recall', f'{context["recall"]:.1%}', 'Captura de ALZAS reales', ''),
+                                    build_stat_card('F1 Score', f'{context["f1"]:.1%}', 'Equilibrio precision-recall', ''),
+                                ],
                             ),
                         ],
                     ),
