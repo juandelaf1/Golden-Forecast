@@ -1656,6 +1656,7 @@ def build_experimental_section() -> html.Div:
 
 
 def build_metrics_tab() -> html.Div:
+    data.ensure_all_models()
     return html.Div(
         className='section-panel',
         children=[
@@ -1726,6 +1727,7 @@ def build_metrics_tab() -> html.Div:
 
 
 def build_regression_tab() -> html.Div:
+    data.ensure_regression()
     reg = context.get('regression')
 
     targets = [

@@ -12,6 +12,7 @@ from sklearn.metrics import (
 
 from src.dashboard.model_loader import (
     build_pretrained_context, load_features, load_evaluation_results,
+    ensure_predictions,
 )
 
 try:
@@ -151,17 +152,8 @@ def build_context() -> dict:
     if primary_result is None:
         primary_result = list(model_results.values())[0]
 
-    # Feature importance from rf_binary
-    rf_model = ml_context['models'].get('rf_binary')
-    if rf_model is not None and hasattr(rf_model, 'feature_importances_'):
-        fi = rf_model.feature_importances_
-        fi_indices = np.argsort(fi)[::-1]
-        feature_importance = {
-            'features': [FEATURE_COLUMNS[i] for i in fi_indices],
-            'importance': fi[fi_indices].tolist(),
-        }
-    else:
-        feature_importance = {'features': FEATURE_COLUMNS, 'importance': [0] * len(FEATURE_COLUMNS)}
+    # Feature importance — deferred (needs rf_binary)
+    feature_importance = {'features': FEATURE_COLUMNS, 'importance': [0] * len(FEATURE_COLUMNS)}
 
     # Confusion matrix + ROC from primary model
     is_multi_primary = 'multiclass' in PRIMARY_MODEL
@@ -211,7 +203,7 @@ def build_context() -> dict:
         f'La estrategia del modelo {vs_bh} a "comprar y mantener" por {diff:+.1%}.'
     )
 
-    # Model table data
+    # Model table data — only from available models (primary only at startup)
     model_table_data = []
     for name, res in model_results.items():
         model_table_data.append({
@@ -225,31 +217,9 @@ def build_context() -> dict:
             'cum_return': res['cum_strategy'][-1],
         })
 
-    # Experimental models
+    # Experimental + Regression — deferred
     experimental_results = None
-    if EXPERIMENTAL_AVAILABLE:
-        try:
-            scaler = ml_context['scaler']
-            X_all = scaler.transform(ml_context['X'])
-            X_train = X_all[:split_index]
-            X_test_e = X_all[split_index:]
-            y_reg_train = data['returns'].iloc[:split_index].values
-            y_reg_test_e = data['returns'].iloc[split_index:].values
-            experimental_results = train_experimental_models(
-                X_train, X_test_e, y_reg_train, y_reg_test_e, FEATURE_COLUMNS
-            )
-        except Exception:
-            experimental_results = None
-
-    # Regression models (Juan de la Fuente)
     regression_results = None
-    if REGRESSION_AVAILABLE:
-        try:
-            with warnings.catch_warnings():
-                warnings.simplefilter('ignore')
-                regression_results = train_and_evaluate_regression()
-        except Exception:
-            regression_results = None
 
     return {
         'data': data,
@@ -289,7 +259,85 @@ def build_context() -> dict:
         'scaler': ml_context['scaler'],
         'experimental': experimental_results,
         'regression': regression_results,
+        '_ml_context': ml_context,
+        '_split_index': split_index,
     }
+
+
+def ensure_all_models():
+    """Load remaining classification models on demand and update context."""
+    global context
+    if context.get('_all_models_loaded'):
+        return
+
+    ml_context = context['_ml_context']
+    split_index = context['_split_index']
+    data = context['data']
+    X_scaled = ml_context['X_scaled']
+    eval_data = ml_context['eval_results']
+
+    for entry in eval_data['resultados']:
+        name = entry['modelo']
+        if name in ml_context['predictions']:
+            continue
+        result = ensure_predictions(name, X_scaled)
+        ml_context['models'][name] = result['model']
+        ml_context['predictions'][name] = {'predictions': result['predictions'], 'probabilities': result['probabilities']}
+        ml_context['model_signals'][name] = result['predictions']
+
+    model_results = _build_model_results(ml_context, data, split_index)
+    context['model_results'] = model_results
+
+    rf_model = ml_context['models'].get('rf_binary')
+    if rf_model is not None and hasattr(rf_model, 'feature_importances_'):
+        fi = rf_model.feature_importances_
+        fi_indices = np.argsort(fi)[::-1]
+        context['feature_importance'] = {
+            'features': [FEATURE_COLUMNS[i] for i in fi_indices],
+            'importance': fi[fi_indices].tolist(),
+        }
+
+    model_table_data = []
+    for name, res in model_results.items():
+        model_table_data.append({
+            'name': name,
+            'type': res.get('type', 'classification'),
+            'accuracy': res['accuracy'],
+            'precision': res['precision'],
+            'recall': res['recall'],
+            'f1': res['f1'],
+            'auc': res['auc'],
+            'cum_return': res['cum_strategy'][-1],
+        })
+    context['model_table_data'] = model_table_data
+
+    if EXPERIMENTAL_AVAILABLE and context.get('experimental') is None:
+        try:
+            X_all = ml_context['scaler'].transform(ml_context['X'])
+            X_train = X_all[:split_index]
+            X_test_e = X_all[split_index:]
+            y_reg_train = data['returns'].iloc[:split_index].values
+            y_reg_test_e = data['returns'].iloc[split_index:].values
+            context['experimental'] = train_experimental_models(
+                X_train, X_test_e, y_reg_train, y_reg_test_e, FEATURE_COLUMNS
+            )
+        except Exception:
+            context['experimental'] = None
+
+    context['_all_models_loaded'] = True
+
+
+def ensure_regression():
+    """Train regression models on demand."""
+    global context
+    if context.get('regression') is not None or not REGRESSION_AVAILABLE:
+        return
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            context['regression'] = train_and_evaluate_regression()
+    except Exception:
+        context['regression'] = None
 
 
 context = build_context()

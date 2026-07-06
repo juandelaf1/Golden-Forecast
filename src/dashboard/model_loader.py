@@ -16,6 +16,8 @@ DIVERSE_MODELS = [
     'lr_multiclass',
 ]
 
+_MODEL_CACHE = {}
+
 
 def load_features() -> pd.DataFrame:
     df = pd.read_csv(FEATURES_PATH, parse_dates=['Date'])
@@ -70,44 +72,47 @@ def generate_predictions(models: dict, scaler, X_full: pd.DataFrame) -> dict:
     return results
 
 
-def get_relevant_models():
-    metadata = load_metadata()
-    all_models = {}
-    for name in metadata['modelos']:
-        if name in DIVERSE_MODELS:
-            all_models[name] = load_model(name)
-    return all_models
+def ensure_predictions(name, X_scaled):
+    """Load a model .pkl and generate predictions, caching results globally."""
+    if name not in _MODEL_CACHE:
+        model = load_model(name)
+        preds = model.predict(X_scaled)
+        probas = model.predict_proba(X_scaled) if hasattr(model, 'predict_proba') else None
+        _MODEL_CACHE[name] = {
+            'predictions': preds,
+            'probabilities': probas,
+            'model': model,
+        }
+    return _MODEL_CACHE[name]
 
 
 def build_pretrained_context():
     df = load_features()
     X, y_binary, y_multiclass = prepare_features(df)
     scaler = load_scaler()
-    models = get_relevant_models()
+    X_scaled = scaler.transform(X)
     eval_results = load_evaluation_results()
 
-    predictions = generate_predictions(models, scaler, X)
-
-    # Primary model: best binary (lr_strong_reg_binary)
+    # Load only primary model eagerly
     primary_name = 'lr_strong_reg_binary'
-    primary_pred = predictions[primary_name]['predictions']
-    primary_proba = predictions[primary_name]['probabilities']
-    signal = primary_pred[-1]
-    signal_proba = float(primary_proba[-1][1]) if primary_proba is not None and primary_proba.shape[1] > 1 else 0.5
+    primary = ensure_predictions(primary_name, X_scaled)
 
-    # Model signals for all models (used in comparison charts)
-    model_signals = {}
-    for name in models:
-        preds = predictions[name]['predictions']
-        model_signals[name] = preds
+    all_models = {primary_name: primary['model']}
+    predictions = {primary_name: {'predictions': primary['predictions'], 'probabilities': primary['probabilities']}}
+    model_signals = {primary_name: primary['predictions']}
+
+    signal = primary['predictions'][-1]
+    primary_proba = primary['probabilities']
+    signal_proba = float(primary_proba[-1][1]) if primary_proba is not None and primary_proba.shape[1] > 1 else 0.5
 
     return {
         'df': df,
         'X': X,
+        'X_scaled': X_scaled,
         'y_binary': y_binary,
         'y_multiclass': y_multiclass,
         'scaler': scaler,
-        'models': models,
+        'models': all_models,
         'predictions': predictions,
         'model_signals': model_signals,
         'eval_results': eval_results,
