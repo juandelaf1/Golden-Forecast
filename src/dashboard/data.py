@@ -180,53 +180,32 @@ def ensure_all_models():
     split_index = context['_split_index']
     data = context['data']
     X_scaled = ml_context['X_scaled']
-    eval_data = ml_context['eval_results']
 
-    for entry in eval_data['resultados']:
-        name = entry['modelo']
-        if name in ml_context['predictions']:
-            continue
-        try:
-            result = ensure_predictions(name, X_scaled)
-            ml_context['models'][name] = result['model']
-            ml_context['predictions'][name] = {'predictions': result['predictions'], 'probabilities': result['probabilities']}
-            ml_context['model_signals'][name] = result['predictions']
-        except Exception as e:
-            # Log the error but continue with other models to avoid blocking the tab
-            print(f"Warning: Failed to load model {name}: {e}")
-            continue
+    # Solo cargar modelos esenciales para la tabla de métricas
+    essential_models = ['lr_binary', 'rf_binary', 'xgb_binary']
+    for name in essential_models:
+        if name not in ml_context['predictions']:
+            try:
+                result = ensure_predictions(name, X_scaled)
+                ml_context['models'][name] = result['model']
+                ml_context['predictions'][name] = {'predictions': result['predictions'], 'probabilities': result['probabilities']}
+                ml_context['model_signals'][name] = result['predictions']
+            except Exception as e:
+                # Skip failed model, no block
+                pass
 
+    # Rebuild model results with available models only
     model_results = _build_model_results(ml_context, data, split_index)
     context['model_results'] = model_results
-
-    rf_model = ml_context['models'].get('rf_binary')
-    if rf_model is not None and hasattr(rf_model, 'feature_importances_'):
-        fi = rf_model.feature_importances_
-        fi_indices = np.argsort(fi)[::-1]
-        context['feature_importance'] = {
-            'features': [FEATURE_COLUMNS[i] for i in fi_indices],
-            'importance': fi[fi_indices].tolist(),
-        }
-
-    model_table_data = []
-    for name, res in model_results.items():
-        model_table_data.append({
-            'name': name,
-            'type': res.get('type', 'classification'),
-            'accuracy': res['accuracy'],
-            'precision': res['precision'],
-            'recall': res['recall'],
-            'f1': res['f1'],
-            'auc': res['auc'],
-            'cum_return': res['cum_strategy'][-1],
-        })
-    context['model_table_data'] = model_table_data
+    context['model_table_data'] = [
+        {'name': n, 'type': 'classification', 'accuracy': r['accuracy'], 'precision': r['precision'],
+         'recall': r['recall'], 'f1': r['f1'], 'auc': r['auc'], 'cum_return': r['cum_strategy'][-1]}
+        for n, r in model_results.items()
+    ]
 
     context['_all_models_loaded'] = True
 
-
 def ensure_experimental():
-    """Train experimental models on demand (separate from ensure_all_models to avoid blocking the metrics tab)."""
     global context
     if context.get('experimental') is not None or not EXPERIMENTAL_AVAILABLE:
         return
@@ -239,15 +218,11 @@ def ensure_experimental():
         X_test_e = X_all[split_index:]
         y_reg_train = data['returns'].iloc[:split_index].values
         y_reg_test_e = data['returns'].iloc[split_index:].values
-        context['experimental'] = train_experimental_models(
-            X_train, X_test_e, y_reg_train, y_reg_test_e, FEATURE_COLUMNS
-        )
+        context['experimental'] = train_experimental_models(X_train, X_test_e, y_reg_train, y_reg_test_e, FEATURE_COLUMNS)
     except Exception:
         context['experimental'] = None
 
-
 def ensure_regression():
-    """Train regression models on demand."""
     global context
     if context.get('regression') is not None or not REGRESSION_AVAILABLE:
         return
@@ -257,6 +232,5 @@ def ensure_regression():
             context['regression'] = train_and_evaluate_regression()
     except Exception:
         context['regression'] = None
-
 
 context = build_context()
