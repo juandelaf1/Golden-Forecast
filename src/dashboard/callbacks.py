@@ -566,7 +566,7 @@ def build_summary_tab() -> html.Div:
                     html.Div(
                         className='wide-card',
                         children=[
-                            html.Div('Predicción vs Realidad', className='card-title'),
+                            html.Div('Aciertos y Confianza del Modelo', className='card-title'),
                             dcc.Loading(
                                 type='dot',
                                 children=dcc.Graph(id='summary-deviation', figure=build_prediction_deviation_figure(), config={'displayModeBar': False}),
@@ -889,7 +889,7 @@ def build_backtest_tab() -> html.Div:
                     html.Div(
                         className='wide-card',
                         children=[
-                            html.Div('Predicción vs Realidad', className='card-title'),
+                            html.Div('Aciertos y Confianza del Modelo', className='card-title'),
                             dcc.Loading(type='dot', children=dcc.Graph(id='deviation-chart', figure=build_prediction_deviation_figure(), config={'displayModeBar': False})),
                         ],
                     ),
@@ -1259,67 +1259,57 @@ def build_backtest_figure() -> go.Figure:
 
 
 def build_prediction_deviation_figure() -> go.Figure:
-    """Gráfico de desviación entre predicción y precio real"""
+    """Aciertos del modelo: barras de retorno diario coloreadas según acierto/fallo + línea de confianza"""
     test = context['test_data']
     predictions = context.get('predictions', [])
     probabilities = context.get('probabilities', [])
     
+    returns = test['returns'].values[:len(predictions)]
+    actuals = test['target_binary'].values[:len(predictions)] if 'target_binary' in test.columns else (returns > 0).astype(int)
+    preds = np.array(predictions[:len(returns)])
+    confs = np.array(probabilities[:len(returns)])
+    correct = (preds == actuals)
+    
+    colors = np.where(correct, '#4ade80', '#f2554d')
+    
     fig = go.Figure()
     
-    # Precio real
+    fig.add_trace(
+        go.Bar(
+            x=test.index[:len(returns)],
+            y=returns * 100,
+            marker_color=colors.tolist(),
+            name='Retorno diario',
+            opacity=0.7,
+            hovertemplate='%{x|%d %b %Y}<br>Retorno: %{y:.2f}%<br>%{text}<extra></extra>',
+            text=['✅ Acierto' if c else '❌ Error' for c in correct],
+        )
+    )
+    
     fig.add_trace(
         go.Scatter(
-            x=test.index,
-            y=test['gold'],
-            name='Precio Real',
+            x=test.index[:len(confs)],
+            y=confs * 100,
+            name='Confianza del Modelo',
             mode='lines',
-            line={'color': WANTED_COLORS['gold'], 'width': 2.5},
+            line={'color': '#e8c34a', 'width': 2},
+            yaxis='y2',
+            hovertemplate='%{x|%d %b %Y}<br>Confianza: %{y:.0f}%<extra></extra>',
         )
     )
     
-    # Precio predicho (usa movimiento fijo basado en media histórica, NO retorno real)
-    avg_move = float(test['returns'].abs().mean())
-    predicted_prices = [test['gold'].iloc[0]]
-    for i in range(1, len(test)):
-        direction = 1 if predictions[i-1] == 1 else -1 if predictions[i-1] == 0 else 0
-        predicted_prices.append(predicted_prices[-1] * (1 + direction * avg_move))
+    fig.add_hline(y=0, line_color='rgba(242,235,225,0.2)', line_width=1)
     
-    fig.add_trace(
-        go.Scatter(
-            x=test.index,
-            y=predicted_prices,
-            name='Precio Predicho (Modelo)',
-            mode='lines',
-            line={'color': WANTED_COLORS['buy'], 'width': 2, 'dash': 'dot'},
-        )
-    )
-    
-    # Área de confianza (mayor opacidad, basada en probabilidad del modelo)
-    confidence = np.array(probabilities[:len(test)])
-    band_width = 1.0 - confidence
-    band_high = test['gold'].values * (1 + band_width * 0.03)
-    band_low = test['gold'].values * (1 - band_width * 0.03)
-    
-    fig.add_trace(
-        go.Scatter(
-            x=list(test.index) + list(test.index)[::-1],
-            y=list(band_high) + list(band_low)[::-1],
-            fill='toself',
-            fillcolor='rgba(0, 230, 118, 0.25)',
-            line={'color': 'rgba(0,0,0,0)'},
-            name='Banda de Confianza (95%)',
-            showlegend=True,
-        )
-    )
-    
+    hits = correct.mean()
     fig.update_layout(
         **PLOT_THEME,
         height=380,
         hovermode='x unified',
-        title={'text': 'Predicción vs Realidad', 'font': {'family': 'Rye, Smokum, serif', 'color': WANTED_COLORS['gold']}},
+        yaxis={'title': 'Retorno diario (%)', 'gridcolor': 'rgba(242,235,225,0.08)'},
+        yaxis2={'title': 'Confianza del modelo (%)', 'overlaying': 'y', 'side': 'right', 'range': [0, 105], 'gridcolor': 'rgba(0,0,0,0)'},
+        legend={'orientation': 'h', 'yanchor': 'bottom', 'y': 1.02, 'x': 0.5, 'xanchor': 'center'},
     )
     fig.update_xaxes(**AXIS_THEME, title_text='Fecha')
-    fig.update_yaxes(**AXIS_THEME, title_text='USD por onza', autorange=True)
     return fig
 
 
