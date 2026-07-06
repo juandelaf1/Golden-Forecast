@@ -948,12 +948,15 @@ def build_stat_card(title, value, subtitle, help_text=None, accent='#D4AF37') ->
 
 def build_price_figure() -> go.Figure:
     df = context['data']
+    base = df['gold'].iloc[0]
+    scale = 100.0 / base
+    
     fig = go.Figure()
     
     fig.add_trace(
         go.Scatter(
             x=df.index,
-            y=df['gold'],
+            y=df['gold'] * scale,
             name='Precio Oro',
             mode='lines',
             line={'color': WANTED_COLORS['gold'], 'width': 3},
@@ -964,7 +967,7 @@ def build_price_figure() -> go.Figure:
     fig.add_trace(
         go.Scatter(
             x=df.index,
-            y=df['ma_21'],
+            y=df['ma_21'] * scale,
             name='MA 21',
             mode='lines',
             line={'color': WANTED_COLORS['ma'], 'dash': 'dot', 'width': 2},
@@ -976,7 +979,7 @@ def build_price_figure() -> go.Figure:
     fig.add_trace(
         go.Scatter(
             x=test.index,
-            y=test['gold'],
+            y=test['gold'] * scale,
             mode='markers',
             name='Señal Modelo',
             marker={
@@ -988,17 +991,18 @@ def build_price_figure() -> go.Figure:
         )
     )
     
+    split_y = df['gold'].max() * scale
     fig.add_shape(
         type='line',
         x0=context['split_date'],
         x1=context['split_date'],
-        y0=df['gold'].min(),
-        y1=df['gold'].max(),
+        y0=df['gold'].min() * scale,
+        y1=split_y,
         line={'color': WANTED_COLORS['iron_mid'], 'dash': 'dash', 'width': 2},
     )
     fig.add_annotation(
         x=context['split_date'],
-        y=df['gold'].max(),
+        y=split_y,
         text='Inicio test set',
         font={'color': '#a89070', 'size': 10, 'family': 'Space Mono, monospace'},
         showarrow=False,
@@ -1008,7 +1012,7 @@ def build_price_figure() -> go.Figure:
     fig.update_layout(**PLOT_THEME, height=420, hovermode='x unified')
     fig.update_xaxes(**AXIS_THEME, title_text='Fecha')
     _apply_rangeselector(fig, df)
-    fig.update_yaxes(**AXIS_THEME, title_text='USD por onza', autorange=True)
+    fig.update_yaxes(**AXIS_THEME, title_text='Precio indexado (base 100)', autorange=True)
     return fig
 
 
