@@ -1201,20 +1201,27 @@ def build_prediction_deviation_figure() -> go.Figure:
     predictions = context.get('predictions', [])
     probabilities = context.get('probabilities', [])
     
-    returns = test['returns'].values[:len(predictions)]
-    actuals = test['target_binary'].values[:len(predictions)] if 'target_binary' in test.columns else (returns > 0).astype(int)
-    preds = np.array(predictions[:len(returns)])
-    confs = np.array(probabilities[:len(returns)])
+    max_points = 90
+    n = min(len(predictions), max_points, len(test))
+    returns = test['returns'].values[-n:]
+    idx = test.index[-n:]
+    actuals = test['target_binary'].values[-n:] if 'target_binary' in test.columns else (returns > 0).astype(int)
+    preds = np.array(predictions[-n:])
+    confs = np.array(probabilities[-n:])
     correct = (preds == actuals)
     
     colors = np.where(correct, '#4ade80', '#f2554d')
+    
+    returns_pct = returns * 100
+    rng = np.max(np.abs(returns_pct)) if len(returns) > 0 else 1
+    rng = max(rng, 2)
     
     fig = go.Figure()
     
     fig.add_trace(
         go.Bar(
-            x=test.index[:len(returns)],
-            y=returns * 100,
+            x=idx,
+            y=returns_pct,
             marker_color=colors.tolist(),
             name='Retorno diario',
             opacity=0.7,
@@ -1225,7 +1232,7 @@ def build_prediction_deviation_figure() -> go.Figure:
     
     fig.add_trace(
         go.Scatter(
-            x=test.index[:len(confs)],
+            x=idx,
             y=confs * 100,
             name='Confianza del Modelo',
             mode='lines',
@@ -1237,13 +1244,13 @@ def build_prediction_deviation_figure() -> go.Figure:
     
     fig.add_hline(y=0, line_color='rgba(242,235,225,0.2)', line_width=1)
     
-    hits = correct.mean()
     theme_no_legend = {k: v for k, v in PLOT_THEME.items() if k != 'legend'}
+    margin_r = rng * 3 + 15
     fig.update_layout(
         **theme_no_legend,
         height=380,
         hovermode='x unified',
-        yaxis={'title': 'Retorno diario (%)', 'gridcolor': 'rgba(242,235,225,0.08)'},
+        yaxis={'title': 'Retorno diario (%)', 'gridcolor': 'rgba(242,235,225,0.08)', 'range': [-rng * 1.5, rng * 1.5]},
         yaxis2={'title': 'Confianza del modelo (%)', 'overlaying': 'y', 'side': 'right', 'range': [0, 105], 'gridcolor': 'rgba(0,0,0,0)'},
         legend={'orientation': 'h', 'yanchor': 'bottom', 'y': 1.02, 'x': 0.5, 'xanchor': 'center', 'font': {'color': '#F2EBE1'}},
     )
@@ -1395,7 +1402,13 @@ def build_confusion_matrix_figure() -> go.Figure:
         fig.add_annotation(x=0.5, y=0.5, xref='paper', yref='paper', text='No hay datos de matriz de confusi\u00f3n', showarrow=False, font={'color': '#D4AF37', 'size': 14})
         return fig
 
-    cm = confusion_matrix(context['test_data']['target_binary'], rf_result['predictions'])
+    y_true = context['test_data'].get('target_binary') if hasattr(context['test_data'], 'get') else None
+    if y_true is None:
+        fig = go.Figure()
+        fig.update_layout(**PLOT_THEME, height=350)
+        fig.add_annotation(x=0.5, y=0.5, xref='paper', yref='paper', text='Columna target_binary no disponible', showarrow=False, font={'color': '#D4AF37', 'size': 14})
+        return fig
+    cm = confusion_matrix(y_true, rf_result['predictions'])
 
     fig = go.Figure(data=go.Heatmap(
         z=cm,
@@ -1433,7 +1446,13 @@ def build_roc_curve_figure() -> go.Figure:
         fig.add_annotation(x=0.5, y=0.5, xref='paper', yref='paper', text='ROC no disponible (probabilidades constantes)', showarrow=False, font={'color': '#D4AF37', 'size': 14})
         return fig
 
-    fpr, tpr, _ = roc_curve(context['test_data']['target_binary'], rf_result['probabilities'])
+    y_true = context['test_data'].get('target_binary') if hasattr(context['test_data'], 'get') else None
+    if y_true is None:
+        fig = go.Figure()
+        fig.update_layout(**PLOT_THEME, height=350)
+        fig.add_annotation(x=0.5, y=0.5, xref='paper', yref='paper', text='target_binary no disponible para ROC', showarrow=False, font={'color': '#D4AF37', 'size': 14})
+        return fig
+    fpr, tpr, _ = roc_curve(y_true, rf_result['probabilities'])
     auc_score = rf_result['auc']
 
     fig = go.Figure()
