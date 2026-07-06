@@ -22,7 +22,13 @@
 
 | Milestone | Asignado | Estado |
 |-----------|----------|--------|
-| Integración modelos pre-entrenados en dashboard | Juan | 🔄 En progreso |
+| Integración modelos pre-entrenados en dashboard | Juan | ✅ |
+| Carga lazy de modelos (startup ~3s) | Juan | ✅ |
+| Lazy loading Metrics/Valor y Riesgo tabs | Juan | ✅ |
+| Audio autoplay en primera interacción | Juan | ✅ |
+| Ticker legible (FIABILIDAD, MA 21, DXY, VIX) | Juan | ✅ |
+| Stack Tecnológico refinado | Juan | ✅ |
+| Colores métricas corregidos (sin azul) | Juan | ✅ |
 | Presentación final con narrativa de negocio | María (lead) + todos | Pendiente |
 | Documentación completa y cierre del repo | Juan (SM) | 🔄 En progreso |
 

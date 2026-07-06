@@ -1,8 +1,8 @@
 # DataScope Solutions: Project Handbook & Governance
 
 **Proyecto:** Machine Learning Pipeline & Predictive Modeling
-**Versión:** 2.1.0
-**Fecha:** 30 de junio de 2026
+**Versión:** 3.0.0
+**Fecha:** 06 de julio de 2026
 
 ---
 

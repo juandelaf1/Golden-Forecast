@@ -61,3 +61,10 @@
 | 04/07/2026 | `notebooks/03_classification.ipynb` reparado | Import de `src.pipeline` roto (refactorizado). Reemplazado con funciones inline equivalentes |
 | 04/07/2026 | `config/pipeline.yaml` → Python 3.12 | Líneas 98 y 105 aún referenciaban `python:3.10-slim` y `python_version: 3.10`. Alineado con Dockerfile y CI |
 | 04/07/2026 | 47 tests pasados, 1 skipped | `test_model_count` salta si no hay 12 modelos .pkl todos a la vez. Todos los demás tests verdes |
+| 06/07/2026 | Ticker: `flex-shrink: 0` + `white-space: nowrap` en CSS | Evita que etiquetas como "FIABILIDAD" se corten a "ABILIDAD" por el scroll |
+| 06/07/2026 | MA 21 calculado desde `gold` directamente (`rolling(21).mean()`) | `gold_ma_20` de features estaba desfasado ~$300 vs el precio real del oro |
+| 06/07/2026 | `CATEGORY_COLORS['Técnico']` cambiado de `#42A5F5` (azul) a `#e8c34a` (dorado) | Las barras de importancia de variables en Métricas ya no son "azul horrible" |
+| 06/07/2026 | Stack Tecnológico en Metodología: grid 2×2 con iconos y celdas | Reemplaza lista plana de `<p>` por tarjetas visuales con borde y hover |
+| 06/07/2026 | Carga lazy de modelos: solo primario al arranque, resto bajo demanda | `build_pretrained_context` solo carga `lr_strong_reg_binary`. `ensure_all_models()` carga rf_binary, xgb_binary, lr_multiclass + experimental al visitar Métricas. `ensure_regression()` entrena regression al visitar Valor y Riesgo. Startup ~3s vs ~15s |
+| 06/07/2026 | Audio autoplay: script JS en layout.py prueba play() al cargar y en cualquier interacción (click, touch, mousemove, scroll, keydown) | El anterior handler solo respondía a click. Ahora el hilo suena con el primer movimiento o tecleo sin tener que hacer clic explícito |
+| 06/07/2026 | Ticker: valores más visibles (font-size 1.05rem, weight 800, bg oscuro) | DXY, VIX, MA 21 ahora se distinguen mejor de las etiquetas |
