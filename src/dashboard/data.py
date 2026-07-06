@@ -56,7 +56,7 @@ def load_feature_data() -> pd.DataFrame:
         'tnx_close': 'tnx',
     })
     merged['returns'] = merged['gold_return']
-    merged['ma_21'] = merged['gold_ma_20']
+    merged['ma_21'] = merged['gold'].rolling(21).mean().fillna(merged['gold'].expanding().mean())
     merged = merged.set_index('Date').sort_index()
     return merged
 
@@ -83,11 +83,12 @@ def _build_model_results(ml_context: dict, data: pd.DataFrame, split_index: int)
         if name not in predictions:
             continue
 
-        preds = predictions[name]['predictions'][split_index:]
-        probas = predictions[name]['probabilities'][split_index:] if predictions[name]['probabilities'] is not None else None
+        n_returns = len(returns_test)
+        preds = predictions[name]['predictions'][split_index:][:n_returns]
+        probas = predictions[name]['probabilities'][split_index:][:n_returns] if predictions[name]['probabilities'] is not None else None
 
         is_multiclass = 'multiclass' in name
-        y_test = y_multi_test if is_multiclass else y_binary_test
+        y_test = y_multi_test[:n_returns] if is_multiclass else y_binary_test[:n_returns]
         avg = 'macro' if is_multiclass else 'binary'
 
         acc = entry.get('accuracy_test', accuracy_score(y_test, preds))

@@ -67,9 +67,9 @@ FEATURE_CATEGORIES = {
 }
 
 CATEGORY_COLORS = {
-    'Precio': '#00E676',
-    'T\u00e9cnico': '#42A5F5',
-    'Macro': '#AB47BC',
+    'Precio': '#4ade80',
+    'T\u00e9cnico': '#e8c34a',
+    'Macro': '#f5a623',
 }
 
 FEATURE_DESCRIPTIONS = {
@@ -97,6 +97,8 @@ FEATURE_DESCRIPTIONS = {
     'gold_return_lag_1': 'Retorno del oro del d\u00eda anterior',
     'gold_return_lag_2': 'Retorno del oro de hace dos d\u00edas',
 }
+
+MAX_POINTS = 500
 
 PLOT_THEME = {
     'plot_bgcolor': 'rgba(0,0,0,0)',
@@ -564,12 +566,28 @@ def build_methodology_tab() -> html.Div:
                         children=[
                             html.Div('Stack Tecnol\u00f3gico', className='card-title'),
                             html.Div(
-                                className='governance-markdown',
+                                className='stack-grid',
                                 children=[
-                                    html.P(html.Strong('Python'), ' 3.10+ \u2014 pandas, numpy, scikit-learn'),
-                                    html.P(html.Strong('Modelos'), ' \u2014 Random Forest, Logistic Regression, XGBoost'),
-                                    html.P(html.Strong('Frontend'), ' \u2014 Plotly Dash, CSS Grid, Plotly.js'),
-                                    html.P(html.Strong('Datos'), ' \u2014 Yahoo Finance (yfinance)'),
+                                    html.Div([
+                                        html.Span('\U0001f40d', className='stack-icon'),
+                                        html.Div('Python 3.10+', className='stack-name'),
+                                        html.Div('pandas \u00b7 numpy \u00b7 scikit-learn', className='stack-detail'),
+                                    ], className='stack-cell'),
+                                    html.Div([
+                                        html.Span('\U0001f916', className='stack-icon'),
+                                        html.Div('Modelos', className='stack-name'),
+                                        html.Div('Random Forest \u00b7 LR \u00b7 XGBoost', className='stack-detail'),
+                                    ], className='stack-cell'),
+                                    html.Div([
+                                        html.Span('\U0001f4bb', className='stack-icon'),
+                                        html.Div('Frontend', className='stack-name'),
+                                        html.Div('Plotly Dash \u00b7 CSS Grid \u00b7 Plotly.js', className='stack-detail'),
+                                    ], className='stack-cell'),
+                                    html.Div([
+                                        html.Span('\U0001f4e1\ufe0f', className='stack-icon'),
+                                        html.Div('Datos', className='stack-name'),
+                                        html.Div('Yahoo Finance (yfinance)', className='stack-detail'),
+                                    ], className='stack-cell'),
                                 ],
                             ),
                         ],
@@ -946,8 +964,12 @@ def build_stat_card(title, value, subtitle, help_text=None, accent='#D4AF37') ->
     )
 
 
+def _last(df, n=None):
+    n = n or MAX_POINTS
+    return df.iloc[-min(n, len(df)):]
+
 def build_price_figure() -> go.Figure:
-    df = context['data']
+    df = _last(context['data'])
     base = df['gold'].iloc[0]
     scale = 100.0 / base
     
@@ -975,7 +997,9 @@ def build_price_figure() -> go.Figure:
     )
     
     # Señal del modelo
-    test = context['test_data'] if 'test_data' in context else df.iloc[int(len(df)*0.8):]
+    test_all = context['test_data'] if 'test_data' in context else df.iloc[int(len(df)*0.8):]
+    test = _last(test_all)
+    signal_slice = context['data']['signal'].loc[test.index]
     fig.add_trace(
         go.Scatter(
             x=test.index,
@@ -983,7 +1007,7 @@ def build_price_figure() -> go.Figure:
             mode='markers',
             name='Señal Modelo',
             marker={
-                'color': [WANTED_COLORS['buy'] if s == 1 else WANTED_COLORS['sell'] for s in context['data']['signal'].iloc[len(context['data'])-len(test):]],
+                'color': [WANTED_COLORS['buy'] if s == 1 else WANTED_COLORS['sell'] for s in signal_slice],
                 'size': 12,
                 'symbol': 'star',
                 'line': {'width': 1, 'color': '#FFFFFF'},
@@ -1017,7 +1041,7 @@ def build_price_figure() -> go.Figure:
 
 
 def build_rsi_figure() -> go.Figure:
-    df = context['data']
+    df = _last(context['data'])
     fig = go.Figure()
     fig.add_trace(
         go.Scatter(
@@ -1037,7 +1061,7 @@ def build_rsi_figure() -> go.Figure:
 
 
 def build_macd_figure() -> go.Figure:
-    df = context['data']
+    df = _last(context['data'])
     fig = go.Figure()
     fig.add_trace(
         go.Scatter(
@@ -1073,7 +1097,7 @@ def build_macd_figure() -> go.Figure:
 
 
 def build_macro_figure() -> go.Figure:
-    df = context['data']
+    df = _last(context['data'])
     from numpy import polyfit, polyval
     fig = make_subplots(rows=2, cols=2, subplot_titles=('Oro vs DXY', 'Oro vs VIX', 'Oro vs TNX', 'Indicadores normalizados (base 100)'))
 
@@ -1151,7 +1175,7 @@ def build_model_figure() -> go.Figure:
 
 
 def build_backtest_figure() -> go.Figure:
-    test = context['test_data']
+    test = _last(context['test_data'])
     fig = go.Figure()
     fig.add_trace(
         go.Scatter(
@@ -1264,7 +1288,7 @@ def build_prediction_deviation_figure() -> go.Figure:
 
 def build_learning_curve_figure() -> go.Figure:
     """Curva de precisión del modelo durante el entrenamiento"""
-    test = context['test_data']
+    test = _last(context['test_data'])
     train = context.get('train', test)
     
     # Simular curva de aprendizaje basada en precisión acumulada
