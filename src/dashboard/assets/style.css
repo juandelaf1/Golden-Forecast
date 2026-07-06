@@ -218,7 +218,7 @@ body {
   padding: 0 24px;
   white-space: nowrap;
   will-change: transform;
-  animation: tickerMove 35s linear 1;
+  animation: tickerMove 35s linear infinite;
   font-family: 'Rye', 'Smokum', serif;
   font-size: 1.2rem;
   color: var(--accent);

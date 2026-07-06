@@ -4,6 +4,35 @@ from src.dashboard import data
 context = data.context
 
 
+def _build_ticker_items() -> list:
+    c = context
+    latest = c['latest']
+    change_pct = c.get('change_pct', 0)
+    signal = c['signal_label']
+    accuracy = c.get('accuracy', 0)
+    f1 = c.get('f1', 0)
+
+    def item(label, value, cls='neutral'):
+        return html.Div(
+            className='ticker-item',
+            children=[
+                html.Span(label, className='ticker-label'),
+                html.Span(value, className=f'ticker-value {cls}'),
+            ],
+        )
+
+    return [
+        item('ORO SPOT', f'${latest["gold"]:.2f}', 'positive' if change_pct >= 0 else 'negative'),
+        item('VAR. %', f'{change_pct:+.2f}%', 'positive' if change_pct >= 0 else 'negative'),
+        item('SEÑAL', signal, 'positive' if signal == 'ALZA' else 'negative' if signal == 'PRECAUCIÓN' else 'neutral'),
+        item('ACIERTOS', f'{accuracy:.1%}'),
+        item('FIABILIDAD', f'{f1:.1%}'),
+        item('DXY', f'{latest.get("dxy", 0):.2f}'),
+        item('VIX', f'{latest.get("vix", 0):.2f}'),
+        item('MA 21', f'${latest.get("ma_21", 0):.2f}'),
+    ]
+
+
 def build_layout() -> html.Div:
     return html.Div(
         className='scene-shell',
@@ -59,8 +88,8 @@ def build_layout() -> html.Div:
                             html.Div(
                                 className='ticker-track',
                                 children=html.Div(
-                                    id='ticker-content',
                                     className='ticker-content',
+                                    children=_build_ticker_items(),
                                 ),
                             ),
                         ],
@@ -136,7 +165,7 @@ dcc.Tabs(
                                                             html.Span('Vol: ', style={'fontSize': '0.7rem', 'color': '#a89070', 'marginRight': '4px'}),
 dcc.Slider(
     id='vol-slider',
-    min=0, max=100, value=5,
+    min=0, max=100, value=3,
                                                                 marks=None,
                                                                 tooltip={'placement': 'top', 'always_visible': False},
                                                                 step=5,
