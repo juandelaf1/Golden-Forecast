@@ -1520,6 +1520,7 @@ TABLE = {'width': '100%', 'borderCollapse': 'collapse'}
 
 def build_experimental_section() -> html.Div:
     """B2B-friendly horizon comparison table."""
+    data.ensure_experimental()
     exp = context.get('experimental')
     if not exp or not exp.get('horizons'):
         return html.Div()

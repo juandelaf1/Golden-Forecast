@@ -311,20 +311,28 @@ def ensure_all_models():
         })
     context['model_table_data'] = model_table_data
 
-    if EXPERIMENTAL_AVAILABLE and context.get('experimental') is None:
-        try:
-            X_all = ml_context['scaler'].transform(ml_context['X'])
-            X_train = X_all[:split_index]
-            X_test_e = X_all[split_index:]
-            y_reg_train = data['returns'].iloc[:split_index].values
-            y_reg_test_e = data['returns'].iloc[split_index:].values
-            context['experimental'] = train_experimental_models(
-                X_train, X_test_e, y_reg_train, y_reg_test_e, FEATURE_COLUMNS
-            )
-        except Exception:
-            context['experimental'] = None
-
     context['_all_models_loaded'] = True
+
+
+def ensure_experimental():
+    """Train experimental models on demand (separate from ensure_all_models to avoid blocking the metrics tab)."""
+    global context
+    if context.get('experimental') is not None or not EXPERIMENTAL_AVAILABLE:
+        return
+    ml_context = context['_ml_context']
+    split_index = context['_split_index']
+    data = context['data']
+    try:
+        X_all = ml_context['scaler'].transform(ml_context['X'])
+        X_train = X_all[:split_index]
+        X_test_e = X_all[split_index:]
+        y_reg_train = data['returns'].iloc[:split_index].values
+        y_reg_test_e = data['returns'].iloc[split_index:].values
+        context['experimental'] = train_experimental_models(
+            X_train, X_test_e, y_reg_train, y_reg_test_e, FEATURE_COLUMNS
+        )
+    except Exception:
+        context['experimental'] = None
 
 
 def ensure_regression():
