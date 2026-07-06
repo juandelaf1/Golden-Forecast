@@ -248,23 +248,30 @@ body {
   gap: 12px;
   padding: 8px 16px;
   margin-right: 40px;
-  border-right: 1px solid rgba(232, 195, 74, 0.15);
+  border-right: 1px solid rgba(232, 195, 74, 0.12);
   flex-shrink: 0;
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 4px;
+  min-height: 42px;
 }
 
 .ticker-label {
-  font-size: 0.9rem;
-  color: #d4c4a8;
+  font-size: 0.85rem;
+  color: #a89070;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.10em;
   font-family: 'Space Mono', monospace;
   white-space: nowrap;
+  min-width: 44px;
 }
 
 .ticker-value {
-  font-weight: 700;
-  min-width: 80px;
+  font-weight: 800;
+  min-width: 85px;
   text-align: right;
+  font-size: 1.05rem;
+  letter-spacing: 0.04em;
+  font-family: 'Space Mono', monospace;
 }
 
 .ticker-value.positive { color: var(--signal-buy); }

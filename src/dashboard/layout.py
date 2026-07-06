@@ -20,10 +20,23 @@ def build_layout() -> html.Div:
             html.Div(className='scene-lamp-flicker'),
             html.Div(className='scene-dust', id='scene-dust'),
             html.Script('''
-window.addEventListener('click', function() {
+(function() {
     var a = document.getElementById('ambient-audio');
-    if (a && a.paused) { a.muted = false; a.play(); }
-}, {once: true});
+    if (!a) return;
+    a.muted = false;
+    a.volume = 0.05;
+    function tryPlay() {
+        a.muted = false;
+        a.play().catch(function(){});
+    }
+    tryPlay();
+    var evts = ['click','touchstart','keydown','mousemove','scroll'];
+    function handler() {
+        tryPlay();
+        evts.forEach(function(e) { window.removeEventListener(e, handler); });
+    }
+    evts.forEach(function(e) { window.addEventListener(e, handler, {once:true}); });
+})();
 '''),
 
             html.Div(
