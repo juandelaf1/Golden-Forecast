@@ -1301,13 +1301,14 @@ def build_prediction_deviation_figure() -> go.Figure:
     fig.add_hline(y=0, line_color='rgba(242,235,225,0.2)', line_width=1)
     
     hits = correct.mean()
+    theme_no_legend = {k: v for k, v in PLOT_THEME.items() if k != 'legend'}
     fig.update_layout(
-        **PLOT_THEME,
+        **theme_no_legend,
         height=380,
         hovermode='x unified',
         yaxis={'title': 'Retorno diario (%)', 'gridcolor': 'rgba(242,235,225,0.08)'},
         yaxis2={'title': 'Confianza del modelo (%)', 'overlaying': 'y', 'side': 'right', 'range': [0, 105], 'gridcolor': 'rgba(0,0,0,0)'},
-        legend={'orientation': 'h', 'yanchor': 'bottom', 'y': 1.02, 'x': 0.5, 'xanchor': 'center'},
+        legend={'orientation': 'h', 'yanchor': 'bottom', 'y': 1.02, 'x': 0.5, 'xanchor': 'center', 'font': {'color': '#F2EBE1'}},
     )
     fig.update_xaxes(**AXIS_THEME, title_text='Fecha')
     return fig
