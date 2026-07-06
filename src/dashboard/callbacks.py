@@ -182,25 +182,35 @@ def register_callbacks(app):
 
     @app.callback(Output('tab-content', 'children'), Input('dashboard-tabs', 'value'))
     def render_tab(active_tab):
-        """Render tab on demand - all tabs can load immediately without queue."""
-        return _tab_cache.get(active_tab, html.Div('Loading...'))
-
-    # Build all tabs upfront in a single function
-    def _build_all_tabs():
-        _tab_cache.clear()
-        _tab_cache['tab-summary'] = build_summary_tab()
-        _tab_cache['tab-price'] = build_price_tab()
-        _tab_cache['tab-indicators'] = build_indicators_tab()
-        _tab_cache['tab-macro'] = build_macro_tab()
-        _tab_cache['tab-backtest'] = build_backtest_tab()
-        _tab_cache['tab-sim'] = build_simulation_tab()
-        _tab_cache['tab-metrics'] = build_metrics_tab()
-        _tab_cache['tab-regression'] = build_regression_tab()
-        _tab_cache['tab-governance'] = build_methodology_tab()
-        return list(_tab_cache.values())
-
-    # Pre-build tabs immediately - this ensures all work is done in parallel early
-    _build_all_tabs()
+        if active_tab not in _tab_cache:
+            try:
+                if active_tab == 'tab-summary':
+                    _tab_cache[active_tab] = build_summary_tab()
+                elif active_tab == 'tab-price':
+                    _tab_cache[active_tab] = build_price_tab()
+                elif active_tab == 'tab-indicators':
+                    _tab_cache[active_tab] = build_indicators_tab()
+                elif active_tab == 'tab-macro':
+                    _tab_cache[active_tab] = build_macro_tab()
+                elif active_tab == 'tab-backtest':
+                    _tab_cache[active_tab] = build_backtest_tab()
+                elif active_tab == 'tab-sim':
+                    _tab_cache[active_tab] = build_simulation_tab()
+                elif active_tab == 'tab-metrics':
+                    _tab_cache[active_tab] = build_metrics_tab()
+                elif active_tab == 'tab-regression':
+                    _tab_cache[active_tab] = build_regression_tab()
+                elif active_tab == 'tab-governance':
+                    _tab_cache[active_tab] = build_methodology_tab()
+                else:
+                    raise PreventUpdate
+            except Exception as e:
+                # Return error message instead of crashing
+                _tab_cache[active_tab] = html.Div([
+                    html.H3('Error loading tab'),
+                    html.P(str(e))
+                ])
+        return _tab_cache[active_tab]
 
     @app.callback(
         [Output('sim-final', 'children'), Output('sim-return', 'children'), Output('sim-trades', 'children'), Output('sim-chart', 'figure')],
