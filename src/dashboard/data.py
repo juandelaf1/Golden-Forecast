@@ -63,7 +63,7 @@ def load_feature_data() -> pd.DataFrame:
 
 def load_market_data() -> tuple[pd.DataFrame, str]:
     data = load_feature_data()
-    data = data.dropna().reset_index(drop=True)
+    data = data.dropna()
     return data, 'gold-features.csv'
 
 

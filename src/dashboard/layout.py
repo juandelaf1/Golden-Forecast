@@ -19,6 +19,12 @@ def build_layout() -> html.Div:
             html.Div(className='scene-vignette'),
             html.Div(className='scene-lamp-flicker'),
             html.Div(className='scene-dust', id='scene-dust'),
+            html.Script('''
+window.addEventListener('click', function() {
+    var a = document.getElementById('ambient-audio');
+    if (a && a.paused) { a.muted = false; a.play(); }
+}, {once: true});
+'''),
 
             html.Div(
                 className='machine-shell',
@@ -115,9 +121,9 @@ dcc.Tabs(
                                                         html.Span('Ambientaci\u00f3n sonora', className='audio-label'),
                                                         html.Span([
                                                             html.Span('Vol: ', style={'fontSize': '0.7rem', 'color': '#a89070', 'marginRight': '4px'}),
-                                                            dcc.Slider(
-                                                                id='vol-slider',
-                                                                min=0, max=100, value=30,
+dcc.Slider(
+    id='vol-slider',
+    min=0, max=100, value=5,
                                                                 marks=None,
                                                                 tooltip={'placement': 'top', 'always_visible': False},
                                                                 step=5,
@@ -131,7 +137,8 @@ dcc.Tabs(
                                                         autoPlay=True,
                                                         loop=True,
                                                         preload='auto',
-                                                        style={'display': 'none'},
+                                                        muted=True,
+                                                        style={'width': '0', 'height': '0', 'opacity': '0', 'position': 'fixed'},
                                                     ),
                                                 ],
                                             ),

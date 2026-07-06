@@ -7,6 +7,8 @@ from dash.exceptions import PreventUpdate
 from plotly.subplots import make_subplots
 from sklearn.metrics import confusion_matrix, roc_curve
 
+import pandas as pd
+
 from src.dashboard import data
 
 context = data.context
@@ -341,6 +343,7 @@ def register_callbacks(app):
         function(volume) {
             const audio = document.getElementById('ambient-audio');
             if (audio) {
+                audio.muted = false;
                 audio.volume = volume / 100;
                 if (audio.paused) {
                     audio.play().catch(function() {});
@@ -393,11 +396,17 @@ def register_callbacks(app):
                 x0=context['split_date'], x1=context['split_date'],
                 y0=df['gold'].min(), y1=df['gold'].max(),
                 line={'color': WANTED_COLORS['iron_mid'], 'dash': 'dash', 'width': 2},
-                annotation={'text': 'Inicio test set', 'font': {'color': '#a89070', 'size': 10, 'family': 'Space Mono, monospace'}},
+            )
+            fig.add_annotation(
+                x=context['split_date'],
+                y=df['gold'].max(),
+                text='Inicio test set',
+                font={'color': '#a89070', 'size': 10, 'family': 'Space Mono, monospace'},
+                showarrow=False,
+                yshift=10,
             )
 
-        fig.update_layout(**PLOT_THEME, height=420, hovermode='x unified',
-                          title={'text': 'Precio del Oro y Se\u00f1ales del Modelo', 'font': {'family': 'Rye, Smokum, serif', 'color': WANTED_COLORS['gold']}})
+        fig.update_layout(**PLOT_THEME, height=420, hovermode='x unified')
         fig.update_xaxes(**AXIS_THEME, title_text='Fecha')
         _apply_rangeselector(fig, df)
         fig.update_yaxes(**AXIS_THEME, title_text=y_title, autorange=True)
@@ -415,6 +424,24 @@ def build_summary_tab() -> html.Div:
                     html.P(
                         'Resumen ejecutivo con la señal del día, la certeza del modelo y los indicadores clave para la toma de decisiones sobre el oro.',
                         className='section-text',
+                    ),
+                    html.Div(
+                        className='help-copy',
+                        style={'marginTop': '12px', 'padding': '16px 18px', 'background': 'rgba(232,195,74,0.05)', 'borderRadius': '14px', 'border': '1px solid rgba(232,195,74,0.12)'},
+                        children=[
+                            html.P([
+                                'Esta herramienta utiliza inteligencia artificial para analizar datos históricos del oro (', html.Code('GC=F', style={'color': '#D4AF37'}), 
+                                ') y predecir su dirección a corto plazo. ',
+                                'Combina 12 modelos de machine learning (Random Forest, XGBoost, Regresión Logística) ',
+                                'con indicadores técnicos (RSI, MACD, Bandas de Bollinger) y variables macroeconómicas (DXY, VIX, TNX). ',
+                                'El resultado es una señal de trading diaria con nivel de confianza asociado.'
+                            ], style={'color': '#d4c4a8', 'lineHeight': '1.7', 'fontSize': '0.92rem', 'margin': '0 0 8px'}),
+                            html.P([
+                                html.Strong('¿Para qué sirve? ', style={'color': '#D4AF37'}),
+                                'Ayuda a inversores y traders a complementar su análisis con una señal objetiva basada en datos. ',
+                                'No reemplaza el juicio humano ni constituye asesoría financiera. Los resultados pasados no garantizan rendimientos futuros.'
+                            ], style={'color': '#a89070', 'lineHeight': '1.7', 'fontSize': '0.85rem', 'margin': '0'}),
+                        ],
                     ),
                 ],
             ),
@@ -656,9 +683,11 @@ def build_methodology_tab() -> html.Div:
                             html.Div(
                                 className='governance-markdown',
                                 children=[
-                                    html.P(html.Strong('Maria'), ' \u2014 Product Owner'),
-                                    html.P(html.Strong('Juan'), ' \u2014 Scrum Master'),
-                                    html.P(html.Strong('Jose, Gema, Joel'), ' \u2014 Development Team'),
+                                    html.P([html.Strong('Maria'), ' (PO)']),
+                                    html.P([html.Strong('Juan'), ' (SM)']),
+                                    html.P([html.Strong('Jose'), ' (Dev)']),
+                                    html.P([html.Strong('Gema'), ' (Dev)']),
+                                    html.P([html.Strong('Joel'), ' (Dev)']),
                                 ],
                             ),
                         ],
@@ -1029,11 +1058,17 @@ def build_price_figure() -> go.Figure:
         y0=df['gold'].min(),
         y1=df['gold'].max(),
         line={'color': WANTED_COLORS['iron_mid'], 'dash': 'dash', 'width': 2},
-        annotation={'text': 'Inicio test set', 'font': {'color': '#a89070', 'size': 10, 'family': 'Space Mono, monospace'}},
+    )
+    fig.add_annotation(
+        x=context['split_date'],
+        y=df['gold'].max(),
+        text='Inicio test set',
+        font={'color': '#a89070', 'size': 10, 'family': 'Space Mono, monospace'},
+        showarrow=False,
+        yshift=10,
     )
     
-    fig.update_layout(**PLOT_THEME, height=420, hovermode='x unified',
-                      title={'text': 'Precio del Oro y Señales del Modelo', 'font': {'family': 'Rye, Smokum, serif', 'color': WANTED_COLORS['gold']}})
+    fig.update_layout(**PLOT_THEME, height=420, hovermode='x unified')
     fig.update_xaxes(**AXIS_THEME, title_text='Fecha')
     _apply_rangeselector(fig, df)
     fig.update_yaxes(**AXIS_THEME, title_text='USD por onza', autorange=True)
@@ -1133,10 +1168,21 @@ def build_macro_figure() -> go.Figure:
     return fig
 
 
+def _metric_color(v: float) -> str:
+    if v < 0.35:
+        return '#f2554d'
+    if v < 0.50:
+        return '#f5a623'
+    if v < 0.65:
+        return '#e8c34a'
+    if v < 0.80:
+        return '#7bc96a'
+    return '#4ade80'
+
 def build_model_figure() -> go.Figure:
     metrics = ['Precisión', 'Precision', 'Recall', 'F1 Score', 'ROC-AUC']
     values = [context['accuracy'], context['precision'], context['recall'], context['f1'], context['auc']]
-    colors = [WANTED_COLORS['buy'], WANTED_COLORS['signal_neutral'], WANTED_COLORS['signal_neutral'], WANTED_COLORS['brass'], WANTED_COLORS['gold']]
+    colors = [_metric_color(v) for v in values]
     
     fig = go.Figure()
     

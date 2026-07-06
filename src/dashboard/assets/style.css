@@ -854,8 +854,14 @@ body {
 /* Dark dropdown styling for Dash dcc.Dropdown */
 .Select-control {
   background-color: #2C2620 !important;
-  border-color: rgba(232, 195, 74, 0.3) !important;
+  border: 1px solid rgba(232, 195, 74, 0.3) !important;
   color: #F2EBE1 !important;
+}
+.Select--single > .Select-control .Select-value {
+  color: #F2EBE1 !important;
+}
+.Select-placeholder {
+  color: #a89070 !important;
 }
 .Select-value-label {
   color: #F2EBE1 !important;
