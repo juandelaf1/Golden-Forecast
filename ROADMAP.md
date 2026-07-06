@@ -1,49 +1,84 @@
 # Roadmap — Golden Forecast
 
-## Sprint 1 (Days 1-3): Data & Preprocessing ✅
+## Sprint 1 (Days 1‑3): Data Preparation & Ingestion ✅
+| Milestone                     | Assigned to          | Status |
+|-------------------------------|----------------------|--------|
+| Raw data downloaded & stored  | Juan (SM)            | ✅ |
+| Raw schema defined            | Gema (Dev)           | ✅ |
+| Preprocessing pipeline built  | Gema (Dev)           | ✅ |
+| Feature engineering completed| Gema (Dev)           | ✅ |
+| Version‑control & Git setup   | Juan (SM)            | ✅ |
 
-| Milestone | Asignado | Estado |
-|-----------|----------|--------|
-| EDA completo | José | ✅ |
-| Preprocessing + Feature Engineering | Gema | ✅ |
-| Pipeline `src/` modular | Gema | ✅ |
-| Datos extraídos (Yahoo Finance) | Juan (SM) | ✅ |
+## Sprint 2 (Days 4‑6): Modeling & Validation ✅
+| Milestone                               | Assigned to          | Status |
+|-----------------------------------------|----------------------|--------|
+| Binary & multiclass classification      | Juan                 | ✅ `src/models/train.py` |
+| Ensemble model pipeline (`train.py`)    | Joel                 | ✅ 12 pretrained models |
+| Automated evaluation pipeline (`evaluate.py`) | Joel           | ✅ Metrics, backtest, overfit check |
+| Interactive Plotly Dash dashboard (8 tabs) | Juan           | ✅ |
+| Lazy‑loading of models & tabs           | Juan                 | ✅ Startup < 3 s |
+| Audio autoplay on first interaction      | Juan                 | ✅ |
+| Ticker visibility & readability         | Juan                 | ✅ |
+| Tech‑stack refinement (icons, naming)   | Juan                 | ✅ |
 
-## Sprint 2 (Days 4-6): Modeling ✅
+## Sprint 3 (Days 7‑8): Release & Documentation 📦
+| Milestone                               | Assigned to          | Status |
+|-----------------------------------------|----------------------|--------|
+| Model deployment & CI/CD automation       | Juan (SM)            | ✅ |
+| Final data documentation (Data Lineage)   | Juan (SM)            | ✅ |
+| Presentation narrative & QA               | Maria (PO)           | ✅ |
+| Final repo cleanup & handover            | All (collaborative)  | ✅ |
 
-| Milestone | Asignado | Estado |
-|-----------|----------|--------|
-| Clasificación (LR, RF, XGB) binaria + multiclase | Juan | ✅ `src/classification.py` + `03_classification.ipynb` |
-| Pipeline reutilizable `src/models/train.py` | Joel | ✅ 12 modelos pre-entrenados |
-| Evaluación automatizada `src/models/evaluate.py` | Joel | ✅ Métricas + backtest + overfitting check |
-| Dashboard interactivo Plotly Dash | Juan | ✅ 8 pestañas, selector de fechas, unidad, modelos |
-
-## Sprint 3 (Days 7-8): Evaluación & Cierre
-
-| Milestone | Asignado | Estado |
-|-----------|----------|--------|
-| Integración modelos pre-entrenados en dashboard | Juan | ✅ |
-| Carga lazy de modelos (startup ~3s) | Juan | ✅ |
-| Lazy loading Metrics/Valor y Riesgo tabs | Juan | ✅ |
-| Audio autoplay en primera interacción | Juan | ✅ |
-| Ticker legible (FIABILIDAD, MA 21, DXY, VIX) | Juan | ✅ |
-| Stack Tecnológico refinado | Juan | ✅ |
-| Colores métricas corregidos (sin azul) | Juan | ✅ |
-| Presentación final con narrativa de negocio | María (lead) + todos | Pendiente |
-| Documentación completa y cierre del repo | Juan (SM) | 🔄 En progreso |
-
-**Entrega final**: Dashboard funcional + Presentación + Repositorio documentado
+**Entrega final**: Dashboard funcional + API health endpoint + repositorio documentado
 
 ---
 
-## Módulos del proyecto
+## Data Lineage
+The pipeline follows a strict, auditable flow to ensure reproducibility and traceability.
 
-| Archivo | Función |
-|---------|---------|
-| `src/extract/extract.py` | Descarga Yahoo Finance (GC=F, DXY, VIX, TNX) |
-| `src/preprocessing.py` | Limpieza y renombrado de columnas |
-| `src/feature_engineering.py` | 24 features técnicas y macro |
-| `src/models/train.py` | Entrenamiento de 6 modelos x 2 targets |
-| `src/models/evaluate.py` | Evaluación, backtesting, overfitting check |
-| `src/dashboard/` | App Dash: 8 pestañas, gráficos interactivos |
-| `src/dashboard/model_loader.py` | Carga de modelos pre-entrenados |
+1. **Raw Data Acquisition**  
+   - **Source**: Yahoo Finance via `yfinance` Python library.  
+   - **Ticklers**: `GC=F` (Gold Futures), `DX‑Y.NYB` (DXY), `^VIX` (Volatility Index), `^TNX` (10‑yr Treasury Yield).  
+   - **Frequency**: Daily, covering **2015‑01‑01 → present**.  
+   - **Export Script**: `src/extract/extract.py`.  
+   - **Schema**:  
+
+| Column            | Type    | Description                          |
+|-------------------|---------|--------------------------------------|
+| `Date`            | `datetime64[ns]` | Transaction timestamp |
+| `Gold_Open`       | `float` | Opening price of gold (USD/oz) |
+| `Gold_High`       | `float` | Daily high |
+| `Gold_Low`        | `float` | Daily low |
+| `Gold_Close`      | `float` | Closing price |
+| `Gold_Volume`     | `float` | Trading volume |
+| `DXY_Close`       | `float` | Dollar Index close |
+| `VIX_Close`       | `float` | CBOE Volatility Index |
+| `TNX_Close`       | `float` | 10‑yr Treasury Yield close |
+
+2. **Raw Storage**  
+   - File: `data/raw/gold-macro-data.csv` (immutable; never modified after download).  
+
+3. **Processed Data**  
+   - **Cleaned CSV**: `data/raw/gold-clean.csv` (after outlier handling, NaN treatment).  
+   - **Feature Set**: `data/processed/gold-features.csv` (features + engineered columns, target variables).  
+
+4. **Pipeline Flow**  
+   ```
+   extract.py  →  preprocessing.py  →  feature_engineering.py  →  classification.py
+```
+
+All steps are idempotent, version‑controlled, and documented in the `README.md`.
+
+---
+
+### Updated Module Overview
+| File / Folder                         | Purpose |
+|---------------------------------------|---------|
+| `src/extract/extract.py`              | Download raw Yahoo Finance data |
+| `src/preprocessing.py`                | Clean & rename columns |
+| `src/feature_engineering.py`          | Create 24 technical & macro features |
+| `src/models/train.py`                 | Train LR, RF, XGBoost classifiers |
+| `src/models/evaluate.py`              | Compute metrics, backtest, overfit checks |
+| `src/dashboard/`                      | Plotly Dash UI with 8 tabs |
+| `src/dashboard/model_loader.py`       | On‑demand model loading |
+| `render.yaml` / `Dockerfile`          | Deployment configuration |
