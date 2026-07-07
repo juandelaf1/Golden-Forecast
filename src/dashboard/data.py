@@ -324,13 +324,18 @@ def ensure_all_models():
     if context.get("_all_models_loaded"):
         return
 
-    ml_context = context["_ml_context"]
-    split_index = context["_split_index"]
-    data = context["data"]
-    X_scaled = ml_context["X_scaled"]
-    eval_data = ml_context["eval_results"]
+    ml_context = context.get("_ml_context")
+    if ml_context is None:
+        return
+    split_index = context.get("_split_index", 0)
+    data = context.get("data")
+    X_scaled = ml_context.get("X_scaled")
+    if X_scaled is None:
+        return
+    eval_data = ml_context.get("eval_results", {})
+    resultados = eval_data.get("resultados", []) if isinstance(eval_data, dict) else []
 
-    for entry in eval_data["resultados"]:
+    for entry in resultados:
         name = entry["modelo"]
         if name in ml_context["predictions"]:
             continue
@@ -372,7 +377,7 @@ def ensure_all_models():
 
     if EXPERIMENTAL_AVAILABLE and context.get("experimental") is None:
         try:
-            X_all = ml_context["scaler"].transform(ml_context["X"])
+            X_all = ml_context["X_scaled"]
             X_train = X_all[:split_index]
             X_test_e = X_all[split_index:]
             y_reg_train = data["returns"].iloc[:split_index].values
