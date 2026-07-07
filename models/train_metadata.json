@@ -9,7 +9,15 @@
     "xgb_binary",
     "xgb_multiclass",
     "xgb_deep_binary",
-    "xgb_deep_multiclass"
+    "xgb_deep_multiclass",
+    "lgb_binary",
+    "lgb_multiclass",
+    "lgb_deep_binary",
+    "lgb_deep_multiclass",
+    "rf_optimized_binary",
+    "rf_optimized_multiclass",
+    "lr_optimized_binary",
+    "lgbm_optimized_binary"
   ],
   "features": "data/processed/gold-features.csv",
   "test_size": 0.2,

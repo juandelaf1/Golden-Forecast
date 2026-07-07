@@ -3,7 +3,7 @@ import pandas as pd
 import yfinance as yfi
 
 ##Descarga histórico diario del oro + 3 indicadores macro
-START = "2015-01-01"
+START = "2008-01-01"
 INTERVAL = "1d"
 OUTPUT = "data/raw/gold-macro-data.csv"
  
@@ -41,6 +41,7 @@ def download_ticker(name: str, ticker: str, start: str, interval: str) -> pd.Dat
 #Unimos las series por fechas
 def merge_series(dfs: dict) -> pd.DataFrame:
     df_merged = pd.concat(dfs.values(), axis=1, sort=False)
+    df_merged = df_merged.dropna()
     return df_merged
  
 def save_dataset(df: pd.DataFrame, OUTPUT: str) -> None:

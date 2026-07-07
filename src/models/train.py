@@ -7,6 +7,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import StandardScaler
 from xgboost import XGBClassifier
+from lightgbm import LGBMClassifier
 
 """
 Entrena 5 modelos de clasificación (3 algoritmos x 2 targets):
@@ -68,6 +69,22 @@ MODELS = {
         eval_metric="logloss",
         verbosity=0
     ),
+    "lgb": LGBMClassifier(
+        n_estimators=100,
+        max_depth=3,
+        learning_rate=0.1,
+        min_child_samples=20,
+        random_state=42,
+        verbosity=-1
+    ),
+    "lgb_deep": LGBMClassifier(
+        n_estimators=200,
+        max_depth=5,
+        learning_rate=0.05,
+        min_child_samples=20,
+        random_state=42,
+        verbosity=-1
+    ),
 }
 
 
@@ -126,7 +143,7 @@ def train_models(X_train, y_binary_train, y_multiclass_train):
 
         # Target multiclase
         # XGBoost no acepta clases negativas "-1", entonces las codificamos a 0,1,2
-        y_multi_encoded = y_multiclass_train.map(MULTICLASS_ENCODE) if "xgb" in model_name else y_multiclass_train
+        y_multi_encoded = y_multiclass_train.map(MULTICLASS_ENCODE) if ("xgb" in model_name and "lgb" not in model_name) else y_multiclass_train
         m_multi = copy.deepcopy(model)
         m_multi.fit(X_train, y_multi_encoded)
         trained[f"{model_name}_multiclass"] = m_multi

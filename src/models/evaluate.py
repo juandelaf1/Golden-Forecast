@@ -84,7 +84,7 @@ def prepare_data(PATH: str, test_size: float = TEST_SIZE):
 
 
 def evaluate_model(model, model_name: str, X_train, X_test, y_train, y_test) -> dict:
-    is_xgb_multi = "xgb" in model_name and "multiclass" in model_name
+    is_xgb_multi = "xgb" in model_name and "multiclass" in model_name and "lgb" not in model_name
 
     # Predicciones
     y_pred_train = model.predict(X_train)
@@ -133,34 +133,28 @@ def compare_models(results: list) -> pd.DataFrame:
 
 #Backtesting
 def backtest_binary(model, model_name, X_test, dates_test):
-
     y_pred = model.predict(X_test)
 
     df_raw = pd.read_csv(PATH, parse_dates=["Date"])
     df_raw = df_raw.sort_values("Date").reset_index(drop=True)
-
     split_idx = int(len(df_raw) * (1 - TEST_SIZE))
     df_test = df_raw.iloc[split_idx:].copy().reset_index(drop=True)
 
     df_test["signal"] = y_pred
-
-    # Comprar únicamente cuando el modelo predice subida
     df_test["strategy_return"] = (
         df_test["gold_return"] * df_test["signal"]
     )
-
     df_test["cum_strategy"] = (1 + df_test["strategy_return"]).cumprod()
     df_test["cum_buyhold"] = (1 + df_test["gold_return"]).cumprod()
 
     return {
         "modelo": model_name,
-        "retorno_estrategia": round((df_test["cum_strategy"].iloc[-1]-1)*100,2),
-        "retorno_buyhold": round((df_test["cum_buyhold"].iloc[-1]-1)*100,2),
+        "retorno_estrategia": round((df_test["cum_strategy"].iloc[-1]-1)*100, 2),
+        "retorno_buyhold": round((df_test["cum_buyhold"].iloc[-1]-1)*100, 2),
         "num_operaciones": int(df_test["signal"].sum()),
         "dias_test": len(df_test),
         "df_test": df_test
     }
-
 
 
 def backtest(model, model_name: str, X_test, y_multi_test, dates_test, scaler=None) -> dict:
@@ -441,10 +435,8 @@ def main():
     print("=" * 60)
     
     # Backtesting del mejor modelo binario
-    binary_results = [r for r in results if "binary" in r["modelo"]]
-    best_binary = max(binary_results, key=lambda x: x["f1_test"])
-
-    best_binary_name = best_binary["modelo"]
+    # Usar rf_binary para backtesting — más selectivo que rf_optimized
+    best_binary_name = "lr_strong_reg_binary"
     best_binary_model = models[best_binary_name]
 
     print(f"Modelo binario seleccionado: {best_binary_name}")

@@ -46,7 +46,6 @@ def create_daily_ranges(df):
     """
     df = df.copy()
 
-    df["gold_daily_range"] = (df["gold_high"] - df["gold_low"]) / df["gold_open"]
     df["dxy_daily_range"] = (df["dxy_high"] - df["dxy_low"]) / df["dxy_open"]
     df["vix_daily_range"] = (df["vix_high"] - df["vix_low"]) / df["vix_open"]
     df["tnx_daily_range"] = (df["tnx_high"] - df["tnx_low"]) / df["tnx_open"]
@@ -192,21 +191,159 @@ def create_return_lags(df):
     df["gold_return_lag_1"] = df["gold_return"].shift(1)
     df["gold_return_lag_2"] = df["gold_return"].shift(2)
     df["gvz_return_lag1"] = df["gvz_return"].shift(1)
-    df["oil_return_lag1"] = df["oil_return"].shift(1)
     df["sp500_return_lag1"] = df["sp500_return"].shift(1)
+
+    # Lags adicionales de DXY y VIX a 2 días.
+    # El dólar y el miedo del mercado no siempre impactan al oro el mismo día,
+    # a veces el efecto se nota con retraso.
+    df["dxy_return_lag2"] = df["dxy_return"].shift(2)
+    df["vix_return_lag2"] = df["vix_return"].shift(2)
 
     return df
 
-def create_calendar_features(df):
+
+def create_momentum(df):
     """
+    Crea variables de momentum a varios horizontes.
+
+    A diferencia de gold_return (retorno de 1 día), estas miden el
+    retorno acumulado de los últimos 3, 5 y 10 días. Ayudan al modelo
+    a distinguir entre una racha sostenida y un movimiento puntual.
+    """
+    df = df.copy()
+
+    df["gold_return_3d"] = df["gold_close"].pct_change(3)
+    df["gold_return_5d"] = df["gold_close"].pct_change(5)
+    df["gold_return_10d"] = df["gold_close"].pct_change(10)
+
+    return df
+
+
+def create_ma_cross(df):
+    """
+    Crea el cruce entre la media móvil corta (5) y la larga (20) del oro.
+
+    gold_ma_cross: diferencia absoluta entre ambas medias.
+    gold_ma_cross_pct: la misma diferencia normalizada por la media larga,
+    para que sea comparable entre distintos niveles de precio del oro
+    (por ejemplo, no es lo mismo un gap de 5$ con el oro a 900 que a 2500).
+
+    Es un indicador clásico de tendencia: cuando la media corta cruza por
+    encima de la larga suele interpretarse como señal alcista, y viceversa.
+    """
+    df = df.copy()
+
+    df["gold_ma_cross"] = df["gold_ma_5"] - df["gold_ma_20"]
+    df["gold_ma_cross_pct"] = (df["gold_ma_5"] - df["gold_ma_20"]) / df["gold_ma_20"]
+
+    return df
+
+
+def create_spreads(df):
+    """
+    Crea spreads de retorno entre el oro y otros activos.
+
+    El oro se mueve muchas veces en relación (inversa) al dólar y a la
+    renta variable. Estos spreads capturan si el oro se está comportando
+    distinto a esos activos en el mismo día, lo cual puede anticipar
+    rotaciones de capital hacia o desde el oro.
+    """
+    df = df.copy()
+
+    df["gold_dxy_spread"] = df["gold_return"] - df["dxy_return"]
+    df["gold_sp500_spread"] = df["gold_return"] - df["sp500_return"]
+
+    return df
+
+
+def create_rolling_correlation(df, window=20):
+    """
+    Crea la correlación móvil de 20 días entre el retorno del oro y el
+    retorno del DXY y del S&P500.
+
+    La relación oro-dólar y oro-bolsa no es constante en el tiempo: hay
+    periodos de correlación fuerte y periodos donde se rompe (por ejemplo
+    en crisis de liquidez). Que el modelo vea si esa relación se está
+    manteniendo o rompiendo recientemente aporta información de régimen
+    de mercado que un retorno puntual no captura.
+    """
+    df = df.copy()
+
+    df["gold_dxy_corr20"] = df["gold_return"].rolling(window).corr(df["dxy_return"])
+    df["gold_sp500_corr20"] = df["gold_return"].rolling(window).corr(df["sp500_return"])
+
+    return df
+
+
+def create_atr(df, window=14):
+    """
+    Crea el ATR (Average True Range) de 14 días del oro.
+
+    El True Range de un día es el mayor de:
+    - high - low
+    - |high - close anterior|
+    - |low - close anterior|
+
+    El ATR es la media móvil del True Range. Es un indicador de
+    volatilidad muy usado por traders porque, a diferencia del rango
+    diario simple, sí tiene en cuenta gaps respecto al cierre anterior.
+    """
+    df = df.copy()
+
+    prev_close = df["gold_close"].shift(1)
+
+    tr1 = df["gold_high"] - df["gold_low"]
+    tr2 = (df["gold_high"] - prev_close).abs()
+    tr3 = (df["gold_low"] - prev_close).abs()
+
+    true_range = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
+
+    df["gold_atr_14"] = true_range.rolling(window=window).mean()
+
+    return df
+
+
+def create_bollinger_position(df, window=20, num_std=2):
+    """
+    Crea la posición del precio dentro de las Bandas de Bollinger.
+
+    En lugar de guardar las bandas superior/inferior como variables
+    absolutas (que dependen del nivel de precio del oro), guardamos
+    bb_position, que indica dónde está el precio dentro del canal:
+
+    bb_position = (close - banda_inferior) / (banda_superior - banda_inferior)
+
+    - bb_position cerca de 1: el precio está pegado a la banda superior
+      (posible sobrecompra).
+    - bb_position cerca de 0: el precio está pegado a la banda inferior
+      (posible sobreventa).
+    - bb_position alrededor de 0.5: el precio está en la media móvil.
+    """
+    df = df.copy()
+
+    rolling_mean = df["gold_close"].rolling(window=window).mean()
+    rolling_std = df["gold_close"].rolling(window=window).std()
+
+    upper_band = rolling_mean + num_std * rolling_std
+    lower_band = rolling_mean - num_std * rolling_std
+
+    df["bb_position"] = (df["gold_close"] - lower_band) / (upper_band - lower_band)
+
+    return df
+
+"""
+def create_calendar_features(df):
+ 
     Crea features de calendario.
     El oro tiene patrones estacionales reales — ciertos días
     de la semana y meses del año tienen comportamiento distinto.
-    """
+    
     df = df.copy()
     df["day_of_week"] = pd.to_datetime(df["Date"]).dt.dayofweek  # 0=lunes, 4=viernes
     df["month"] = pd.to_datetime(df["Date"]).dt.month
     return df
+
+"""
 
 def create_targets(df, threshold=0.003):
     """
@@ -253,8 +390,14 @@ def create_features(df):
     5. RSI.
     6. MACD.
     7. Volatilidad rolling.
-    8. Lags del retorno del oro.
-    9. Patrones estacionales reales
+    8. Lags del retorno del oro (incluye dxy/vix lag2).
+    9. Momentum (3d, 5d, 10d).
+    10. Cruce de medias móviles.
+    11. Spreads oro vs dxy/sp500.
+    12. Correlación móvil oro vs dxy/sp500.
+    13. ATR 14.
+    14. Posición en Bandas de Bollinger.
+    15. Patrones estacionales reales.
     """
     df = df.copy()
 
@@ -266,8 +409,14 @@ def create_features(df):
     df = create_macd(df)
     df = create_rolling_volatility(df)
     df = create_return_lags(df)
-    df = create_calendar_features(df)
-    
+    df = create_momentum(df)
+    df = create_ma_cross(df)
+    df = create_spreads(df)
+    df = create_rolling_correlation(df)
+    df = create_atr(df)
+    df = create_bollinger_position(df)
+    #df = create_calendar_features(df)
+
     return df
 
 
