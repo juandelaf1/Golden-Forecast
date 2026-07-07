@@ -1,0 +1,71 @@
+{
+  "$schema": "https://mintlify.com/schema.json",
+  "name": "Golden Forecast",
+  "logo": {
+    "dark": "/logo/dark.png",
+    "light": "/logo/light.png"
+  },
+  "favicon": "/favicon.svg",
+  "colors": {
+    "primary": "#B8860B",
+    "light": "#FFD700",
+    "dark": "#8B6914",
+    "anchors": {
+      "from": "#D4AF37",
+      "to": "#8B6914"
+    }
+  },
+  "topbarLinks": [
+    {
+      "name": "Dashboard",
+      "url": "https://golden-forecast.onrender.com"
+    }
+  ],
+  "topbarCtaButton": {
+    "name": "GitHub",
+    "url": "https://github.com/juandelaf1/Golden-Forecast"
+  },
+  "navigation": [
+    {
+      "group": "Golden Forecast",
+      "pages": [
+        "README"
+      ]
+    },
+    {
+      "group": "Arquitectura",
+      "pages": [
+        "docs/architecture"
+      ]
+    },
+    {
+      "group": "Datos",
+      "pages": [
+        "docs/data_dictionary",
+        "data/README"
+      ]
+    },
+    {
+      "group": "Modelos",
+      "pages": [
+        "docs/ml_report"
+      ]
+    },
+    {
+      "group": "Dashboard",
+      "pages": [
+        "docs/project_handbook"
+      ]
+    },
+    {
+      "group": "Gobernanza",
+      "pages": [
+        "docs/decision_log",
+        "ROADMAP"
+      ]
+    }
+  ],
+  "footerSocials": {
+    "github": "https://github.com/juandelaf1/Golden-Forecast"
+  }
+}

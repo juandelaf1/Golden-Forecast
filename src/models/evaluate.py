@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib
+
 matplotlib.use("Agg")  # Para entornos sin display
 
 from sklearn.metrics import (
@@ -12,10 +13,7 @@ from sklearn.metrics import (
     precision_score,
     recall_score,
     f1_score,
-    confusion_matrix,
-    classification_report,
 )
-
 
 DIR = "models"
 PATH = "data/processed/gold-features.csv"
@@ -26,19 +24,22 @@ TEST_SIZE = 0.2
 MULTICLASS_DECODE = {0: -1, 1: 0, 2: 1}
 MULTICLASS_ENCODE = {-1: 0, 0: 1, 1: 2}
 
-#Datos de entrenamiento
+
+# Datos de entrenamiento
 def load_metadata(DIR: str) -> dict:
     path = os.path.join(DIR, "train_metadata.json")
     with open(path) as f:
         return json.load(f)
 
-#Datos de modelo
+
+# Datos de modelo
 def load_model(name: str, DIR: str):
     path = os.path.join(DIR, f"{name}.pkl")
     with open(path, "rb") as f:
         return pickle.load(f)
 
-#Datos de todos los modelos
+
+# Datos de todos los modelos
 def load_all_models(DIR: str) -> dict:
     metadata = load_metadata(DIR)
     models = {}
@@ -47,7 +48,8 @@ def load_all_models(DIR: str) -> dict:
         print(f"Cargado: {name}")
     return models
 
-#StandardScaler ajustado sobre train
+
+# StandardScaler ajustado sobre train
 def load_scaler(DIR: str):
     path = os.path.join(DIR, "scaler.pkl")
     with open(path, "rb") as f:
@@ -74,9 +76,12 @@ def prepare_data(PATH: str, test_size: float = TEST_SIZE):
     dates_test = dates.iloc[split_idx:]
 
     return (
-        X_train, X_test,
-        y_bin_train, y_bin_test,
-        y_multi_train, y_multi_test,
+        X_train,
+        X_test,
+        y_bin_train,
+        y_bin_test,
+        y_multi_train,
+        y_multi_test,
         dates_test,
     )
 
@@ -103,24 +108,34 @@ def evaluate_model(model, model_name: str, X_train, X_test, y_train, y_test) -> 
         "modelo": model_name,
         "accuracy_train": round(accuracy_score(y_train, y_pred_train), 4),
         "accuracy_test": round(accuracy_score(y_test_eval, y_pred_test), 4),
-        "precision_test": round(precision_score(y_test_eval, y_pred_test, average=avg, zero_division=0), 4),
-        "recall_test": round(recall_score(y_test_eval, y_pred_test, average=avg, zero_division=0), 4),
-        "f1_test": round(f1_score(y_test_eval, y_pred_test, average=avg, zero_division=0), 4),
+        "precision_test": round(
+            precision_score(y_test_eval, y_pred_test, average=avg, zero_division=0), 4
+        ),
+        "recall_test": round(
+            recall_score(y_test_eval, y_pred_test, average=avg, zero_division=0), 4
+        ),
+        "f1_test": round(
+            f1_score(y_test_eval, y_pred_test, average=avg, zero_division=0), 4
+        ),
         "overfitting_gap": round(
-            accuracy_score(y_train, y_pred_train) - accuracy_score(y_test_eval, y_pred_test), 4
+            accuracy_score(y_train, y_pred_train)
+            - accuracy_score(y_test_eval, y_pred_test),
+            4,
         ),
     }
 
     return metrics
 
 
-#Check overfitting
+# Check overfitting
 def check_overfitting(results: list) -> pd.DataFrame:
     df = pd.DataFrame(results)
     df["overfitting"] = df["overfitting_gap"].apply(
         lambda x: "Posible" if x > 0.05 else "OK"
     )
-    return df[["modelo", "accuracy_train", "accuracy_test", "overfitting_gap", "overfitting"]]
+    return df[
+        ["modelo", "accuracy_train", "accuracy_test", "overfitting_gap", "overfitting"]
+    ]
 
 
 def compare_models(results: list) -> pd.DataFrame:
@@ -128,8 +143,11 @@ def compare_models(results: list) -> pd.DataFrame:
     df = df.sort_values("f1_test", ascending=False)
     return df[["modelo", "accuracy_test", "precision_test", "recall_test", "f1_test"]]
 
-#Backtesting
-def backtest(model, model_name: str, X_test, y_multi_test, dates_test, scaler=None) -> dict:
+
+# Backtesting
+def backtest(
+    model, model_name: str, X_test, y_multi_test, dates_test, scaler=None
+) -> dict:
     is_xgb = "xgb" in model_name
 
     y_pred = model.predict(X_test)
@@ -145,7 +163,9 @@ def backtest(model, model_name: str, X_test, y_multi_test, dates_test, scaler=No
 
     # Usamos gold_return como proxy del retorno real del día
     df_test["signal"] = y_pred
-    df_test["strategy_return"] = df_test["gold_return"] * (df_test["signal"] == 1).astype(int)
+    df_test["strategy_return"] = df_test["gold_return"] * (
+        df_test["signal"] == 1
+    ).astype(int)
 
     # Retorno acumulado
     df_test["cum_strategy"] = (1 + df_test["strategy_return"]).cumprod()
@@ -172,11 +192,21 @@ def plot_backtest(bt_result: dict, save_path: str = None):
     df = bt_result["df_test"]
 
     fig, ax = plt.subplots(figsize=(12, 5))
-    ax.plot(df["Date"], df["cum_strategy"], label="Estrategia modelo", color="goldenrod")
-    ax.plot(df["Date"], df["cum_buyhold"], label="Buy & Hold", color="steelblue", linestyle="--")
-    ax.set_title(f"Backtesting — {bt_result['modelo']}\n"
-                 f"Estrategia: {bt_result['retorno_estrategia']}% | "
-                 f"Buy & Hold: {bt_result['retorno_buyhold']}%")
+    ax.plot(
+        df["Date"], df["cum_strategy"], label="Estrategia modelo", color="goldenrod"
+    )
+    ax.plot(
+        df["Date"],
+        df["cum_buyhold"],
+        label="Buy & Hold",
+        color="steelblue",
+        linestyle="--",
+    )
+    ax.set_title(
+        f"Backtesting — {bt_result['modelo']}\n"
+        f"Estrategia: {bt_result['retorno_estrategia']}% | "
+        f"Buy & Hold: {bt_result['retorno_buyhold']}%"
+    )
     ax.set_xlabel("Fecha")
     ax.set_ylabel("Retorno acumulado")
     ax.legend()
@@ -202,9 +232,12 @@ def main():
     scaler = load_scaler(DIR)
 
     (
-        X_train, X_test,
-        y_bin_train, y_bin_test,
-        y_multi_train, y_multi_test,
+        X_train,
+        X_test,
+        y_bin_train,
+        y_bin_test,
+        y_multi_train,
+        y_multi_test,
         dates_test,
     ) = prepare_data(PATH)
 
@@ -212,7 +245,9 @@ def main():
     X_train_sc = scaler.transform(X_train)
     X_test_sc = scaler.transform(X_test)
 
-    print(f"\nPeriodo de test: {dates_test.iloc[0].date()} -> {dates_test.iloc[-1].date()}")
+    print(
+        f"\nPeriodo de test: {dates_test.iloc[0].date()} -> {dates_test.iloc[-1].date()}"
+    )
     print(f"Filas test: {len(X_test)}")
 
     # 2. Evaluar todos los modelos
@@ -226,7 +261,9 @@ def main():
         y_test = y_bin_test if "binary" in name else y_multi_test
         metrics = evaluate_model(model, name, X_train_sc, X_test_sc, y_train, y_test)
         results.append(metrics)
-        print(f"  {name}: accuracy_test={metrics['accuracy_test']} | f1={metrics['f1_test']}")
+        print(
+            f"  {name}: accuracy_test={metrics['accuracy_test']} | f1={metrics['f1_test']}"
+        )
 
     # 3. Tabla comparativa
     print("\n" + "=" * 60)
@@ -258,7 +295,9 @@ def main():
 
     print(f"\n  Retorno estrategia: {bt['retorno_estrategia']}%")
     print(f"  Retorno buy & hold: {bt['retorno_buyhold']}%")
-    print(f"  Operaciones realizadas: {bt['num_operaciones']} de {bt['dias_test']} días")
+    print(
+        f"  Operaciones realizadas: {bt['num_operaciones']} de {bt['dias_test']} días"
+    )
 
     os.makedirs("docs", exist_ok=True)
     plot_backtest(bt, save_path="docs/backtest.png")

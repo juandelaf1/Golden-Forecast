@@ -1,0 +1,109 @@
+# Golden Forecast - Pipeline Configuration
+# Centralized paths and parameters for reproducibility
+
+# Data paths
+data:
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+  raw_file: "gold-macro-data.csv"
+  clean_file: "gold-clean.csv"
+  features_file: "gold-features.csv"
+
+# Model paths
+models:
+  dir: "models"
+  classification_prefix: ""
+  regression_prefix: ""
+  cache_file: "regression_cache.pkl"
+  evaluation_file: "evaluation_results.json"
+  metadata_file: "train_metadata.json"
+
+# Preprocessing parameters
+preprocessing:
+  drop_volumes: ["dxy_volume", "vix_volume", "tnx_volume"]
+  date_column: "Date"
+
+# Feature engineering parameters
+feature_engineering:
+  target_threshold: 0.005  # 0.5% for multiclass
+  rsi_window: 14
+  macd_fast: 12
+  macd_slow: 26
+  macd_signal: 9
+  volatility_window: 14
+  ma_short: 5
+  ma_long: 20
+  return_lags: [1, 2]
+  absolute_columns_to_drop:
+    - "gold_close"
+    - "gold_high"
+    - "gold_low"
+    - "gold_open"
+    - "dxy_close"
+    - "dxy_high"
+    - "dxy_low"
+    - "dxy_open"
+    - "vix_close"
+    - "vix_high"
+    - "vix_low"
+    - "vix_open"
+    - "tnx_close"
+    - "tnx_high"
+    - "tnx_low"
+    - "tnx_open"
+    - "gold_return_next_day"
+
+# Classification parameters
+classification:
+  test_size: 0.2
+  random_state: 42
+  models:
+    - "Dummy"
+    - "Logistic Regression"
+    - "Random Forest"
+    - "XGBoost"
+  horizons: [1, 5, 10, 20]
+  voting_estimators: ["lr", "rf", "xgb"]
+
+# Regression parameters
+regression:
+  test_size: 0.2
+  random_state: 42
+  cache_ttl_hours: 24
+  targets:
+    fair_value_dist:
+      horizon: 1
+      description: "Distancia a MA200 (z-score precio vs valor)"
+      unit: "desviaciones estándar"
+      best_model: "RandomForest"
+  cv:
+    n_splits: 5
+    test_size: 250
+    gap: 20
+  models:
+    - "Ridge"
+    - "RandomForest"
+  cache_file: "regression_cache.pkl"
+
+# Dashboard parameters
+dashboard:
+  host: "0.0.0.0"
+  port: 8050
+  assets_dir: "src/dashboard/assets"
+  primary_model: "lr_strong_reg_binary"
+  feature_columns: 23
+
+# Docker parameters
+docker:
+  base_image: "python:3.12-slim"
+  port: 8050
+  workdir: "/app"
+  requirements: "requirements.txt"
+
+# CI/CD parameters
+ci:
+  python_version: "3.12"
+  lint: true
+  test: true
+  build_docker: true
+  deploy_render: true

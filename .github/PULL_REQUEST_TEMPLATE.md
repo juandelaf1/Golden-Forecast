@@ -2,6 +2,14 @@
 
 What does this PR do? What problem does it solve?
 
+## Related Issues
+
+Closes #<issue_number>
+Fixes #<issue_number>
+Resolves #<issue_number>
+
+<!-- Add issue numbers above to auto-close them on merge -->
+
 ## Type of change
 
 - [ ] feat: New feature
