@@ -1,8 +1,8 @@
 # DataScope Solutions: Project Handbook & Governance
 
 **Proyecto:** Machine Learning Pipeline & Predictive Modeling
-**Versión:** 2.1.0
-**Fecha:** 30 de junio de 2026
+**Versión:** 3.0.0
+**Fecha:** 06 de julio de 2026
 
 ---
 
@@ -121,14 +121,14 @@ El objetivo es determinar si es posible construir un modelo predictivo que permi
 
 El equipo deberá:
 
-* Determinar si el problema se aborda como clasificación o regresión.
-* Definir el target adecuado.
+* Abordar el problema desde clasificación (sube/baja) y regresión (precio continuo).
+* Definir targets binario y multiclase.
 * Construir un pipeline completo de Machine Learning supervisado.
-* Evaluar el rendimiento predictivo del modelo.
+* Evaluar el rendimiento predictivo de los modelos.
 * Traducir resultados técnicos a lenguaje de negocio.
 * Comunicar conclusiones de manera clara y comprensible.
 
-**Estado actual:** Dataset definitivo pendiente de selección.
+**Estado actual:** Dataset GC=F + DXY + VIX + TNX (2015-2026). 12 modelos pre-entrenados de clasificación (LR, RF, XGB × binario, multiclase). Regresión implementada como módulo experimental. Dashboard interactivo Plotly Dash desplegable via Docker.
 
 ---
 
@@ -166,9 +166,11 @@ Reglas:
    * `feature/eda`
    * `feature/preprocessing`
    * `feature/modeling`
+   * `feature/classification`
    * `feature/documentation`
-3. Pull Requests obligatorios.
+3. Pull Requests obligatorios con plantilla (`.github/PULL_REQUEST_TEMPLATE.md`).
 4. Revisión por pares antes del merge.
+5. Merges de `main` en `feature/` para mantener sincronización.
 
 ### Conventional Commits
 
@@ -183,14 +185,38 @@ Reglas:
 ## 6. Estructura del Repositorio
 
 ```text
-/data
-/notebooks
-/src
-/models
-/docs
-
-README.md
-requirements.txt
+golden-forecast/
+├── data/
+│   ├── raw/                    # gold-macro-data.csv (Yahoo Finance)
+│   └── processed/              # gold-clean.csv, gold-features.csv (24 features)
+├── notebooks/                  # EDA, preprocessing, clasificacion
+├── src/
+│   ├── extract/extract.py      # Descarga Yahoo Finance
+│   ├── preprocessing.py        # Limpieza y renombrado
+│   ├── feature_engineering.py  # 35 features (24 tecnicas+macro + 9 sentiment)
+│   ├── models/
+│   │   ├── train.py            # Entrenamiento pre-entrenado
+│   │   └── evaluate.py         # Evaluacion + backtest
+│   ├── classification.py       # Modulo de clasificacion reutilizable
+│   ├── regression.py           # Modulo de regresion exploratorio
+│   └── dashboard/
+│       ├── app.py              # Entry point Dash
+│       ├── layout.py           # Layout 8 pestañas
+│       ├── callbacks.py        # Callbacks + graficos
+│       ├── data.py             # Datos + live training
+│       ├── model_loader.py     # Carga modelos pre-entrenados
+│       └── assets/style.css    # Tema Wild-West
+├── models/                     # 12 .pkl + scaler.pkl + metadata JSON
+├── docs/                       # Handbook, data dictionary, decision log, architecture, ml_report
+├── scripts/                    # run_pipeline.py
+├── tests/                      # 7 test files (47 tests)
+├── mock_server/                # API mock para pruebas
+├── mint.json                   # Documentacion Mintlify
+├── Dockerfile
+├── docker-compose.yml
+├── README.md
+├── ROADMAP.md
+└── requirements.txt
 ```
 
 ---
@@ -237,42 +263,59 @@ Predicción del comportamiento histórico del precio del oro.
 
 ### Decisión
 
-La selección definitiva del dataset será realizada durante la Fase 0 (Setup) tras evaluación conjunta del equipo.
+Dataset GC=F (Gold Futures) via Yahoo Finance, enriquecido con DXY, VIX, TNX (2015-2026). Procesado en `data/processed/gold-features.csv` con 35 features (24 técnicas+macro + 9 market sentiment).
 
 ---
 
 ## 8. Pipeline de Machine Learning
 
-1. Carga de datos
-2. EDA (análisis exploratorio)
-3. Limpieza de datos
-4. Feature Engineering
-5. Train/Test Split
-6. Preprocesamiento
-7. Entrenamiento de modelos
-8. Evaluación
-9. Comparación de resultados
-10. Interpretación
-11. Conclusiones
+```
+extract.py → preprocessing.py → feature_engineering.py → train.py → evaluate.py
+     ↓              ↓                    ↓                   ↓           ↓
+  Yahoo Finance  Columnas          35 features          12 modelos    Metricas +
+  (GC=F, DXY,    limpias           + targets            x 2 targets  Backtest
+   VIX, TNX)                                                                    
+```
+
+### Pipeline Dashboard
+
+```
+data.py (live training) 
+                 ↘
+model_loader.py (pre-trained) → callbacks.py → layout.py → app.py → Browser
+```
 
 ---
 
 ## 9. Métricas de Evaluación
 
-### Clasificación
+### Clasificación binaria
 
 * Accuracy
 * Precision
 * Recall
 * F1-score
+* ROC-AUC
+
+### Clasificación multiclase
+
+* Accuracy
+* F1-score (macro)
 
 ### Regresión
 
-* MAE
-* RMSE
-* R²
+* MAE (Mean Absolute Error)
+* RMSE (Root Mean Squared Error)
+* R² (coeficiente de determinación)
+* MAPE (Mean Absolute Percentage Error)
 
-> La métrica principal será definida según el problema de negocio.
+### Backtest
+
+* Retorno acumulado de la estrategia
+* Retorno acumulado de Buy & Hold
+* Alpha (diferencia estrategia vs B&H)
+
+> La métrica principal de clasificación es F1-score. Para regresión, MAE y RMSE.
 
 ---
 
@@ -310,15 +353,9 @@ Una tarea está completada si:
 
 ---
 
-## 13. Registro de Decisiones (Decision Log)
+## 13. Registro de Decisiones
 
-| Fecha      | Decisión                                           | Justificación                                                     |
-| ---------- | -------------------------------------------------- | ----------------------------------------------------------------- |
-| 29/06/2026 | Selección de dataset                               | Pendiente                                                         |
-| 30/06/2026 | María designada Product Owner                      | Responsable de visión de negocio                                  |
-| 30/06/2026 | Juan designado Scrum Master                        | Responsable de coordinación y seguimiento                         |
-| 30/06/2026 | José, Gema y Joel asignados al Development Team    | Distribución de responsabilidades técnicas                        |
-| 30/06/2026 | Evaluación del precio del oro como caso de estudio | Posible aplicación de modelos predictivos sobre series temporales |
+Ver `docs/decision_log.md` para el registro completo y actualizado de decisiones técnicas del proyecto.
 
 ---
 
@@ -371,19 +408,64 @@ Estructura:
 
 ## 18. Stack Tecnológico
 
-* Python
-* pandas
-* numpy
-* scikit-learn
-* matplotlib
-* seaborn
-* Git
-* GitHub
-* Jupyter Notebook
-* VS Code
+| Área | Tecnologías |
+|------|-------------|
+| Lenguaje | Python 3.12 |
+| Datos | pandas, numpy, yfinance |
+| Modelado | scikit-learn, XGBoost |
+| Dashboard | Plotly Dash, Plotly.js, CSS Grid |
+| Deployment | Docker, Render |
+| Control de versiones | Git + GitHub (GitHub Flow) |
+| Entorno | VS Code, Jupyter Notebook |
 
 ---
 
-## 19. Principio del Proyecto
+## 19. Dashboard Interactivo
+
+Temática **Wild-West Saloon** con 8 pestañas:
+
+| Pestaña | Contenido |
+|---------|-----------|
+| **Panel de Control** | Señal del día (ALZA/ESTABLE/PRECAUCIÓN), certeza, precio + MA21, predicción vs realidad, rendimiento acumulado |
+| **Precio** | Gráfico histórico con RSI, MACD, volatilidad, rango de fechas seleccionable (1D a HIST), selector de unidad (USD/oz, %, indexado) |
+| **Indicadores** | RSI, MACD, volumen con selector de fechas |
+| **Macro** | Correlaciones DXY/VIX/TNX con desplegable explicativo |
+| **Backtest** | Estrategia ML vs Buy & Hold, alpha generado |
+| **Simulación** | Simulador de trading con capital inicial y rango de fechas |
+| **Métricas** | Importancia de variables (interactivo por categoría), matriz de confusión, ROC, tabla comparativa de modelos (clasificación + regresión) |
+| **Metodología** | Pipeline, modelos, equipo, stack, repositorio (QR) |
+
+### Ejecución
+
+```bash
+pip install -r requirements.txt
+python src/dashboard/app.py
+# Abrir http://localhost:8050
+```
+
+### Docker
+
+```bash
+docker build -t golden-forecast .
+docker run -p 8050:8050 golden-forecast
+```
+
+---
+
+## 20. Modelos Pre-entrenados
+
+12 modelos entrenados con split temporal 80/20, escalado sin data leakage:
+
+| Modelo | Target | F1 (test) | Accuracy |
+|--------|--------|-----------|----------|
+| lr_strong_reg_binary | Binario | 0.70 | 56.9% |
+| lr_binary | Binario | 0.69 | 56.2% |
+| xgb_binary | Binario | 0.67 | 56.5% |
+| rf_binary | Binario | 0.66 | 55.2% |
+| lr_multiclass | Multiclase | 0.31 | 38.1% |
+
+---
+
+## 21. Principio del Proyecto
 
 > "De datos crudos a decisiones de negocio explicables."

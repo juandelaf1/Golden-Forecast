@@ -1,0 +1,29 @@
+{
+  "project":"assay_office_generation",
+  "variants": [
+    {"id":"v01","filename":"assay_office_v01.webp","seed":1234567890},
+    {"id":"v02","filename":"assay_office_v02.webp","seed":2234567890},
+    {"id":"v03","filename":"assay_office_v03.webp","seed":3234567890},
+    {"id":"v04","filename":"assay_office_v04.webp","seed":4234567890},
+    {"id":"v05","filename":"assay_office_v05.webp","seed":5234567890},
+    {"id":"v06","filename":"assay_office_v06.webp","seed":6234567890},
+    {"id":"v07","filename":"assay_office_v07.webp","seed":7234567890},
+    {"id":"v08","filename":"assay_office_v08.webp","seed":8234567890}
+  ],
+  "final":"assay_office_final.webp",
+  "preview":"preview_1920.webp",
+  "parameters":{
+    "width":7680,
+    "height":3240,
+    "samples":1,
+    "steps":30,
+    "cfg_scale":7.5,
+    "sampler":"Euler a",
+    "variations":8,
+    "aspect_ratio":"21:9"
+  },
+  "selection":{
+    "select_top_n":3,
+    "criteria":["composition","lighting","material realism","center clearance"]
+  }
+}
