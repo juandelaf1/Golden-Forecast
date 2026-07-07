@@ -1,39 +1,31 @@
 # Roadmap — Golden Forecast
 
 ## Sprint 1 (Days 1‑3): Data Preparation & Ingestion ✅
-| Milestone                     | Assigned to          | Status |
-|-------------------------------|----------------------|--------|
-| Data pipeline (extraction + schema + preprocessing) | Gema | ✅ |
-| Feature engineering           | Gema, Jose           | ✅ |
-| Git setup & repo structure    | Juan                 | ✅ |
+- Data extraction, schema definition & preprocessing pipeline
+- Feature engineering (technical + macro indicators)
+- Git setup, repo structure & version control
 
 ## Sprint 2 (Days 4‑6): Modeling & Validation ✅
-| Milestone                               | Assigned to               | Status |
-|-----------------------------------------|---------------------------|--------|
-| Classification modeling (LR, RF, XGB)   | Joel                      | ✅ |
-| Model training pipeline & evaluation    | Joel                      | ✅ |
-| Backtesting & overfitting analysis      | Joel                      | ✅ |
-| Exploratory Data Analysis (EDA)         | Jose                      | ✅ |
-| Interactive dashboard + optimizations   | Jose, Gema                | ✅ |
-| Audio, UI & experience refinements      | Jose                      | ✅ |
-| Regression module & experiments         | Juan                      | ✅ |
-| Feature importance & correlation analysis| Gema                     | ✅ |
+- Classification modeling (Logistic Regression, Random Forest, XGBoost)
+- Model training pipeline & automated evaluation
+- Backtesting & overfitting analysis
+- Exploratory Data Analysis (EDA)
+- Interactive Plotly Dash dashboard (8 tabs)
+- Dashboard optimizations (caching, lazy loading, audio, UI)
+- Regression module & exploratory experiments
+- Feature importance, correlation & macro analysis
 
 ## Sprint 3 (Days 7‑8): Release & Documentation 📦
-| Milestone                               | Assigned to               | Status |
-|-----------------------------------------|---------------------------|--------|
-| Project vision, backlog & prioritization | Maria                    | ✅ |
-| Sprint review & retrospective           | Maria                    | ✅ |
-| Presentation storytelling & narrative   | Maria                    | ✅ |
-| QA & validation of final deliverables   | Maria                    | ✅ |
-| Deployment (Docker, Render, CI/CD)       | Juan                     | ✅ |
-| Data lineage & documentation            | Gema, Juan               | ✅ |
-| EDA notebook (PR #38)                   | Jose                     | ✅ |
-| Market sentiment features (PR #39)      | Gema                     | ✅ |
-| Re‑train models with new features       | Joel                     | ⏳ |
-| Testing (features, models, dashboard)   | Joel, Gema, Jose         | ✅ |
-| Mintlify documentation site             | Gema, Juan               | ✅ |
-| Final repo cleanup & handover           | Maria, Juan              | ✅ |
+- Project vision, backlog prioritization & sprint coordination
+- Presentation storytelling, narrative & QA validation
+- Deployment (Docker, Render, CI/CD automation)
+- Data lineage, documentation & data dictionary
+- EDA notebook (PR #38)
+- Market sentiment & relative spread features (PR #39)
+- Model re-training with updated feature set
+- Testing (features, models, dashboard)
+- Mintlify documentation site
+- Final repo cleanup & handover
 
 **Entrega final**: Dashboard funcional + API health endpoint + repositorio documentado
 
