@@ -41,6 +41,7 @@ def download_ticker(name: str, ticker: str, start: str, interval: str) -> pd.Dat
 #Unimos las series por fechas
 def merge_series(dfs: dict) -> pd.DataFrame:
     df_merged = pd.concat(dfs.values(), axis=1, sort=False)
+    df_merged = df_merged.ffill()
     df_merged = df_merged.dropna()
     return df_merged
  

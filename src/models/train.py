@@ -101,6 +101,7 @@ def prepare_xy(df: pd.DataFrame):
     X = df.drop(columns=NO_FEATURE_COLUMN)
     y_binary = df["target_binary"]
     y_multiclass = df["target_multiclass"]
+    
 
     print(f"\nFeatures: {X.shape[1]} columnas")
     print(f"Target binario     — clases: {sorted(y_binary.unique())}")
@@ -207,6 +208,20 @@ def main():
     print("Entrenando modelos...")
     print("=" * 60)
     trained = train_models(X_train_scaled, y_bin_train, y_multi_train)
+    
+    rf = trained["rf_binary"]
+
+    importance = (
+        pd.DataFrame({
+            "feature": X.columns,
+            "importance": rf.feature_importances_
+        })
+        .sort_values("importance", ascending=False)
+    )
+
+    print("\n========== IMPORTANCIA RANDOM FOREST ==========")
+    print(importance)
+    print("===============================================\n")
 
     print("\n" + "=" * 60)
     print("Guardando modelos...")

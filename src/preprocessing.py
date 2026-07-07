@@ -111,7 +111,7 @@ def remove_missing_values(df):
     eran pocos y no compensaba imputarlos.
     """
     df = df.copy()
-
+    df =df.ffill()
     df = df.dropna()
 
     return df

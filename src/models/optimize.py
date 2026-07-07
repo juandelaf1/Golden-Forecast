@@ -49,8 +49,8 @@ MULTICLASS_DECODE = {0: -1, 1: 0, 2: 1}
 # Espacio de búsqueda para Random Forest
 RF_PARAM_GRID = {
     "n_estimators": [100, 200, 300, 500],
-    "max_depth": [3, 4, 5, 6, None],
-    "min_samples_leaf": [10, 15, 20, 30, 50],
+    "max_depth": [3, 4, 5, 6],  # quitar None — sin límite causa overfitting
+    "min_samples_leaf": [10, 15, 20, 30],  # quitar 50 — demasiado restrictivo
     "max_features": ["sqrt", "log2", 0.3, 0.5],
     "class_weight": [None, "balanced"],
 }
@@ -222,13 +222,13 @@ def main():
     rf_bin_model, rf_bin_params, rf_bin_cv_score = optimize_model(
         RandomForestClassifier(random_state=RANDOM_STATE),
         RF_PARAM_GRID,
-        X_train_sc, y_bin_train,
+        X_train, y_bin_train,
         model_name="rf_optimized_binary",
     )
 
     rf_bin_metrics = evaluate_optimized(
         rf_bin_model, "rf_optimized_binary",
-        X_train_sc, X_test_sc,
+        X_train, X_test,
         y_bin_train, y_bin_test,
     )
     results.append(rf_bin_metrics)
@@ -245,13 +245,13 @@ def main():
     rf_multi_model, rf_multi_params, rf_multi_cv_score = optimize_model(
         RandomForestClassifier(random_state=RANDOM_STATE),
         RF_PARAM_GRID,
-        X_train_sc, y_multi_train,
+        X_train, y_multi_train,
         model_name="rf_optimized_multiclass",
     )
 
     rf_multi_metrics = evaluate_optimized(
         rf_multi_model, "rf_optimized_multiclass",
-        X_train_sc, X_test_sc,
+        X_train, X_test,
         y_multi_train, y_multi_test,
     )
     results.append(rf_multi_metrics)
@@ -293,13 +293,13 @@ def main():
     lgbm_bin_model, lgbm_bin_params, lgbm_bin_cv_score = optimize_model(
         LGBMClassifier(random_state=RANDOM_STATE, verbosity=-1),
         LGBM_PARAM_GRID,
-        X_train_sc, y_bin_train,
+        X_train, y_bin_train,
         model_name="lgbm_optimized_binary",
     )
 
     lgbm_bin_metrics = evaluate_optimized(
         lgbm_bin_model, "lgbm_optimized_binary",
-        X_train_sc, X_test_sc,
+        X_train, X_test,
         y_bin_train, y_bin_test,
     )
     results.append(lgbm_bin_metrics)

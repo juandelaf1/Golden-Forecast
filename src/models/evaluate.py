@@ -133,8 +133,9 @@ def compare_models(results: list) -> pd.DataFrame:
 
 #Backtesting
 def backtest_binary(model, model_name, X_test, dates_test):
-    y_pred = model.predict(X_test)
-
+    proba = model.predict_proba(X_test)[:, 1]
+    y_pred = (proba >= 0.56).astype(int)
+    
     df_raw = pd.read_csv(PATH, parse_dates=["Date"])
     df_raw = df_raw.sort_values("Date").reset_index(drop=True)
     split_idx = int(len(df_raw) * (1 - TEST_SIZE))
@@ -436,7 +437,10 @@ def main():
     
     # Backtesting del mejor modelo binario
     # Usar rf_binary para backtesting — más selectivo que rf_optimized
-    best_binary_name = "lr_strong_reg_binary"
+    binary_results = [r for r in results if "binary" in r["modelo"]]
+    best_binary = max(binary_results, key=lambda x: x["f1_test"])
+
+    best_binary_name = best_binary["modelo"]
     best_binary_model = models[best_binary_name]
 
     print(f"Modelo binario seleccionado: {best_binary_name}")
