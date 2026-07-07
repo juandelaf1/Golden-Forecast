@@ -403,6 +403,7 @@ try:
     context = build_context()
 except Exception as exc:
     import warnings
+
     warnings.warn(f"Failed to build context: {exc}")
     df = load_market_data()[0]
     context = {
