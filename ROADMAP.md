@@ -3,35 +3,38 @@
 ## Sprint 1 (Days 1‑3): Data Preparation & Ingestion ✅
 | Milestone                     | Assigned to          | Status |
 |-------------------------------|----------------------|--------|
-| Raw data downloaded & stored  | Juan (SM)            | ✅ |
-| Raw schema defined            | Gema (Dev)           | ✅ |
-| Preprocessing pipeline built  | Gema (Dev)           | ✅ |
-| Feature engineering completed| Gema (Dev)           | ✅ |
-| Version‑control & Git setup   | Juan (SM)            | ✅ |
+| Data extraction script        | Gema                 | ✅ |
+| Raw schema definition         | Gema                 | ✅ |
+| Preprocessing pipeline        | Gema                 | ✅ |
+| Feature engineering           | Gema, Jose           | ✅ |
+| Git setup & repo structure    | Juan                 | ✅ |
 
 ## Sprint 2 (Days 4‑6): Modeling & Validation ✅
-| Milestone                               | Assigned to          | Status |
-|-----------------------------------------|----------------------|--------|
-| Binary & multiclass classification      | Juan                 | ✅ `src/models/train.py` |
-| Ensemble model pipeline (`train.py`)    | Joel                 | ✅ 12 pretrained models |
-| Automated evaluation pipeline (`evaluate.py`) | Joel           | ✅ Metrics, backtest, overfit check |
-| Interactive Plotly Dash dashboard (8 tabs) | Juan           | ✅ |
-| Lazy‑loading of models & tabs           | Juan                 | ✅ Startup < 3 s |
-| Audio autoplay on first interaction      | Juan                 | ✅ |
-| Ticker visibility & readability         | Juan                 | ✅ |
-| Tech‑stack refinement (icons, naming)   | Juan                 | ✅ |
+| Milestone                               | Assigned to               | Status |
+|-----------------------------------------|---------------------------|--------|
+| Classification modeling (LR, RF, XGB)   | Joel                      | ✅ |
+| Model training pipeline & evaluation    | Joel                      | ✅ |
+| Backtesting & overfitting analysis      | Joel                      | ✅ |
+| Exploratory Data Analysis (EDA)         | Jose                      | ✅ |
+| Interactive dashboard (8 tabs)          | Jose, Gema                | ✅ |
+| Dashboard optimizations (caching, lazy) | Jose, Gema                | ✅ |
+| Audio & UI refinements                  | Jose                      | ✅ |
+| Regression module & experiments         | Juan                      | ✅ |
+| Feature importance & metrics            | Gema                      | ✅ |
+| Correlation & macro analysis            | Gema                      | ✅ |
 
 ## Sprint 3 (Days 7‑8): Release & Documentation 📦
-| Milestone                               | Assigned to          | Status |
-|-----------------------------------------|----------------------|--------|
-| Model deployment & CI/CD automation       | Juan (SM)            | ✅ |
-| Final data documentation (Data Lineage)   | Juan (SM)            | ✅ |
-| EDA notebook (PR #38)                     | Jose (Dev)           | ✅ |
-| Market sentiment features (PR #39)        | Gema (Dev)           | ✅ |
-| Re‑train models with new features         | Joel (Dev)           | ⏳ |
-| Docs updated & Mintlify site              | Juan (SM)            | ✅ |
-| Presentation narrative & QA               | Maria (PO)           | ✅ |
-| Final repo cleanup & handover            | All (collaborative)  | ✅ |
+| Milestone                               | Assigned to               | Status |
+|-----------------------------------------|---------------------------|--------|
+| Deployment (Docker, Render, CI/CD)       | Juan                     | ✅ |
+| Data lineage & reproducibility           | Gema                     | ✅ |
+| EDA notebook (PR #38)                    | Jose                     | ✅ |
+| Market sentiment features (PR #39)       | Gema                     | ✅ |
+| Re‑train models with new features        | Joel                     | ⏳ |
+| Tests (features, models, dashboard)      | Joel, Gema, Jose         | ✅ |
+| Documentation & Mintlify site            | Gema, Juan               | ✅ |
+| Presentation narrative & QA              | Maria                    | ✅ |
+| Final repo cleanup & handover            | Maria, Juan              | ✅ |
 
 **Entrega final**: Dashboard funcional + API health endpoint + repositorio documentado
 
