@@ -3,7 +3,7 @@ services:
     name: golden-forecast
     env: docker
     repo: https://github.com/juandelaf1/Golden-Forecast
-    branch: feature/full-pipeline
+    branch: main
     dockerfilePath: ./Dockerfile
     healthCheckPath: /
     envVars:
