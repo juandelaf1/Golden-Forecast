@@ -3,9 +3,7 @@
 ## Sprint 1 (Days 1‑3): Data Preparation & Ingestion ✅
 | Milestone                     | Assigned to          | Status |
 |-------------------------------|----------------------|--------|
-| Data extraction script        | Gema                 | ✅ |
-| Raw schema definition         | Gema                 | ✅ |
-| Preprocessing pipeline        | Gema                 | ✅ |
+| Data pipeline (extraction + schema + preprocessing) | Gema | ✅ |
 | Feature engineering           | Gema, Jose           | ✅ |
 | Git setup & repo structure    | Juan                 | ✅ |
 
@@ -16,25 +14,26 @@
 | Model training pipeline & evaluation    | Joel                      | ✅ |
 | Backtesting & overfitting analysis      | Joel                      | ✅ |
 | Exploratory Data Analysis (EDA)         | Jose                      | ✅ |
-| Interactive dashboard (8 tabs)          | Jose, Gema                | ✅ |
-| Dashboard optimizations (caching, lazy) | Jose, Gema                | ✅ |
-| Audio & UI refinements                  | Jose                      | ✅ |
+| Interactive dashboard + optimizations   | Jose, Gema                | ✅ |
+| Audio, UI & experience refinements      | Jose                      | ✅ |
 | Regression module & experiments         | Juan                      | ✅ |
-| Feature importance & metrics            | Gema                      | ✅ |
-| Correlation & macro analysis            | Gema                      | ✅ |
+| Feature importance & correlation analysis| Gema                     | ✅ |
 
 ## Sprint 3 (Days 7‑8): Release & Documentation 📦
 | Milestone                               | Assigned to               | Status |
 |-----------------------------------------|---------------------------|--------|
+| Project vision, backlog & prioritization | Maria                    | ✅ |
+| Sprint review & retrospective           | Maria                    | ✅ |
+| Presentation storytelling & narrative   | Maria                    | ✅ |
+| QA & validation of final deliverables   | Maria                    | ✅ |
 | Deployment (Docker, Render, CI/CD)       | Juan                     | ✅ |
-| Data lineage & reproducibility           | Gema                     | ✅ |
-| EDA notebook (PR #38)                    | Jose                     | ✅ |
-| Market sentiment features (PR #39)       | Gema                     | ✅ |
-| Re‑train models with new features        | Joel                     | ⏳ |
-| Tests (features, models, dashboard)      | Joel, Gema, Jose         | ✅ |
-| Documentation & Mintlify site            | Gema, Juan               | ✅ |
-| Presentation narrative & QA              | Maria                    | ✅ |
-| Final repo cleanup & handover            | Maria, Juan              | ✅ |
+| Data lineage & documentation            | Gema, Juan               | ✅ |
+| EDA notebook (PR #38)                   | Jose                     | ✅ |
+| Market sentiment features (PR #39)      | Gema                     | ✅ |
+| Re‑train models with new features       | Joel                     | ⏳ |
+| Testing (features, models, dashboard)   | Joel, Gema, Jose         | ✅ |
+| Mintlify documentation site             | Gema, Juan               | ✅ |
+| Final repo cleanup & handover           | Maria, Juan              | ✅ |
 
 **Entrega final**: Dashboard funcional + API health endpoint + repositorio documentado
 
