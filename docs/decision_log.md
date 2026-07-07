@@ -68,3 +68,8 @@
 | 06/07/2026 | Carga lazy de modelos: solo primario al arranque, resto bajo demanda | `build_pretrained_context` solo carga `lr_strong_reg_binary`. `ensure_all_models()` carga rf_binary, xgb_binary, lr_multiclass + experimental al visitar Métricas. `ensure_regression()` entrena regression al visitar Valor y Riesgo. Startup ~3s vs ~15s |
 | 06/07/2026 | Audio autoplay: script JS en layout.py prueba play() al cargar y en cualquier interacción (click, touch, mousemove, scroll, keydown) | El anterior handler solo respondía a click. Ahora el hilo suena con el primer movimiento o tecleo sin tener que hacer clic explícito |
 | 06/07/2026 | Ticker: valores más visibles (font-size 1.05rem, weight 800, bg oscuro) | DXY, VIX, MA 21 ahora se distinguen mejor de las etiquetas |
+| 07/07/2026 | PR #38 mergeado: EDA de gold-features.csv (Jose) | Notebook profesional con 36 celdas, 8 gráficos, calidad de datos, targets, correlaciones |
+| 07/07/2026 | PR #39 mergeado: Market sentiment + relative spreads (Gema) | 9 nuevas features: lags DXY/VIX, retornos acumulados 5d/10d, VIX fear flags, MA spread, gold-dxy spread |
+| 07/07/2026 | Merge main → feature/full-pipeline | Sincronización con PRs #38 y #39. Conflicto en docstring de `feature_engineering.py` resuelto |
+| 07/07/2026 | Deploy caído por feature mismatch en Render | Modelos .pkl antiguos no reconocen nuevas columnas (PR #39). Pendiente reentrenar por Joel |
+| 07/07/2026 | Documentación Mintlify creada | `mint.json` configurado con navegación, colores dorados, enlace a dashboard y GitHub |

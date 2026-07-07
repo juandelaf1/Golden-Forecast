@@ -3,9 +3,10 @@
 ## 1. Dataset
 
 - **Source**: Yahoo Finance (GC=F, DX-Y.NYB, ^VIX, ^TNX)
-- **Period**: 2015-01-01 to present (~2,900 daily records)
+- **Period**: 2015-01-01 to present (~2,865 daily records)
 - **Split**: Temporal (80/20), chronological order preserved
-- **Preprocessing**: Missing values removed (10 rows), no forward-fill
+- **Preprocessing**: Missing values removed, no forward-fill
+- **Features**: 33 engineered variables + 2 targets (see PR #39 for market sentiment additions)
 
 ## 2. Features (23 engineered variables)
 
@@ -17,7 +18,11 @@
 | Moving Averages | gold_ma_5, gold_ma_20, gold_close_vs_ma_5/20 | 4 |
 | Technical | gold_rsi_14, gold_macd, gold_macd_signal, gold_volatility_14 | 4 |
 | Lags | gold_return_lag_1, gold_return_lag_2 | 2 |
-| **Total** | | **23** |
+| Cumulative Returns | gold_return_5d, gold_return_10d | 2 |
+| VIX Sentiment | vix_ma_20, vix_high_fear, vix_extreme_fear | 3 |
+| Relative Spreads | gold_ma5_minus_ma20, gold_dxy_spread | 2 |
+| Lags (macro) | dxy_return_lag_2, vix_return_lag_2 | 2 |
+| **Total** | | **33 features + 2 targets** |
 
 ## 3. Models
 

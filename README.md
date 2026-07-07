@@ -3,15 +3,16 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Python-3.10-3776AB?logo=python&logoColor=white" alt="Python">
-  <img src="https://img.shields.io/badge/pandas-1.5-150458?logo=pandas&logoColor=white" alt="pandas">
-  <img src="https://img.shields.io/badge/scikit--learn-1.3-F7931E?logo=scikit-learn&logoColor=white" alt="scikit-learn">
-  <img src="https://img.shields.io/badge/XGBoost-1.7-EC1C24?logo=xgboost&logoColor=white" alt="XGBoost">
-  <img src="https://img.shields.io/badge/Plotly-5.17-3F4F75?logo=plotly&logoColor=white" alt="Plotly">
-  <img src="https://img.shields.io/badge/Dash-2.14-008DE4?logo=dash&logoColor=white" alt="Dash">
-  <img src="https://img.shields.io/badge/Flask-2.3-000000?logo=flask&logoColor=white" alt="Flask">
-  <img src="https://img.shields.io/badge/Yahoo%20Finance-yfinance-6001D2?logo=yahoo&logoColor=white" alt="yfinance">
+  <img src="https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/pandas-2.0-150458?logo=pandas&logoColor=white" alt="pandas">
+  <img src="https://img.shields.io/badge/scikit--learn-1.8-F7931E?logo=scikit-learn&logoColor=white" alt="scikit-learn">
+  <img src="https://img.shields.io/badge/XGBoost-2.0-EC1C24?logo=xgboost&logoColor=white" alt="XGBoost">
+  <img src="https://img.shields.io/badge/Plotly-5.24-3F4F75?logo=plotly&logoColor=white" alt="Plotly">
+  <img src="https://img.shields.io/badge/Dash-2.18-008DE4?logo=dash&logoColor=white" alt="Dash">
+  <img src="https://img.shields.io/badge/Flask-3.0-000000?logo=flask&logoColor=white" alt="Flask">
+  <img src="https://img.shields.io/badge/Yahoo%20Finance-yfinance-0.2-6001D2?logo=yahoo&logoColor=white" alt="yfinance">
   <img src="https://img.shields.io/badge/License-MIT-green" alt="License">
+  <img src="https://img.shields.io/badge/Render-Live-46E3B7?logo=render&logoColor=white" alt="Render">
 </p>
 
 ---
@@ -46,6 +47,8 @@ Datos diarios de **GC=F** (Gold Futures) via Yahoo Finance desde 2015, enriqueci
 | **VIX** | Indice de volatilidad / miedo | Directa (refugio) |
 | **TNX** | Bono USA 10 anos (tipos de interes) | Inversa |
 
+> **Dashboard en vivo**: [https://golden-forecast.onrender.com](https://golden-forecast.onrender.com)
+
 ## Stack Tecnologico
 
 | Area | Tecnologias |
@@ -67,11 +70,15 @@ golden-forecast/
 ├── src/
 │   ├── extract/                # Descarga de datos
 │   ├── models/                 # Pipeline entrenamiento (train.py, evaluate.py)
-│   └── dashboard/              # App Dash (app.py, callbacks.py, layout.py, data.py, model_loader.py)
+│   ├── dashboard/              # App Dash (app.py, callbacks.py, layout.py, data.py, model_loader.py)
+│   ├── classification.py       # Modulo de clasificacion reutilizable
+│   └── regression.py           # Modulo de regresion exploratorio
 ├── models/                     # 12 modelos pre-entrenados (.pkl) + scaler + metadata
-├── docs/                       # Handbook, data dictionary, decision log
-├── mock_server/                # API mock para pruebas
-└── README.md, ROADMAP.md, requirements.txt
+├── docs/                       # Handbook, data dictionary, decision log, ml report, architecture
+├── scripts/                    # run_pipeline.py — orquestador
+├── tests/                      # 7 test files (47 tests)
+├── mint.json                   # Documentacion Mintlify
+└── README.md, ROADMAP.md, requirements.txt, Dockerfile, render.yaml
 ```
 
 ## Pipeline de ML
@@ -79,9 +86,9 @@ golden-forecast/
 ```
 extract.py → preprocessing.py → feature_engineering.py → train.py → evaluate.py
      ↓              ↓                    ↓                   ↓           ↓
-  Yahoo Finance  Columnas          24 features           6 modelos    Metricas +
-  (GC=F, DXY,    limpias           tecnicas+macro        x 2 targets  Backtest
-   VIX, TNX)                                                                    
+  Yahoo Finance  Columnas          35 features          12 modelos    Metricas +
+  (GC=F, DXY,    limpias           + targets            x 2 targets  Backtest
+   VIX, TNX)                                                           + EDA
 ```
 
 ## Modelos Pre-entrenados

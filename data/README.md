@@ -24,27 +24,29 @@
 ## Processing Pipeline
 
 ```
-extract.py → preprocessing.py → feature_engineering.py → classification.py
+extract.py → preprocessing.py → feature_engineering.py → models/train.py
      ↓              ↓                    ↓                    ↓
-   data/raw/      Columnas           Features              Modelos de
-   gold-macro-    renombradas        técnicas y            clasificación
-   data.csv       y limpiadas        macro                 evaluados
+    data/raw/      Columnas           35 features          12 modelos
+    gold-macro-    renombradas        + 2 targets          .pkl
+    data.csv       y limpiadas        (33+2 columnas)      guardados
 ```
 
 ## Storage
 
 - **Raw**: `data/raw/gold-macro-data.csv` (immutable, never modified)
 - **Processed**: `data/processed/gold-clean.csv` (cleaned data)
-- **Features**: `data/processed/gold-features.csv` (features + targets for modeling)
+- **Features**: `data/processed/gold-features.csv` (33 features + 2 targets)
 
 ## Reproducibility
 
 ```bash
-python src/extract/extract.py          # Descargar datos crudos
-python src/preprocessing.py            # Generar CSV limpio (gold-clean.csv)
-python src/feature_engineering.py      # Generar CSV con features (gold-features.csv)
-python src/classification.py           # Entrenar y evaluar modelos
+python src/extract/extract.py              # Descargar datos crudos
+python src/preprocessing.py                # Generar CSV limpio
+python src/feature_engineering.py          # Generar CSV con features
+python src/models/train.py                 # Entrenar y evaluar modelos
 ```
 
-O ejecutar los notebooks en orden:
-`EDA_Golden_Forecast.ipynb → 02_preprocessing.ipynb → 03_classification.ipynb`
+O ejecutar el orquestador completo:
+```bash
+python scripts/run_pipeline.py
+```

@@ -19,7 +19,23 @@ En el notebook de clasificación también se usan `gold_open`, `gold_high`, `gol
 
 ## Engineered Features (gold-features.csv)
 
-### Features de precio y retornos
+### Features introducidas en PR #39 (Market Sentiment & Relative Spreads)
+
+| Variable | Tipo | Descripción | Fórmula |
+|----------|------|-------------|---------|
+| dxy_return_lag_2 | float | Retorno DXY de hace 2 días | `dxy_return.shift(2)` |
+| vix_return_lag_2 | float | Retorno VIX de hace 2 días | `vix_return.shift(2)` |
+| gold_return_5d | float | Retorno acumulado oro 5 días | `gold_close.pct_change(5)` |
+| gold_return_10d | float | Retorno acumulado oro 10 días | `gold_close.pct_change(10)` |
+| vix_ma_20 | float | Media móvil VIX 20 días | `vix_close.rolling(20).mean()` |
+| vix_high_fear | int | Bandera VIX > 25 (miedo alto) | `(vix_close > 25).astype(int)` |
+| vix_extreme_fear | int | Bandera VIX > 35 (miedo extremo) | `(vix_close > 35).astype(int)` |
+| gold_ma5_minus_ma20 | float | Diferencia MA corta vs larga | `gold_ma_5 - gold_ma_20` |
+| gold_dxy_spread | float | Spread oro vs dólar | `gold_return - dxy_return` |
+
+---
+
+## Features de precio y retornos
 
 | Variable | Tipo | Descripción | Fórmula |
 |----------|------|-------------|---------|

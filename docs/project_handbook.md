@@ -193,10 +193,12 @@ golden-forecast/
 ├── src/
 │   ├── extract/extract.py      # Descarga Yahoo Finance
 │   ├── preprocessing.py        # Limpieza y renombrado
-│   ├── feature_engineering.py  # 24 features tecnicas + macro
+│   ├── feature_engineering.py  # 35 features (24 tecnicas+macro + 9 sentiment)
 │   ├── models/
 │   │   ├── train.py            # Entrenamiento pre-entrenado
 │   │   └── evaluate.py         # Evaluacion + backtest
+│   ├── classification.py       # Modulo de clasificacion reutilizable
+│   ├── regression.py           # Modulo de regresion exploratorio
 │   └── dashboard/
 │       ├── app.py              # Entry point Dash
 │       ├── layout.py           # Layout 8 pestañas
@@ -205,8 +207,11 @@ golden-forecast/
 │       ├── model_loader.py     # Carga modelos pre-entrenados
 │       └── assets/style.css    # Tema Wild-West
 ├── models/                     # 12 .pkl + scaler.pkl + metadata JSON
-├── docs/                       # Handbook, data dictionary, decision log
+├── docs/                       # Handbook, data dictionary, decision log, architecture, ml_report
+├── scripts/                    # run_pipeline.py
+├── tests/                      # 7 test files (47 tests)
 ├── mock_server/                # API mock para pruebas
+├── mint.json                   # Documentacion Mintlify
 ├── Dockerfile
 ├── docker-compose.yml
 ├── README.md
@@ -258,7 +263,7 @@ Predicción del comportamiento histórico del precio del oro.
 
 ### Decisión
 
-Dataset GC=F (Gold Futures) via Yahoo Finance, enriquecido con DXY, VIX, TNX (2015-2026). Procesado en `data/processed/gold-features.csv` con 24 features técnicas y macro.
+Dataset GC=F (Gold Futures) via Yahoo Finance, enriquecido con DXY, VIX, TNX (2015-2026). Procesado en `data/processed/gold-features.csv` con 35 features (24 técnicas+macro + 9 market sentiment).
 
 ---
 
@@ -267,8 +272,8 @@ Dataset GC=F (Gold Futures) via Yahoo Finance, enriquecido con DXY, VIX, TNX (20
 ```
 extract.py → preprocessing.py → feature_engineering.py → train.py → evaluate.py
      ↓              ↓                    ↓                   ↓           ↓
-  Yahoo Finance  Columnas          24 features           6 modelos    Metricas +
-  (GC=F, DXY,    limpias           tecnicas+macro        x 2 targets  Backtest
+  Yahoo Finance  Columnas          35 features          12 modelos    Metricas +
+  (GC=F, DXY,    limpias           + targets            x 2 targets  Backtest
    VIX, TNX)                                                                    
 ```
 

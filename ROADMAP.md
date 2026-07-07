@@ -26,6 +26,10 @@
 |-----------------------------------------|----------------------|--------|
 | Model deployment & CI/CD automation       | Juan (SM)            | ✅ |
 | Final data documentation (Data Lineage)   | Juan (SM)            | ✅ |
+| EDA notebook (PR #38)                     | Jose (Dev)           | ✅ |
+| Market sentiment features (PR #39)        | Gema (Dev)           | ✅ |
+| Re‑train models with new features         | Joel (Dev)           | ⏳ |
+| Docs updated & Mintlify site              | Juan (SM)            | ✅ |
 | Presentation narrative & QA               | Maria (PO)           | ✅ |
 | Final repo cleanup & handover            | All (collaborative)  | ✅ |
 
@@ -76,7 +80,7 @@ All steps are idempotent, version‑controlled, and documented in the `README.md
 |---------------------------------------|---------|
 | `src/extract/extract.py`              | Download raw Yahoo Finance data |
 | `src/preprocessing.py`                | Clean & rename columns |
-| `src/feature_engineering.py`          | Create 24 technical & macro features |
+| `src/feature_engineering.py`          | Create 24 technical & macro features + 9 market sentiment (PR #39) |
 | `src/models/train.py`                 | Train LR, RF, XGBoost classifiers |
 | `src/models/evaluate.py`              | Compute metrics, backtest, overfit checks |
 | `src/dashboard/`                      | Plotly Dash UI with 8 tabs |
