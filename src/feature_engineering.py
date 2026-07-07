@@ -174,15 +174,82 @@ def create_return_lags(df):
     gold_return_lag_2:
     Retorno del oro de hace dos días.
 
+    dxy_return_lag_2:
+    Retorno del índice dólar (DXY) de hace dos días.
+
+    Permite que el modelo incorpore información pasada sobre la evolución
+    del dólar, ya que sus movimientos pueden influir en el precio del oro
+    con cierto retraso.
+
+    vix_return_lag_2:
+    Retorno del VIX de hace dos días.
+
+    Introduce información histórica sobre cambios en el nivel de incertidumbre
+    del mercado. Esto puede ayudar a capturar posibles efectos retardados del
+    sentimiento inversor sobre el comportamiento del oro.
+
     No hay data leakage porque solo se usa información pasada.
     """
     df = df.copy()
 
     df["gold_return_lag_1"] = df["gold_return"].shift(1)
     df["gold_return_lag_2"] = df["gold_return"].shift(2)
+    df["dxy_return_lag_2"] = df["dxy_return"].shift(2)
+    df["vix_return_lag_2"] = df["vix_return"].shift(2)
 
     return df
 
+
+def create_cumulative_returns(df):
+    """
+    Crea retornos acumulados del oro a 5 y 10 días.
+
+    Estas variables miden cuánto ha cambiado el oro en una ventana más amplia,
+    no solo de un día a otro.
+    """
+    df = df.copy()
+
+    df["gold_return_5d"] = df["gold_close"].pct_change(5)
+    df["gold_return_10d"] = df["gold_close"].pct_change(10)
+
+    return df
+
+def create_vix_sentiment_features(df):
+    """
+    Crea variables derivadas del VIX para representar sentimiento de mercado.
+
+    El VIX se suele interpretar como índice del miedo:
+    - VIX alto: más incertidumbre.
+    - VIX bajo: mercado más tranquilo.
+    """
+    df = df.copy()
+
+    df["vix_ma_20"] = df["vix_close"].rolling(window=20).mean()
+    df["vix_high_fear"] = (df["vix_close"] > 25).astype(int)
+    df["vix_extreme_fear"] = (df["vix_close"] > 35).astype(int)
+
+    return df
+
+def create_relative_spreads(df):
+    """
+    Crea variables que comparan el comportamiento del oro con otros activos.
+
+    Sirven para medir si el oro se está comportando mejor o peor que
+    el dólar y la bolsa.
+    """
+    df = df.copy()
+
+    # Diferencia entre la media móvil corta y larga del oro
+    df["gold_ma5_minus_ma20"] = df["gold_ma_5"] - df["gold_ma_20"]
+
+    # Comparación del retorno diario del oro frente al dólar
+    df["gold_dxy_spread"] = df["gold_return"] - df["dxy_return"]
+
+    # Esta feature queda pendiente porque en el dataset actual no existe sp500_return.
+    # Comparación del retorno diario del oro frente al S&P 500
+    # df["gold_sp500_spread"] = df["gold_return"] - df["sp500_return"]
+
+    return df
 
 def create_targets(df, threshold=0.005):
     """
@@ -230,6 +297,9 @@ def create_features(df):
     6. MACD.
     7. Volatilidad rolling.
     8. Lags del retorno del oro.
+    9. Retornos acumulados del oro.
+    10. Variables de sentimiento del VIX.
+    11. Spreads relativos entre activos.
     """
     df = df.copy()
 
@@ -241,6 +311,9 @@ def create_features(df):
     df = create_macd(df)
     df = create_rolling_volatility(df)
     df = create_return_lags(df)
+    df = create_cumulative_returns(df)
+    df = create_vix_sentiment_features(df)
+    df = create_relative_spreads(df)
 
     return df
 
