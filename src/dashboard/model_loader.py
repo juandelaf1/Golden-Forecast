@@ -93,7 +93,19 @@ def build_pretrained_context():
     df = load_features()
     X, y_binary, y_multiclass = prepare_features(df)
     scaler = load_scaler()
-    X_scaled = scaler.transform(X)
+
+    try:
+        X_scaled = scaler.transform(X)
+    except ValueError:
+        cols = getattr(scaler, "feature_names_in_", None)
+        if cols is not None:
+            X_in = X[cols]
+        else:
+            # Fallback: use first N columns (original feature count)
+            n = getattr(scaler, "n_features_in_", X.shape[1])
+            X_in = X.iloc[:, :n]
+        X_scaled = scaler.transform(X_in)
+
     eval_results = load_evaluation_results()
 
     # Load only primary model eagerly

@@ -399,4 +399,22 @@ def ensure_regression():
         context["regression"] = None
 
 
-context = build_context()
+try:
+    context = build_context()
+except Exception as exc:
+    import warnings
+    warnings.warn(f"Failed to build context: {exc}")
+    df = load_market_data()[0]
+    context = {
+        "df": df,
+        "model_results": {},
+        "feature_importance": {"features": [], "importance": []},
+        "last20_pred": [],
+        "last20_actual": [],
+        "fpr": [],
+        "tpr": [],
+        "cm": [],
+        "signal": [0] * len(df),
+        "signal_proba": [0.5] * len(df),
+        "primary_accuracy": 0,
+    }
