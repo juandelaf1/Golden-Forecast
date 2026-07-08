@@ -16,30 +16,28 @@ def create_sample_dataframe():
     """
     rows = 40
 
-    return pd.DataFrame({
-        "Date": pd.date_range(start="2020-01-01", periods=rows, freq="D"),
-
-        "gold_open": range(100, 100 + rows),
-        "gold_high": range(102, 102 + rows),
-        "gold_low": range(99, 99 + rows),
-        "gold_close": range(101, 101 + rows),
-        "gold_volume": range(1000, 1000 + rows),
-
-        "dxy_open": range(90, 90 + rows),
-        "dxy_high": range(91, 91 + rows),
-        "dxy_low": range(89, 89 + rows),
-        "dxy_close": range(90, 90 + rows),
-
-        "vix_open": range(15, 15 + rows),
-        "vix_high": range(16, 16 + rows),
-        "vix_low": range(14, 14 + rows),
-        "vix_close": range(15, 15 + rows),
-
-        "tnx_open": range(1, 1 + rows),
-        "tnx_high": range(2, 2 + rows),
-        "tnx_low": range(1, 1 + rows),
-        "tnx_close": range(2, 2 + rows),
-    })
+    return pd.DataFrame(
+        {
+            "Date": pd.date_range(start="2020-01-01", periods=rows, freq="D"),
+            "gold_open": range(100, 100 + rows),
+            "gold_high": range(102, 102 + rows),
+            "gold_low": range(99, 99 + rows),
+            "gold_close": range(101, 101 + rows),
+            "gold_volume": range(1000, 1000 + rows),
+            "dxy_open": range(90, 90 + rows),
+            "dxy_high": range(91, 91 + rows),
+            "dxy_low": range(89, 89 + rows),
+            "dxy_close": range(90, 90 + rows),
+            "vix_open": range(15, 15 + rows),
+            "vix_high": range(16, 16 + rows),
+            "vix_low": range(14, 14 + rows),
+            "vix_close": range(15, 15 + rows),
+            "tnx_open": range(1, 1 + rows),
+            "tnx_high": range(2, 2 + rows),
+            "tnx_low": range(1, 1 + rows),
+            "tnx_close": range(2, 2 + rows),
+        }
+    )
 
 
 def test_create_features_adds_expected_columns():
