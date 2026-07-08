@@ -55,6 +55,7 @@
     {
       "group": "Dashboard",
       "pages": [
+        "docs/dashboard_guide",
         "docs/project_handbook"
       ]
     },
