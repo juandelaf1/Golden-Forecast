@@ -45,10 +45,10 @@
       "class_weight": "balanced"
     },
     "lr_optimized_binary": {
-      "solver": "lbfgs",
-      "max_iter": 2000,
-      "class_weight": null,
-      "C": 0.01
+      "model__solver": "lbfgs",
+      "model__max_iter": 2000,
+      "model__class_weight": null,
+      "model__C": 0.01
     },
     "lgbm_optimized_binary": {
       "num_leaves": 15,

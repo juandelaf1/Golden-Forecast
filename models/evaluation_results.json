@@ -146,12 +146,12 @@
     },
     {
       "modelo": "lr_optimized_binary",
-      "accuracy_train": 0.5464,
-      "accuracy_test": 0.5452,
-      "precision_test": 0.5655,
-      "recall_test": 0.7649,
-      "f1_test": 0.6503,
-      "overfitting_gap": 0.0013
+      "accuracy_train": 0.536,
+      "accuracy_test": 0.5463,
+      "precision_test": 0.5815,
+      "recall_test": 0.6394,
+      "f1_test": 0.6091,
+      "overfitting_gap": -0.0103
     },
     {
       "modelo": "lgbm_optimized_binary",

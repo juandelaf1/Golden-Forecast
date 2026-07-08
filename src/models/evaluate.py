@@ -14,8 +14,6 @@ from sklearn.metrics import (
     precision_score,
     recall_score,
     f1_score,
-    confusion_matrix,
-    classification_report,
 )
 
 DIR = "models"
@@ -24,38 +22,37 @@ NO_FEATURE_COLUMN = ["Date", "target_binary", "target_multiclass"]
 TEST_SIZE = 0.2
 
 MULTICLASS_DECODE = {0: -1, 1: 0, 2: 1}
-MULTICLASS_ENCODE = {-1: 0, 0: 1, 1: 2}
 
 
-def load_metadata(DIR: str) -> dict:
-    path = os.path.join(DIR, "train_metadata.json")
+def load_metadata(dir_path: str) -> dict:
+    path = os.path.join(dir_path, "train_metadata.json")
     with open(path) as f:
         return json.load(f)
 
 
-def load_model(name: str, DIR: str):
-    path = os.path.join(DIR, f"{name}.pkl")
+def load_model(name: str, dir_path: str):
+    path = os.path.join(dir_path, f"{name}.pkl")
     with open(path, "rb") as f:
         return pickle.load(f)
 
 
-def load_all_models(DIR: str) -> dict:
-    metadata = load_metadata(DIR)
+def load_all_models(dir_path: str) -> dict:
+    metadata = load_metadata(dir_path)
     models = {}
     for name in metadata["modelos"]:
-        models[name] = load_model(name, DIR)
+        models[name] = load_model(name, dir_path)
         print(f"Cargado: {name}")
     return models
 
 
-def load_scaler(DIR: str):
-    path = os.path.join(DIR, "scaler.pkl")
+def load_scaler(dir_path: str):
+    path = os.path.join(dir_path, "scaler.pkl")
     with open(path, "rb") as f:
         return pickle.load(f)
 
 
-def prepare_data(PATH: str, test_size: float = TEST_SIZE):
-    df = pd.read_csv(PATH, parse_dates=["Date"])
+def prepare_data(path: str, test_size: float = TEST_SIZE):
+    df = pd.read_csv(path, parse_dates=["Date"])
     df = df.sort_values("Date").reset_index(drop=True)
 
     X = df.drop(columns=NO_FEATURE_COLUMN)
@@ -74,15 +71,22 @@ def prepare_data(PATH: str, test_size: float = TEST_SIZE):
     dates_test = dates.iloc[split_idx:]
 
     return (
-        X_train, X_test,
-        y_bin_train, y_bin_test,
-        y_multi_train, y_multi_test,
+        X_train,
+        X_test,
+        y_bin_train,
+        y_bin_test,
+        y_multi_train,
+        y_multi_test,
         dates_test,
     )
 
 
 def uses_scaled_data(model_name: str) -> bool:
     return model_name.startswith("lr")
+
+
+def decode_multiclass(y_pred):
+    return np.array([MULTICLASS_DECODE[int(p)] for p in y_pred])
 
 
 def evaluate_model(model, model_name: str, X_train, X_test, y_train, y_test) -> dict:
@@ -92,25 +96,20 @@ def evaluate_model(model, model_name: str, X_train, X_test, y_train, y_test) -> 
     y_pred_test = model.predict(X_test)
 
     if is_xgb_multi:
-        y_pred_train = np.array([MULTICLASS_DECODE[p] for p in y_pred_train])
-        y_pred_test = np.array([MULTICLASS_DECODE[p] for p in y_pred_test])
-        y_train_eval = y_train
-        y_test_eval = y_test
-    else:
-        y_train_eval = y_train
-        y_test_eval = y_test
+        y_pred_train = decode_multiclass(y_pred_train)
+        y_pred_test = decode_multiclass(y_pred_test)
 
     avg = "binary" if "binary" in model_name else "weighted"
 
     metrics = {
         "modelo": model_name,
-        "accuracy_train": round(accuracy_score(y_train_eval, y_pred_train), 4),
-        "accuracy_test": round(accuracy_score(y_test_eval, y_pred_test), 4),
-        "precision_test": round(precision_score(y_test_eval, y_pred_test, average=avg, zero_division=0), 4),
-        "recall_test": round(recall_score(y_test_eval, y_pred_test, average=avg, zero_division=0), 4),
-        "f1_test": round(f1_score(y_test_eval, y_pred_test, average=avg, zero_division=0), 4),
+        "accuracy_train": round(accuracy_score(y_train, y_pred_train), 4),
+        "accuracy_test": round(accuracy_score(y_test, y_pred_test), 4),
+        "precision_test": round(precision_score(y_test, y_pred_test, average=avg, zero_division=0), 4),
+        "recall_test": round(recall_score(y_test, y_pred_test, average=avg, zero_division=0), 4),
+        "f1_test": round(f1_score(y_test, y_pred_test, average=avg, zero_division=0), 4),
         "overfitting_gap": round(
-            accuracy_score(y_train_eval, y_pred_train) - accuracy_score(y_test_eval, y_pred_test), 4
+            accuracy_score(y_train, y_pred_train) - accuracy_score(y_test, y_pred_test), 4
         ),
     }
 
@@ -119,9 +118,7 @@ def evaluate_model(model, model_name: str, X_train, X_test, y_train, y_test) -> 
 
 def check_overfitting(results: list) -> pd.DataFrame:
     df = pd.DataFrame(results)
-    df["overfitting"] = df["overfitting_gap"].apply(
-        lambda x: "Posible" if x > 0.05 else "OK"
-    )
+    df["overfitting"] = df["overfitting_gap"].apply(lambda x: "Posible" if x > 0.05 else "OK")
     return df[["modelo", "accuracy_train", "accuracy_test", "overfitting_gap", "overfitting"]]
 
 
@@ -131,7 +128,7 @@ def compare_models(results: list) -> pd.DataFrame:
     return df[["modelo", "accuracy_test", "precision_test", "recall_test", "f1_test"]]
 
 
-def backtest_binary(model, model_name, X_test, dates_test):
+def backtest_binary(model, model_name, X_test):
     proba = model.predict_proba(X_test)[:, 1]
     y_pred = (proba >= 0.56).astype(int)
 
@@ -151,17 +148,16 @@ def backtest_binary(model, model_name, X_test, dates_test):
         "retorno_buyhold": round((df_test["cum_buyhold"].iloc[-1] - 1) * 100, 2),
         "num_operaciones": int(df_test["signal"].sum()),
         "dias_test": len(df_test),
-        "df_test": df_test
+        "df_test": df_test,
     }
 
 
-def backtest(model, model_name: str, X_test, y_multi_test, dates_test) -> dict:
+def backtest(model, model_name: str, X_test, y_multi_test):
     is_xgb = "xgb" in model_name and "lgb" not in model_name
 
     y_pred = model.predict(X_test)
-
     if is_xgb:
-        y_pred = np.array([MULTICLASS_DECODE[p] for p in y_pred])
+        y_pred = decode_multiclass(y_pred)
 
     df_raw = pd.read_csv(PATH, parse_dates=["Date"])
     df_raw = df_raw.sort_values("Date").reset_index(drop=True)
@@ -173,17 +169,12 @@ def backtest(model, model_name: str, X_test, y_multi_test, dates_test) -> dict:
     df_test["cum_strategy"] = (1 + df_test["strategy_return"]).cumprod()
     df_test["cum_buyhold"] = (1 + df_test["gold_return"]).cumprod()
 
-    total_strategy = df_test["cum_strategy"].iloc[-1] - 1
-    total_buyhold = df_test["cum_buyhold"].iloc[-1] - 1
-    n_trades = (df_test["signal"] == 1).sum()
-    n_days = len(df_test)
-
     return {
         "modelo": model_name,
-        "retorno_estrategia": round(total_strategy * 100, 2),
-        "retorno_buyhold": round(total_buyhold * 100, 2),
-        "num_operaciones": int(n_trades),
-        "dias_test": int(n_days),
+        "retorno_estrategia": round((df_test["cum_strategy"].iloc[-1] - 1) * 100, 2),
+        "retorno_buyhold": round((df_test["cum_buyhold"].iloc[-1] - 1) * 100, 2),
+        "num_operaciones": int((df_test["signal"] == 1).sum()),
+        "dias_test": len(df_test),
         "df_test": df_test,
     }
 
@@ -219,8 +210,7 @@ def plot_walk_forward(df_wf: pd.DataFrame, save_path: str = "docs/walk_forward.p
 
     axes[0].bar(df_wf["ventana"], df_wf["accuracy"], color="goldenrod", alpha=0.8)
     axes[0].axhline(0.5, color="red", linestyle="--", label="Baseline (50%)")
-    axes[0].axhline(df_wf["accuracy"].mean(), color="steelblue",
-                    linestyle="--", label=f"Media ({df_wf['accuracy'].mean():.2%})")
+    axes[0].axhline(df_wf["accuracy"].mean(), color="steelblue", linestyle="--", label=f"Media ({df_wf['accuracy'].mean():.2%})")
     axes[0].set_title("Accuracy por ventana temporal")
     axes[0].set_xlabel("Ventana")
     axes[0].set_ylabel("Accuracy")
@@ -229,10 +219,8 @@ def plot_walk_forward(df_wf: pd.DataFrame, save_path: str = "docs/walk_forward.p
 
     x = df_wf["ventana"]
     width = 0.35
-    axes[1].bar(x - width/2, df_wf["retorno_estrategia_pct"],
-                width, label="Estrategia", color="goldenrod", alpha=0.8)
-    axes[1].bar(x + width/2, df_wf["retorno_buyhold_pct"],
-                width, label="Buy & Hold", color="steelblue", alpha=0.8)
+    axes[1].bar(x - width / 2, df_wf["retorno_estrategia_pct"], width, label="Estrategia", color="goldenrod", alpha=0.8)
+    axes[1].bar(x + width / 2, df_wf["retorno_buyhold_pct"], width, label="Buy & Hold", color="steelblue", alpha=0.8)
     axes[1].axhline(0, color="black", linewidth=0.8)
     axes[1].set_title("Retorno acumulado por ventana — Estrategia vs Buy & Hold")
     axes[1].set_xlabel("Ventana")
@@ -287,8 +275,7 @@ def walk_forward_validation(df_path: str, n_splits: int = 5):
         proba = model_bin.predict_proba(X_test_sc)[:, 1]
         umbral_compra = np.percentile(proba, 75)
         umbral_venta = np.percentile(proba, 25)
-        signals = np.where(proba > umbral_compra, 1,
-                   np.where(proba < umbral_venta, -1, 0))
+        signals = np.where(proba > umbral_compra, 1, np.where(proba < umbral_venta, -1, 0))
 
         strategy_returns = returns_wf.values * (signals == 1).astype(int)
         cum_strategy = (1 + strategy_returns).prod() - 1
@@ -299,11 +286,11 @@ def walk_forward_validation(df_path: str, n_splits: int = 5):
         date_end = dates_wf.iloc[-1].date()
 
         print(f"\nVentana {i+1}: {date_start} -> {date_end}")
-        print(f"  Train: {train_end} filas | Test: {len(X_test_wf)} filas")
-        print(f"  Accuracy: {acc:.4f} | F1: {f1:.4f}")
-        print(f"  Retorno estrategia: {cum_strategy*100:.2f}%")
-        print(f"  Retorno buy & hold: {cum_buyhold*100:.2f}%")
-        print(f"  Operaciones: {n_trades} de {len(X_test_wf)} días")
+        print(f" Train: {train_end} filas | Test: {len(X_test_wf)} filas")
+        print(f" Accuracy: {acc:.4f} | F1: {f1:.4f}")
+        print(f" Retorno estrategia: {cum_strategy*100:.2f}%")
+        print(f" Retorno buy & hold: {cum_buyhold*100:.2f}%")
+        print(f" Operaciones: {n_trades} de {len(X_test_wf)} días")
 
         results_wf.append({
             "ventana": i + 1,
@@ -322,11 +309,11 @@ def walk_forward_validation(df_path: str, n_splits: int = 5):
     print("\n" + "=" * 60)
     print("RESUMEN WALK-FORWARD")
     print("=" * 60)
-    print(f"  Accuracy medio:            {df_wf['accuracy'].mean():.4f}")
-    print(f"  F1 medio:                  {df_wf['f1'].mean():.4f}")
-    print(f"  Retorno estrategia medio:  {df_wf['retorno_estrategia_pct'].mean():.2f}%")
-    print(f"  Retorno buy&hold medio:    {df_wf['retorno_buyhold_pct'].mean():.2f}%")
-    print(f"  Total operaciones:         {df_wf['n_trades'].sum()}")
+    print(f" Accuracy medio: {df_wf['accuracy'].mean():.4f}")
+    print(f" F1 medio: {df_wf['f1'].mean():.4f}")
+    print(f" Retorno estrategia medio: {df_wf['retorno_estrategia_pct'].mean():.2f}%")
+    print(f" Retorno buy&hold medio: {df_wf['retorno_buyhold_pct'].mean():.2f}%")
+    print(f" Total operaciones: {df_wf['n_trades'].sum()}")
 
     plot_walk_forward(df_wf)
 
@@ -339,15 +326,18 @@ def main():
     print("=" * 60)
 
     models = load_all_models(DIR)
-    scaler = load_scaler(DIR)
 
     (
-        X_train, X_test,
-        y_bin_train, y_bin_test,
-        y_multi_train, y_multi_test,
+        X_train,
+        X_test,
+        y_bin_train,
+        y_bin_test,
+        y_multi_train,
+        y_multi_test,
         dates_test,
     ) = prepare_data(PATH)
 
+    scaler = load_scaler(DIR)
     X_train_sc = scaler.transform(X_train)
     X_test_sc = scaler.transform(X_test)
 
@@ -368,7 +358,7 @@ def main():
 
         metrics = evaluate_model(model, name, X_train_used, X_test_used, y_train, y_test)
         results.append(metrics)
-        print(f"  {name}: accuracy_test={metrics['accuracy_test']} | f1={metrics['f1_test']}")
+        print(f" {name}: accuracy_test={metrics['accuracy_test']} | f1={metrics['f1_test']}")
 
     print("\n" + "=" * 60)
     print("TABLA COMPARATIVA — Test")
@@ -394,13 +384,7 @@ def main():
 
     print(f"Modelo binario seleccionado: {best_binary_name}")
 
-    bt_binary = backtest_binary(
-        best_binary_model,
-        best_binary_name,
-        best_binary_X_test,
-        dates_test
-    )
-
+    bt_binary = backtest_binary(best_binary_model, best_binary_name, best_binary_X_test)
     print(f"Retorno estrategia binaria: {bt_binary['retorno_estrategia']}%")
 
     multi_results = [r for r in results if "multiclass" in r["modelo"]]
@@ -411,11 +395,10 @@ def main():
 
     print(f"Modelo seleccionado para backtesting: {best_model_name}")
 
-    bt = backtest(best_model, best_model_name, best_multi_X_test, y_multi_test, dates_test)
-
-    print(f"\n  Retorno estrategia: {bt['retorno_estrategia']}%")
-    print(f"  Retorno buy & hold: {bt['retorno_buyhold']}%")
-    print(f"  Operaciones realizadas: {bt['num_operaciones']} de {bt['dias_test']} días")
+    bt = backtest(best_model, best_model_name, best_multi_X_test, y_multi_test)
+    print(f"\n Retorno estrategia: {bt['retorno_estrategia']}%")
+    print(f" Retorno buy & hold: {bt['retorno_buyhold']}%")
+    print(f" Operaciones realizadas: {bt['num_operaciones']} de {bt['dias_test']} días")
 
     os.makedirs("docs", exist_ok=True)
     plot_backtest(bt, save_path="docs/backtest.png")
