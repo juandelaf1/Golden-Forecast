@@ -1,4 +1,5 @@
 import os
+import json
 import pickle
 import pandas as pd
 from datetime import datetime, timezone
@@ -7,16 +8,19 @@ from datetime import datetime, timezone
 predict.py — Predicción diaria del movimiento del oro
 
 Este script es el último eslabón del pipeline automático.
-Carga los modelos y el scaler ya entrenados (archivos .pkl),
-toma la última fila disponible del dataset de features,
+Lee evaluation_results.json para seleccionar automáticamente los mejores
+modelos entrenados, toma la última fila disponible del dataset de features,
 y genera una predicción para el siguiente día de mercado.
 
 No entrena nada nuevo. Solo usa lo que ya está guardado en models/.
+Si Joel reentrena y actualiza evaluation_results.json, este script
+automáticamente usará los nuevos modelos ganadores.
 """
 
 FEATURES_PATH    = "data/processed/gold-features.csv"
 MODELS_DIR       = "models"
-PREDICTIONS_LOG  = "data/processed/predictions.csv"
+EVALUATION_PATH  = "models/evaluation_results.json"
+PREDICTIONS_LOG  = "data/predictions.csv"
 
 # Columnas que no son variables predictoras y hay que eliminar antes de pasar al modelo
 NO_FEATURE_COLUMNS = ["Date", "target_binary", "target_multiclass"]
@@ -39,6 +43,34 @@ def load_pickle(path: str):
         return pickle.load(f)
 
 
+def load_best_model_names() -> tuple[str, str]:
+    """
+    Lee evaluation_results.json y devuelve los nombres de los mejores modelos.
+
+    Para el modelo binario: busca el mayor f1_test entre todos los modelos
+    cuyo nombre contiene 'binary'.
+
+    Para el modelo multiclase: usa el campo 'mejor_multiclase' que ya
+    calculó evaluate.py, para no duplicar esa lógica aquí.
+
+    Así, si Joel reentrena y actualiza el JSON, este script se adapta solo.
+    """
+    with open(EVALUATION_PATH) as f:
+        data = json.load(f)
+
+    # Mejor modelo binario: el que tenga mayor f1_test entre los modelos binarios
+    binary_results = [r for r in data["resultados"] if "binary" in r["modelo"]]
+    best_binary = max(binary_results, key=lambda x: x["f1_test"])["modelo"]
+
+    # Mejor modelo multiclase: ya lo calculó evaluate.py y lo guardó en el JSON
+    best_multiclass = data["mejor_multiclase"]
+
+    print(f"  Modelo binario seleccionado    : {best_binary}")
+    print(f"  Modelo multiclase seleccionado : {best_multiclass}")
+
+    return best_binary, best_multiclass
+
+
 def predict_next_day() -> dict:
     """
     Carga el dataset de features, toma la última fila disponible,
@@ -46,8 +78,11 @@ def predict_next_day() -> dict:
     mejores modelos (binario y multiclase).
 
     Devuelve un diccionario con la fecha de referencia,
-    las predicciones y la probabilidad de subida.
+    las predicciones, la probabilidad de subida y los modelos usados.
     """
+
+    # Leer los nombres de los modelos ganadores desde el JSON de evaluación
+    best_binary_name, best_multi_name = load_best_model_names()
 
     # Cargar el dataset completo de features
     df = pd.read_csv(FEATURES_PATH, parse_dates=["Date"])
@@ -64,13 +99,17 @@ def predict_next_day() -> dict:
 
     # Cargar el scaler y transformar (NUNCA reajustar — debe ser el mismo que se usó en train.py)
     scaler = load_pickle(f"{MODELS_DIR}/scaler.pkl")
-    X_scaled = scaler.transform(X)
+    try:
+        X_scaled = scaler.transform(X)
+    except ValueError:
+        # El scaler fue entrenado con columnas distintas a las actuales.
+        # Usamos solo las columnas que el scaler conoce (feature_names_in_)
+        # para evitar que el pipeline falle tras un reentrenamiento parcial.
+        X_scaled = scaler.transform(X[scaler.feature_names_in_])
 
-    # Cargar el mejor modelo binario (ganador de la evaluación)
-    model_binary = load_pickle(f"{MODELS_DIR}/lr_strong_reg_binary.pkl")
-
-    # Cargar el mejor modelo multiclase
-    model_multi = load_pickle(f"{MODELS_DIR}/lr_strong_reg_multiclass.pkl")
+    # Cargar los modelos ganadores usando los nombres leídos del JSON
+    model_binary = load_pickle(f"{MODELS_DIR}/{best_binary_name}.pkl")
+    model_multi  = load_pickle(f"{MODELS_DIR}/{best_multi_name}.pkl")
 
     # Generar predicciones
     pred_binary     = int(model_binary.predict(X_scaled)[0])
@@ -78,13 +117,15 @@ def predict_next_day() -> dict:
     pred_multiclass = int(model_multi.predict(X_scaled)[0])
 
     result = {
-        "fecha_referencia":    str(fecha_referencia),
-        "prediccion_binaria":  pred_binary,
-        "señal_binaria":       BINARY_LABELS[pred_binary],
-        "probabilidad_sube":   prob_sube,
-        "prediccion_multiclase": pred_multiclass,
-        "señal_multiclase":    MULTI_LABELS[pred_multiclass],
-        "generado_en": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC"),
+        "fecha_referencia":        str(fecha_referencia),
+        "prediccion_binaria":      pred_binary,
+        "señal_binaria":           BINARY_LABELS[pred_binary],
+        "probabilidad_sube":       prob_sube,
+        "prediccion_multiclase":   pred_multiclass,
+        "señal_multiclase":        MULTI_LABELS[pred_multiclass],
+        "modelo_binario_usado":    best_binary_name,
+        "modelo_multiclase_usado": best_multi_name,
+        "generado_en":             datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC"),
     }
 
     # Mostrar resultado en consola (visible en el log de GitHub Actions)
@@ -95,7 +136,6 @@ def predict_next_day() -> dict:
     print(f"  Señal binaria       : {result['señal_binaria']}  "
           f"(probabilidad de subida: {prob_sube * 100:.1f}%)")
     print(f"  Señal multiclase    : {result['señal_multiclase']}")
-    print(f"  Generado en         : {result['generado_en']}")
     print("=" * 55)
 
     return result
