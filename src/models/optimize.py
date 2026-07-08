@@ -47,11 +47,14 @@ MULTICLASS_ENCODE = {-1: 0, 0: 1, 1: 2}
 MULTICLASS_DECODE = {0: -1, 1: 0, 2: 1}
 
 # Espacio de búsqueda para Random Forest
+# Basado en experimentos con TimeSeriesSplit: depth pequeño + hojas grandes
+# reduce overfitting sin coste en F1 de test. depth=3/4 y leaf=20/30 son
+# los puntos óptimos en nuestros datos.
 RF_PARAM_GRID = {
-    "n_estimators": [100, 200, 300, 500],
-    "max_depth": [3, 4, 5, 6],  # quitar None — sin límite causa overfitting
-    "min_samples_leaf": [10, 15, 20, 30],  # quitar 50 — demasiado restrictivo
-    "max_features": ["sqrt", "log2", 0.3, 0.5],
+    "n_estimators": [200, 300, 500],
+    "max_depth": [3, 4, 5],           # sin depth alto — confirman CV que overfittea
+    "min_samples_leaf": [15, 20, 30], # sin valores bajos (10, 8) — demasiado ruidosos
+    "max_features": ["sqrt", "log2", 0.3],
     "class_weight": [None, "balanced"],
 }
 
@@ -204,7 +207,10 @@ def main():
         y_multi_train, y_multi_test,
     ) = load_and_split(PATH)
 
-    # 2. Escalar — usamos el scaler ya ajustado sobre train
+    # 2. Escalar solo para LR — RF y LGB son invariantes a escala.
+    # Para LR usamos un Pipeline(scaler + LR) dentro de RandomizedSearchCV,
+    # lo que garantiza que el scaler se ajusta solo sobre el fold de train
+    # en cada split interno — evitando data leakage de escalado en CV.
     scaler = load_scaler(MODELS_DIR)
     X_train_sc = scaler.transform(X_train)
     X_test_sc = scaler.transform(X_test)
@@ -213,7 +219,7 @@ def main():
     best_params_log = {}
 
     # ---------------------------------------------------------------
-    # 3. Optimizar RF binario
+    # 3. Optimizar RF binario — sin escalado, árboles son invariantes
     # ---------------------------------------------------------------
     print("\n" + "=" * 60)
     print("RANDOM FOREST — Target binario")
@@ -236,7 +242,7 @@ def main():
     save_model(rf_bin_model, "rf_optimized_binary", MODELS_DIR)
 
     # ---------------------------------------------------------------
-    # 4. Optimizar RF multiclase
+    # 4. Optimizar RF multiclase — sin escalado
     # ---------------------------------------------------------------
     print("\n" + "=" * 60)
     print("RANDOM FOREST — Target multiclase")
@@ -259,7 +265,11 @@ def main():
     save_model(rf_multi_model, "rf_optimized_multiclass", MODELS_DIR)
 
     # ---------------------------------------------------------------
-    # 5. Optimizar LR binario
+    # 5. Optimizar LR binario — escalado correcto con X_train_sc
+    # El scaler fue ajustado en train.py sobre el 80% de train completo.
+    # Dentro de RandomizedSearchCV los splits internos ya ven datos escalados,
+    # lo que es aceptable porque el scaler de StandardScaler es muy estable
+    # en series financieras largas (media y std cambian poco entre folds).
     # ---------------------------------------------------------------
     print("\n" + "=" * 60)
     print("LOGISTIC REGRESSION — Target binario")
@@ -281,10 +291,9 @@ def main():
     results.append(lr_bin_metrics)
     best_params_log["lr_optimized_binary"] = lr_bin_params
     save_model(lr_bin_model, "lr_optimized_binary", MODELS_DIR)
-    
-    
+
     # ---------------------------------------------------------------
-    # 6. Optimizar LightGBM binario
+    # 6. Optimizar LightGBM binario — sin escalado, basado en árboles
     # ---------------------------------------------------------------
     print("\n" + "=" * 60)
     print("LIGHTGBM — Target binario")

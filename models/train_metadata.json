@@ -19,11 +19,26 @@
     "lr_optimized_binary",
     "lgbm_optimized_binary"
   ],
-  "features": "data/processed/gold-features.csv",
+  "features_path": "data/processed/gold-features.csv",
   "test_size": 0.2,
-  "NO_FEATURE_COLUMN": [
+  "no_feature_columns": [
     "Date",
     "target_binary",
     "target_multiclass"
-  ]
+  ],
+  "scaled_models": [
+    "lr",
+    "lr_strong_reg"
+  ],
+  "raw_models": [
+    "rf",
+    "xgb",
+    "xgb_deep",
+    "lgb",
+    "lgb_deep"
+  ],
+  "notes": {
+    "lr": "train/predict con scaler",
+    "rf_xgb_lgb": "train/predict sin scaler"
+  }
 }
