@@ -1,0 +1,71 @@
+name: Pipeline diario — extracción, procesado y predicción
+
+on:
+  schedule:
+    # Se ejecuta a las 23:00 UTC de lunes a viernes (tras el cierre del mercado americano)
+    - cron: '0 23 * * 1-5'
+  workflow_dispatch:
+    # Permite lanzarlo manualmente desde la pestaña Actions de GitHub (útil para pruebas)
+
+permissions:
+  contents: write  # Necesario para que el bot pueda hacer commit y push al repositorio
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # 1. Descarga el contenido del repositorio en el runner (la máquina virtual de GitHub)
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GOLDEN_TOKEN }}
+          fetch-depth: 1
+
+      # 2. Instala Python 3.12 (la versión que usa el proyecto)
+      - name: Configurar Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'  # Guarda en caché las dependencias para acelerar ejecuciones futuras
+
+      # 3. Instala todas las librerías del proyecto (pandas, scikit-learn, yfinance, etc.)
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      # 4. Descarga los datos más recientes desde Yahoo Finance
+      #    Lee: internet (Yahoo Finance)
+      #    Escribe: data/raw/gold-macro-data.csv
+      - name: Paso 1 — Descargar datos nuevos
+        run: python src/extract/extract.py
+
+      # 5. Limpia el dataset crudo: renombra columnas, elimina nulos y columnas de volumen
+      #    Lee: data/raw/gold-macro-data.csv
+      #    Escribe: data/processed/gold-clean.csv
+      - name: Paso 2 — Preprocesar datos
+        run: python src/preprocessing.py
+
+      # 6. Calcula los 25+ indicadores técnicos y las variables objetivo
+      #    Lee: data/processed/gold-clean.csv
+      #    Escribe: data/processed/gold-features.csv
+      - name: Paso 3 — Feature engineering
+        run: python src/feature_engineering.py
+
+      # 7. Carga los modelos y el scaler guardados y predice el movimiento del día siguiente
+      #    Lee: data/processed/gold-features.csv + models/scaler.pkl + models/lr_strong_reg_*.pkl
+      #    Escribe: data/processed/predictions.csv (añade una fila nueva cada día)
+      - name: Paso 4 — Generar predicción del día siguiente
+        run: python src/predict.py
+
+      # 8. Guarda los archivos actualizados en el repositorio
+      #    Si no hay cambios (por ejemplo, día festivo sin nuevos datos), no hace commit
+      - name: Guardar resultados en el repositorio
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/processed/gold-clean.csv
+          git add data/processed/gold-features.csv
+          git add data/processed/predictions.csv
+          git diff --staged --quiet || git commit -m "chore: actualización diaria $(date -u +'%Y-%m-%d')"
+          git push https://x-access-token:${{ secrets.GOLDEN_TOKEN }}@github.com/${{ github.repository }} HEAD

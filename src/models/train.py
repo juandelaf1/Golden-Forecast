@@ -18,11 +18,11 @@ Entrena 6 modelos de clasificación (3 algoritmos x 2 targets):
     Targets:
         - target_binary     (1 = sube, 0 = baja)
         - target_multiclass (1 = comprar, 0 = mantener, -1 = vender)
-"""   
+"""
 
 PATH = "data/processed/gold-features.csv"
 MODELS_DIR = "models"
-TEST_SIZE = 0.2 ##Nuevo a tests 0.2 y Antiguo a train 0.8
+TEST_SIZE = 0.2  ##Nuevo a tests 0.2 y Antiguo a train 0.8
 
 # Columnas que no son features (no entran en X)
 NO_FEATURE_COLUMN = ["Date", "target_binary", "target_multiclass"]
@@ -37,32 +37,20 @@ MULTICLASS_DECODE = {0: -1, 1: 0, 2: 1}
 # checklist del proyecto (mínimo 2 configuraciones comparadas)
 MODELS = {
     "lr": LogisticRegression(  # regularización estándar
-        max_iter=1000,
-        random_state=42,
-        C=1.0               
+        max_iter=1000, random_state=42, C=1.0
     ),
-    "lr_strong_reg": LogisticRegression( # regularización más fuerte
-        max_iter=1000,
-        random_state=42,
-        C=0.1               
+    "lr_strong_reg": LogisticRegression(  # regularización más fuerte
+        max_iter=1000, random_state=42, C=0.1
     ),
-    "rf": RandomForestClassifier(
-        n_estimators=100,
-        max_depth=5,
-        random_state=42
-    ),
-    "rf_deep": RandomForestClassifier(
-        n_estimators=200,
-        max_depth=10,
-        random_state=42
-    ),
+    "rf": RandomForestClassifier(n_estimators=100, max_depth=5, random_state=42),
+    "rf_deep": RandomForestClassifier(n_estimators=200, max_depth=10, random_state=42),
     "xgb": XGBClassifier(
         n_estimators=100,
         max_depth=3,
         learning_rate=0.1,
         random_state=42,
         eval_metric="logloss",
-        verbosity=0
+        verbosity=0,
     ),
     "xgb_deep": XGBClassifier(
         n_estimators=200,
@@ -70,7 +58,7 @@ MODELS = {
         learning_rate=0.05,
         random_state=42,
         eval_metric="logloss",
-        verbosity=0
+        verbosity=0,
     ),
 }
 
@@ -82,8 +70,9 @@ def load_data(path: str) -> pd.DataFrame:
     print(f"Rango temporal: {df['Date'].min().date()} -> {df['Date'].max().date()}")
     return df
 
-#Separa el dataset en variables predictoras x, y targets y
-#Se excluye Date y las columnas objetivo para que no entren como features.
+
+# Separa el dataset en variables predictoras x, y targets y
+# Se excluye Date y las columnas objetivo para que no entren como features.
 def prepare_xy(df: pd.DataFrame):
     X = df.drop(columns=NO_FEATURE_COLUMN)
     y_binary = df["target_binary"]
@@ -95,7 +84,8 @@ def prepare_xy(df: pd.DataFrame):
 
     return X, y_binary, y_multiclass
 
-#Divide los datos respetando el orden cronológico, no split aleatorio.
+
+# Divide los datos respetando el orden cronológico, no split aleatorio.
 def temporal_split(X: pd.DataFrame, y: pd.Series, test_size: float = TEST_SIZE):
     split_idx = int(len(X) * (1 - test_size))
 
@@ -106,15 +96,17 @@ def temporal_split(X: pd.DataFrame, y: pd.Series, test_size: float = TEST_SIZE):
 
     return X_train, X_test, y_train, y_test
 
-#StandardScaler pars las features
-#Solo ajuste sobre tarin para evitar data leakage y despues aplicar esa escala a test
+
+# StandardScaler pars las features
+# Solo ajuste sobre tarin para evitar data leakage y despues aplicar esa escala a test
 def scale(X_train: pd.DataFrame, X_test: pd.DataFrame):
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.transform(X_test)
     return X_train_scaled, X_test_scaled, scaler
 
-#Entrenamiendo de los modelos, tenemos 6 x 2 targets
+
+# Entrenamiendo de los modelos, tenemos 6 x 2 targets
 def train_models(X_train, y_binary_train, y_multiclass_train):
     trained = {}
 
@@ -130,7 +122,11 @@ def train_models(X_train, y_binary_train, y_multiclass_train):
 
         # Target multiclase
         # XGBoost no acepta clases negativas "-1", entonces las codificamos a 0,1,2
-        y_multi_encoded = y_multiclass_train.map(MULTICLASS_ENCODE) if "xgb" in model_name else y_multiclass_train
+        y_multi_encoded = (
+            y_multiclass_train.map(MULTICLASS_ENCODE)
+            if "xgb" in model_name
+            else y_multiclass_train
+        )
         m_multi = copy.deepcopy(model)
         m_multi.fit(X_train, y_multi_encoded)
         trained[f"{model_name}_multiclass"] = m_multi
@@ -138,7 +134,8 @@ def train_models(X_train, y_binary_train, y_multiclass_train):
 
     return trained
 
-#Guarda archivos .pkl y una metadata en json
+
+# Guarda archivos .pkl y una metadata en json
 def save_models(trained: dict, scaler: StandardScaler, models_dir: str):
     os.makedirs(models_dir, exist_ok=True)
 
@@ -180,16 +177,15 @@ def main():
     X_train, X_test, y_bin_train, y_bin_test = temporal_split(X, y_binary)
     _, _, y_multi_train, y_multi_test = temporal_split(X, y_multiclass)
 
-    split_idx = int(len(X) * (1 - TEST_SIZE))
-    print(f"\nSplit temporal:")
+    print("\nSplit temporal:")
     print(f"  Train: {X_train.shape[0]} filas")
     print(f"  Test:  {X_test.shape[0]} filas")
 
-    #Escalar
+    # Escalar
     X_train_scaled, X_test_scaled, scaler = scale(X_train, X_test)
-    print(f"\nEscalado aplicado — scaler ajustado solo sobre train")
+    print("\nEscalado aplicado — scaler ajustado solo sobre train")
 
-    #Entrenar modelos
+    # Entrenar modelos
     print("\n" + "=" * 60)
     print("Entrenando modelos...")
     print("=" * 60)
@@ -202,7 +198,7 @@ def main():
 
     print("\n Entrenamiento completado.")
 
-    #Valores devueltos para notebook
+    # Valores devueltos para notebook
     return {
         "df": df,
         "X_train": X_train_scaled,

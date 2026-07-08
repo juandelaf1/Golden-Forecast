@@ -2,8 +2,8 @@
   "$schema": "https://mintlify.com/schema.json",
   "name": "Golden Forecast",
   "logo": {
-    "dark": "/logo/dark.png",
-    "light": "/logo/light.png"
+    "dark": "/logo/dark.svg",
+    "light": "/logo/light.svg"
   },
   "favicon": "/favicon.svg",
   "colors": {
@@ -42,6 +42,7 @@
       "group": "Datos",
       "pages": [
         "docs/data_dictionary",
+        "docs/data_lineage",
         "data/README"
       ]
     },
@@ -54,6 +55,7 @@
     {
       "group": "Dashboard",
       "pages": [
+        "docs/dashboard_guide",
         "docs/project_handbook"
       ]
     },
@@ -62,6 +64,12 @@
       "pages": [
         "docs/decision_log",
         "ROADMAP"
+      ]
+    },
+    {
+      "group": "Galería",
+      "pages": [
+        "docs/screenshots"
       ]
     }
   ],

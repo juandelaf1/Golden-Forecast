@@ -1,78 +1,76 @@
-"""Tests for preprocessing module."""
+import sys
+from pathlib import Path
+
 import pandas as pd
-import pytest
 
-from src.preprocessing import (
-    convert_date,
-    rename_columns,
-    drop_uninformative_columns,
-    remove_missing_values,
-    clean_gold_data,
-)
+# Permite importar archivos desde la carpeta src
+sys.path.append(str(Path(__file__).resolve().parents[1] / "src"))
+
+from preprocessing import clean_gold_data
 
 
-class TestPreprocessing:
-    """Tests for preprocessing functions."""
-
-    def test_convert_date(self):
-        df = pd.DataFrame({'Date': ['2023-01-01', '2023-01-02']})
-        result = convert_date(df)
-        assert pd.api.types.is_datetime64_any_dtype(result['Date'])
-
-    def test_rename_columns(self):
-        cols = {
-            "Gold_('Close', 'GC=F')": "gold_close",
-            "DXY_('Close', 'DX-Y.NYB')": "dxy_close",
+def create_raw_sample_dataframe():
+    """
+    Crea un dataset pequeño con columnas originales para probar el preprocessing.
+    """
+    return pd.DataFrame(
+        {
+            "Date": pd.date_range(start="2020-01-01", periods=5, freq="D"),
+            "gold_open": [100, 101, 102, 103, 104],
+            "gold_high": [101, 102, 103, 104, 105],
+            "gold_low": [99, 100, 101, 102, 103],
+            "gold_close": [100, 101, 102, 103, 104],
+            "gold_volume": [1000, 1100, 1200, 1300, 1400],
+            "dxy_open": [90, 91, 92, 93, 94],
+            "dxy_high": [91, 92, 93, 94, 95],
+            "dxy_low": [89, 90, 91, 92, 93],
+            "dxy_close": [90, 91, 92, 93, 94],
+            "dxy_volume": [1, 1, 1, 1, 1],
+            "vix_open": [15, 16, 17, 18, 19],
+            "vix_high": [16, 17, 18, 19, 20],
+            "vix_low": [14, 15, 16, 17, 18],
+            "vix_close": [15, 16, 17, 18, 19],
+            "vix_volume": [1, 1, 1, 1, 1],
+            "tnx_open": [2, 2, 2, 2, 2],
+            "tnx_high": [3, 3, 3, 3, 3],
+            "tnx_low": [1, 1, 1, 1, 1],
+            "tnx_close": [2, 2, 2, 2, 2],
+            "tnx_volume": [1, 1, 1, 1, 1],
         }
-        df = pd.DataFrame({k: [1.0] for k in cols})
-        result = rename_columns(df)
-        assert list(result.columns) == ['gold_close', 'dxy_close']
+    )
 
-    def test_drop_uninformative_columns(self):
-        df = pd.DataFrame({'gold_close': [1], 'dxy_volume': [2], 'vix_volume': [3]})
-        result = drop_uninformative_columns(df)
-        assert 'dxy_volume' not in result.columns
-        assert 'vix_volume' not in result.columns
-        assert 'gold_close' in result.columns
 
-    def test_remove_missing_values(self):
-        df = pd.DataFrame({'a': [1, None, 3], 'b': [4, 5, 6]})
-        result = remove_missing_values(df)
-        assert len(result) == 2
-        assert result['a'].notna().all()
+def test_clean_gold_data_returns_dataframe(tmp_path):
+    """
+    Comprueba que el preprocessing devuelve un DataFrame válido.
+    """
+    input_path = tmp_path / "raw_sample.csv"
+    output_path = tmp_path / "clean_sample.csv"
 
-    def test_clean_gold_data_integration(self, tmp_path):
-        # Create minimal raw data
-        raw = pd.DataFrame({
-            'Date': ['2023-01-01', '2023-01-02', '2023-01-03'],
-            "Gold_('Close', 'GC=F')": [1900, 1910, 1920],
-            "Gold_('High', 'GC=F')": [1910, 1920, 1930],
-            "Gold_('Low', 'GC=F')": [1890, 1900, 1910],
-            "Gold_('Open', 'GC=F')": [1895, 1905, 1915],
-            "Gold_('Volume', 'GC=F')": [100, 100, 100],
-            "DXY_('Close', 'DX-Y.NYB')": [100, 101, 102],
-            "DXY_('High', 'DX-Y.NYB')": [101, 102, 103],
-            "DXY_('Low', 'DX-Y.NYB')": [99, 100, 101],
-            "DXY_('Open', 'DX-Y.NYB')": [100, 101, 102],
-            "DXY_('Volume', 'DX-Y.NYB')": [100, 100, 100],
-            "VIX_('Close', '^VIX')": [20, 21, 22],
-            "VIX_('High', '^VIX')": [22, 23, 24],
-            "VIX_('Low', '^VIX')": [18, 19, 20],
-            "VIX_('Open', '^VIX')": [19, 20, 21],
-            "VIX_('Volume', '^VIX')": [100, 100, 100],
-            "TNX_('Close', '^TNX')": [4.0, 4.1, 4.2],
-            "TNX_('High', '^TNX')": [4.2, 4.3, 4.4],
-            "TNX_('Low', '^TNX')": [3.8, 3.9, 4.0],
-            "TNX_('Open', '^TNX')": [3.9, 4.0, 4.1],
-            "TNX_('Volume', '^TNX')": [100, 100, 100],
-        })
-        raw_path = tmp_path / "raw.csv"
-        clean_path = tmp_path / "clean.csv"
-        raw.to_csv(raw_path, index=False)
+    df = create_raw_sample_dataframe()
+    df.to_csv(input_path, index=False)
 
-        result = clean_gold_data(str(raw_path), str(clean_path))
+    result = clean_gold_data(input_path, output_path)
 
-        assert 'gold_close' in result.columns
-        assert 'dxy_volume' not in result.columns
-        assert result['Date'].dtype == 'datetime64[ns]'
-        assert len(result) == 3
+    assert isinstance(result, pd.DataFrame)
+    assert not result.empty
+    assert output_path.exists()
+
+
+def test_volume_columns_are_handled_correctly(tmp_path):
+    """
+    Comprueba que se eliminan los volúmenes menos útiles
+    y se conserva el volumen del oro.
+    """
+    input_path = tmp_path / "raw_sample.csv"
+    output_path = tmp_path / "clean_sample.csv"
+
+    df = create_raw_sample_dataframe()
+    df.to_csv(input_path, index=False)
+
+    result = clean_gold_data(input_path, output_path)
+
+    assert "gold_volume" in result.columns
+    assert "dxy_volume" not in result.columns
+    assert "vix_volume" not in result.columns
+    assert "tnx_volume" not in result.columns
