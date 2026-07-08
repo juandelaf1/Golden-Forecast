@@ -327,6 +327,9 @@ def ensure_all_models():
     context['_all_models_loaded'] = True
 
 
+ensure_experimental = ensure_all_models
+
+
 def ensure_regression():
     """Train regression models on demand."""
     global context

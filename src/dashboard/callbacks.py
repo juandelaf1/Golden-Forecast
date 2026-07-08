@@ -1526,43 +1526,49 @@ TABLE = {'width': '100%', 'borderCollapse': 'collapse'}
 
 
 def build_experimental_section() -> html.Div:
-    """B2B-friendly horizon comparison table."""
+    """Multi-model horizon comparison table."""
     data.ensure_experimental()
     exp = context.get('experimental')
-    if not exp or not exp.get('horizons'):
+    if not exp or not exp.get('models'):
         return html.Div()
-
-    rows = [
-        html.Tr([
-            html.Th('Ventana', style=TH),
-            html.Th('Precisión', style=TH),
-            html.Th('Precision', style=TH),
-            html.Th('Recall', style=TH),
-            html.Th('F1', style=TH),
-            html.Th('ROC-AUC', style=TH),
-        ]),
-    ]
-
-    for h in exp['horizons']:
-        label = f'{h["horizon"]} día' + ('s' if h['horizon'] > 1 else '')
-        rows.append(html.Tr([
-            html.Td(label, style=TD),
-            html.Td(f'{h["accuracy"]:.1%}', style=TD),
-            html.Td(f'{h["precision"]:.1%}', style=TD),
-            html.Td(f'{h["recall"]:.1%}', style=TD),
-            html.Td(f'{h["f1"]:.3f}', style=TD),
-            html.Td(f'{h["auc"]:.3f}', style=TD),
-        ]))
 
     children = [
         html.Div('Evaluación Multiciclo', className='card-title'),
         html.P(
-            'Análisis del rendimiento del modelo Logistic Regression aplicado a distintos horizontes temporales. '
-            'Permite identificar a qué plazo la señal predictiva es más consistente.',
+            'Rendimiento de cada modelo en distintos horizontes temporales (1, 5, 10, 20 días). '
+            'Permite identificar a qué plazo la señal predictiva es más consistente por algoritmo.',
             style={'color': '#a89070', 'fontSize': '0.8rem', 'margin': '4px 0 12px', 'lineHeight': '1.4'},
         ),
-        html.Table(style=TABLE, children=rows),
     ]
+
+    for model_name, model_results in exp['models'].items():
+        if not model_results:
+            continue
+        rows = [
+            html.Tr([
+                html.Th('Ventana', style=TH),
+                html.Th('Precisión', style=TH),
+                html.Th('Precision', style=TH),
+                html.Th('Recall', style=TH),
+                html.Th('F1', style=TH),
+                html.Th('ROC-AUC', style=TH),
+            ]),
+        ]
+        for h in model_results:
+            label = f'{h["horizon"]} día' + ('s' if h['horizon'] > 1 else '')
+            rows.append(html.Tr([
+                html.Td(label, style=TD),
+                html.Td(f'{h["accuracy"]:.1%}', style=TD),
+                html.Td(f'{h["precision"]:.1%}', style=TD),
+                html.Td(f'{h["recall"]:.1%}', style=TD),
+                html.Td(f'{h["f1"]:.3f}', style=TD),
+                html.Td(f'{h["auc"]:.3f}', style=TD),
+            ]))
+        children.append(html.Div(
+            model_name,
+            style={'color': '#D4AF37', 'fontSize': '0.75rem', 'margin': '12px 0 4px', 'fontFamily': 'Rye, Smokum, serif'},
+        ))
+        children.append(html.Table(style=TABLE, children=rows))
 
     # Voting classifier row
     voting = exp.get('voting')

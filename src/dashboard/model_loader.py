@@ -90,7 +90,17 @@ def build_pretrained_context():
     df = load_features()
     X, y_binary, y_multiclass = prepare_features(df)
     scaler = load_scaler()
-    X_scaled = scaler.transform(X)
+    try:
+        X_scaled = scaler.transform(X)
+    except ValueError:
+        known = list(scaler.feature_names_in_)
+        missing = [c for c in known if c not in X.columns]
+        extra = [c for c in X.columns if c not in known]
+        if missing:
+            X = X.reindex(columns=known, fill_value=0)
+        else:
+            X = X[known]
+        X_scaled = scaler.transform(X)
     eval_results = load_evaluation_results()
 
     # Load only primary model eagerly
