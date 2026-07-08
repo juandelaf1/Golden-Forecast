@@ -99,7 +99,13 @@ def predict_next_day() -> dict:
 
     # Cargar el scaler y transformar (NUNCA reajustar — debe ser el mismo que se usó en train.py)
     scaler = load_pickle(f"{MODELS_DIR}/scaler.pkl")
-    X_scaled = scaler.transform(X)
+    try:
+        X_scaled = scaler.transform(X)
+    except ValueError:
+        # El scaler fue entrenado con columnas distintas a las actuales.
+        # Usamos solo las columnas que el scaler conoce (feature_names_in_)
+        # para evitar que el pipeline falle tras un reentrenamiento parcial.
+        X_scaled = scaler.transform(X[scaler.feature_names_in_])
 
     # Cargar los modelos ganadores usando los nombres leídos del JSON
     model_binary = load_pickle(f"{MODELS_DIR}/{best_binary_name}.pkl")
