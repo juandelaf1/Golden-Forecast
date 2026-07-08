@@ -20,7 +20,7 @@ jobs:
       - name: Checkout del repositorio
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GOLDEN_TOKEN }}
           fetch-depth: 1
 
       # 2. Instala Python 3.10 (la versión que usa el proyecto)
@@ -68,4 +68,4 @@ jobs:
           git add data/processed/gold-features.csv
           git add data/processed/predictions.csv
           git diff --staged --quiet || git commit -m "chore: actualización diaria $(date -u +'%Y-%m-%d')"
-          git push origin HEAD
+          git push https://x-access-token:${{ secrets.GOLDEN_TOKEN }}@github.com/${{ github.repository }} HEAD
