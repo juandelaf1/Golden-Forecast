@@ -23,11 +23,11 @@ jobs:
           token: ${{ secrets.GOLDEN_TOKEN }}
           fetch-depth: 1
 
-      # 2. Instala Python 3.10 (la versión que usa el proyecto)
-      - name: Configurar Python 3.10
+      # 2. Instala Python 3.12 (la versión que usa el proyecto)
+      - name: Configurar Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.12'
           cache: 'pip'  # Guarda en caché las dependencias para acelerar ejecuciones futuras
 
       # 3. Instala todas las librerías del proyecto (pandas, scikit-learn, yfinance, etc.)
