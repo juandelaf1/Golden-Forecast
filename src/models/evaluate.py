@@ -4,73 +4,101 @@ import pickle
 import numpy as np
 import pandas as pd
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import (
-    accuracy_score,
-    precision_score,
-    recall_score,
-    f1_score,
-)
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
 DIR = "models"
 PATH = "data/processed/gold-features.csv"
-NO_FEATURE_COLUMN = ["Date", "target_binary", "target_multiclass"]
 TEST_SIZE = 0.2
 
+NO_FEATURE_COLUMN = [
+    "Date",
+    "target_binary",
+    "target_multiclass",
+    "gold_return",
+    "gold_return_next_day",
+]
+
 MULTICLASS_DECODE = {0: -1, 1: 0, 2: 1}
+MULTICLASS_ENCODE = {-1: 0, 0: 1, 1: 2}
 
 
-def load_metadata(dir_path: str) -> dict:
-    path = os.path.join(dir_path, "train_metadata.json")
-    with open(path) as f:
+def load_metadata(models_dir: str) -> dict:
+    path = os.path.join(models_dir, "train_metadata.json")
+    with open(path, encoding="utf-8") as f:
         return json.load(f)
 
 
-def load_model(name: str, dir_path: str):
-    path = os.path.join(dir_path, f"{name}.pkl")
+def load_model(name: str, models_dir: str):
+    path = os.path.join(models_dir, f"{name}.pkl")
     with open(path, "rb") as f:
         return pickle.load(f)
 
 
-def load_all_models(dir_path: str) -> dict:
-    metadata = load_metadata(dir_path)
+def load_all_models(models_dir: str) -> dict:
+    metadata = load_metadata(models_dir)
     models = {}
-    for name in metadata["modelos"]:
-        models[name] = load_model(name, dir_path)
+
+    modelos_meta = metadata.get("modelos", [])
+    if modelos_meta and isinstance(modelos_meta[0], dict):
+        iterable = modelos_meta
+    else:
+        iterable = [{"name": name, "uses_scaled": name.startswith("lr")} for name in modelos_meta]
+
+    for item in iterable:
+        name = item["name"]
+        models[name] = {
+            "model": load_model(name, models_dir),
+            "uses_scaled": bool(item.get("uses_scaled", name.startswith("lr"))),
+        }
         print(f"Cargado: {name}")
+
     return models
 
 
-def load_scaler(dir_path: str):
-    path = os.path.join(dir_path, "scaler.pkl")
+def load_scaler(models_dir: str):
+    path = os.path.join(models_dir, "scaler.pkl")
     with open(path, "rb") as f:
         return pickle.load(f)
 
 
-def prepare_data(path: str, test_size: float = TEST_SIZE):
+def get_feature_columns(df: pd.DataFrame, metadata: dict):
+    if "feature_columns" in metadata:
+        return metadata["feature_columns"]
+    return [col for col in df.columns if col not in NO_FEATURE_COLUMN]
+
+
+def prepare_data(path: str, metadata: dict, test_size: float = TEST_SIZE):
     df = pd.read_csv(path, parse_dates=["Date"])
     df = df.sort_values("Date").reset_index(drop=True)
 
-    X = df.drop(columns=NO_FEATURE_COLUMN)
-    y_binary = df["target_binary"]
-    y_multiclass = df["target_multiclass"]
-    dates = df["Date"]
+    feature_cols = get_feature_columns(df, metadata)
+    missing_features = [c for c in feature_cols if c not in df.columns]
+    if missing_features:
+        raise ValueError(f"Faltan features en el dataset: {missing_features}")
+
+    X = df[feature_cols].copy()
+    y_binary = df["target_binary"].copy()
+    y_multiclass = df["target_multiclass"].copy()
+    dates = df["Date"].copy()
 
     split_idx = int(len(X) * (1 - test_size))
 
-    X_train = X.iloc[:split_idx]
-    X_test = X.iloc[split_idx:]
-    y_bin_train = y_binary.iloc[:split_idx]
-    y_bin_test = y_binary.iloc[split_idx:]
-    y_multi_train = y_multiclass.iloc[:split_idx]
-    y_multi_test = y_multiclass.iloc[split_idx:]
-    dates_test = dates.iloc[split_idx:]
+    X_train = X.iloc[:split_idx].copy()
+    X_test = X.iloc[split_idx:].copy()
+    y_bin_train = y_binary.iloc[:split_idx].copy()
+    y_bin_test = y_binary.iloc[split_idx:].copy()
+    y_multi_train = y_multiclass.iloc[:split_idx].copy()
+    y_multi_test = y_multiclass.iloc[split_idx:].copy()
+    dates_test = dates.iloc[split_idx:].copy()
 
     return (
+        df,
+        feature_cols,
         X_train,
         X_test,
         y_bin_train,
@@ -81,14 +109,6 @@ def prepare_data(path: str, test_size: float = TEST_SIZE):
     )
 
 
-def uses_scaled_data(model_name: str) -> bool:
-    return model_name.startswith("lr")
-
-
-def decode_multiclass(y_pred):
-    return np.array([MULTICLASS_DECODE[int(p)] for p in y_pred])
-
-
 def evaluate_model(model, model_name: str, X_train, X_test, y_train, y_test) -> dict:
     is_xgb_multi = "xgb" in model_name and "multiclass" in model_name and "lgb" not in model_name
 
@@ -96,24 +116,20 @@ def evaluate_model(model, model_name: str, X_train, X_test, y_train, y_test) -> 
     y_pred_test = model.predict(X_test)
 
     if is_xgb_multi:
-        y_pred_train = decode_multiclass(y_pred_train)
-        y_pred_test = decode_multiclass(y_pred_test)
+        y_pred_train = np.array([MULTICLASS_DECODE[p] for p in y_pred_train])
+        y_pred_test = np.array([MULTICLASS_DECODE[p] for p in y_pred_test])
 
     avg = "binary" if "binary" in model_name else "weighted"
 
-    metrics = {
+    return {
         "modelo": model_name,
         "accuracy_train": round(accuracy_score(y_train, y_pred_train), 4),
         "accuracy_test": round(accuracy_score(y_test, y_pred_test), 4),
         "precision_test": round(precision_score(y_test, y_pred_test, average=avg, zero_division=0), 4),
         "recall_test": round(recall_score(y_test, y_pred_test, average=avg, zero_division=0), 4),
         "f1_test": round(f1_score(y_test, y_pred_test, average=avg, zero_division=0), 4),
-        "overfitting_gap": round(
-            accuracy_score(y_train, y_pred_train) - accuracy_score(y_test, y_pred_test), 4
-        ),
+        "overfitting_gap": round(accuracy_score(y_train, y_pred_train) - accuracy_score(y_test, y_pred_test), 4),
     }
-
-    return metrics
 
 
 def check_overfitting(results: list) -> pd.DataFrame:
@@ -128,15 +144,16 @@ def compare_models(results: list) -> pd.DataFrame:
     return df[["modelo", "accuracy_test", "precision_test", "recall_test", "f1_test"]]
 
 
-def backtest_binary(model, model_name, X_test):
+def get_test_context(df_full: pd.DataFrame, test_size: float = TEST_SIZE):
+    split_idx = int(len(df_full) * (1 - test_size))
+    return df_full.iloc[split_idx:].copy().reset_index(drop=True)
+
+
+def backtest_binary(model, model_name, X_test, df_test_context, threshold=0.56):
     proba = model.predict_proba(X_test)[:, 1]
-    y_pred = (proba >= 0.56).astype(int)
+    y_pred = (proba >= threshold).astype(int)
 
-    df_raw = pd.read_csv(PATH, parse_dates=["Date"])
-    df_raw = df_raw.sort_values("Date").reset_index(drop=True)
-    split_idx = int(len(df_raw) * (1 - TEST_SIZE))
-    df_test = df_raw.iloc[split_idx:].copy().reset_index(drop=True)
-
+    df_test = df_test_context.copy()
     df_test["signal"] = y_pred
     df_test["strategy_return"] = df_test["gold_return"] * df_test["signal"]
     df_test["cum_strategy"] = (1 + df_test["strategy_return"]).cumprod()
@@ -144,6 +161,7 @@ def backtest_binary(model, model_name, X_test):
 
     return {
         "modelo": model_name,
+        "threshold": threshold,
         "retorno_estrategia": round((df_test["cum_strategy"].iloc[-1] - 1) * 100, 2),
         "retorno_buyhold": round((df_test["cum_buyhold"].iloc[-1] - 1) * 100, 2),
         "num_operaciones": int(df_test["signal"].sum()),
@@ -152,29 +170,30 @@ def backtest_binary(model, model_name, X_test):
     }
 
 
-def backtest(model, model_name: str, X_test, y_multi_test):
+def backtest_multiclass(model, model_name: str, X_test, df_test_context) -> dict:
     is_xgb = "xgb" in model_name and "lgb" not in model_name
 
     y_pred = model.predict(X_test)
     if is_xgb:
-        y_pred = decode_multiclass(y_pred)
+        y_pred = np.array([MULTICLASS_DECODE[p] for p in y_pred])
 
-    df_raw = pd.read_csv(PATH, parse_dates=["Date"])
-    df_raw = df_raw.sort_values("Date").reset_index(drop=True)
-    split_idx = int(len(df_raw) * (1 - TEST_SIZE))
-    df_test = df_raw.iloc[split_idx:].copy().reset_index(drop=True)
-
+    df_test = df_test_context.copy()
     df_test["signal"] = y_pred
     df_test["strategy_return"] = df_test["gold_return"] * (df_test["signal"] == 1).astype(int)
     df_test["cum_strategy"] = (1 + df_test["strategy_return"]).cumprod()
     df_test["cum_buyhold"] = (1 + df_test["gold_return"]).cumprod()
 
+    total_strategy = df_test["cum_strategy"].iloc[-1] - 1
+    total_buyhold = df_test["cum_buyhold"].iloc[-1] - 1
+    n_trades = (df_test["signal"] == 1).sum()
+    n_days = len(df_test)
+
     return {
         "modelo": model_name,
-        "retorno_estrategia": round((df_test["cum_strategy"].iloc[-1] - 1) * 100, 2),
-        "retorno_buyhold": round((df_test["cum_buyhold"].iloc[-1] - 1) * 100, 2),
-        "num_operaciones": int((df_test["signal"] == 1).sum()),
-        "dias_test": len(df_test),
+        "retorno_estrategia": round(total_strategy * 100, 2),
+        "retorno_buyhold": round(total_buyhold * 100, 2),
+        "num_operaciones": int(n_trades),
+        "dias_test": int(n_days),
         "df_test": df_test,
     }
 
@@ -234,11 +253,12 @@ def plot_walk_forward(df_wf: pd.DataFrame, save_path: str = "docs/walk_forward.p
     plt.close()
 
 
-def walk_forward_validation(df_path: str, n_splits: int = 5):
+def walk_forward_validation(df_path: str, metadata: dict, n_splits: int = 5):
     df = pd.read_csv(df_path, parse_dates=["Date"])
     df = df.sort_values("Date").reset_index(drop=True)
 
-    X = df.drop(columns=NO_FEATURE_COLUMN)
+    feature_cols = get_feature_columns(df, metadata)
+    X = df[feature_cols].copy()
     y_binary = df["target_binary"]
 
     total = len(df)
@@ -261,7 +281,7 @@ def walk_forward_validation(df_path: str, n_splits: int = 5):
         dates_wf = df["Date"].iloc[test_start:test_end]
         returns_wf = df["gold_return"].iloc[test_start:test_end]
 
-        scaler_wf = StandardScaler()
+        scaler_wf = load_scaler(DIR)
         X_train_sc = scaler_wf.fit_transform(X_train_wf)
         X_test_sc = scaler_wf.transform(X_test_wf)
 
@@ -285,11 +305,11 @@ def walk_forward_validation(df_path: str, n_splits: int = 5):
         date_start = dates_wf.iloc[0].date()
         date_end = dates_wf.iloc[-1].date()
 
-        print(f"\nVentana {i+1}: {date_start} -> {date_end}")
+        print(f"\nVentana {i + 1}: {date_start} -> {date_end}")
         print(f" Train: {train_end} filas | Test: {len(X_test_wf)} filas")
         print(f" Accuracy: {acc:.4f} | F1: {f1:.4f}")
-        print(f" Retorno estrategia: {cum_strategy*100:.2f}%")
-        print(f" Retorno buy & hold: {cum_buyhold*100:.2f}%")
+        print(f" Retorno estrategia: {cum_strategy * 100:.2f}%")
+        print(f" Retorno buy & hold: {cum_buyhold * 100:.2f}%")
         print(f" Operaciones: {n_trades} de {len(X_test_wf)} días")
 
         results_wf.append({
@@ -316,7 +336,6 @@ def walk_forward_validation(df_path: str, n_splits: int = 5):
     print(f" Total operaciones: {df_wf['n_trades'].sum()}")
 
     plot_walk_forward(df_wf)
-
     return df_wf
 
 
@@ -325,9 +344,13 @@ def main():
     print("Golden-Forecast — Evaluación de modelos")
     print("=" * 60)
 
+    metadata = load_metadata(DIR)
     models = load_all_models(DIR)
+    scaler = load_scaler(DIR)
 
     (
+        df_full,
+        feature_cols,
         X_train,
         X_test,
         y_bin_train,
@@ -335,13 +358,15 @@ def main():
         y_multi_train,
         y_multi_test,
         dates_test,
-    ) = prepare_data(PATH)
+    ) = prepare_data(PATH, metadata)
 
-    scaler = load_scaler(DIR)
+    df_test_context = get_test_context(df_full)
+
     X_train_sc = scaler.transform(X_train)
     X_test_sc = scaler.transform(X_test)
 
-    print(f"\nPeriodo de test: {dates_test.iloc[0].date()} -> {dates_test.iloc[-1].date()}")
+    print(f"\nFeatures usadas en evaluación: {len(feature_cols)}")
+    print(f"Periodo de test: {dates_test.iloc[0].date()} -> {dates_test.iloc[-1].date()}")
     print(f"Filas test: {len(X_test)}")
 
     print("\n" + "=" * 60)
@@ -349,12 +374,15 @@ def main():
     print("=" * 60)
 
     results = []
-    for name, model in models.items():
+    for name, payload in models.items():
+        model = payload["model"]
+        uses_scaled = payload["uses_scaled"]
+
         y_train = y_bin_train if "binary" in name else y_multi_train
         y_test = y_bin_test if "binary" in name else y_multi_test
 
-        X_train_used = X_train_sc if uses_scaled_data(name) else X_train
-        X_test_used = X_test_sc if uses_scaled_data(name) else X_test
+        X_train_used = X_train_sc if uses_scaled else X_train
+        X_test_used = X_test_sc if uses_scaled else X_test
 
         metrics = evaluate_model(model, name, X_train_used, X_test_used, y_train, y_test)
         results.append(metrics)
@@ -379,23 +407,24 @@ def main():
     binary_results = [r for r in results if "binary" in r["modelo"]]
     best_binary = max(binary_results, key=lambda x: x["f1_test"])
     best_binary_name = best_binary["modelo"]
-    best_binary_model = models[best_binary_name]
-    best_binary_X_test = X_test_sc if uses_scaled_data(best_binary_name) else X_test
+    best_binary_model = models[best_binary_name]["model"]
+    best_binary_scaled = models[best_binary_name]["uses_scaled"]
+    best_binary_X_test = X_test_sc if best_binary_scaled else X_test
 
     print(f"Modelo binario seleccionado: {best_binary_name}")
-
-    bt_binary = backtest_binary(best_binary_model, best_binary_name, best_binary_X_test)
+    bt_binary = backtest_binary(best_binary_model, best_binary_name, best_binary_X_test, df_test_context, threshold=0.56)
     print(f"Retorno estrategia binaria: {bt_binary['retorno_estrategia']}%")
 
     multi_results = [r for r in results if "multiclass" in r["modelo"]]
     best_multi = max(multi_results, key=lambda x: x["f1_test"])
     best_model_name = best_multi["modelo"]
-    best_model = models[best_model_name]
-    best_multi_X_test = X_test_sc if uses_scaled_data(best_model_name) else X_test
+    best_model = models[best_model_name]["model"]
+    best_multi_scaled = models[best_model_name]["uses_scaled"]
+    best_multi_X_test = X_test_sc if best_multi_scaled else X_test
 
     print(f"Modelo seleccionado para backtesting: {best_model_name}")
+    bt = backtest_multiclass(best_model, best_model_name, best_multi_X_test, df_test_context)
 
-    bt = backtest(best_model, best_model_name, best_multi_X_test, y_multi_test)
     print(f"\n Retorno estrategia: {bt['retorno_estrategia']}%")
     print(f" Retorno buy & hold: {bt['retorno_buyhold']}%")
     print(f" Operaciones realizadas: {bt['num_operaciones']} de {bt['dias_test']} días")
@@ -405,6 +434,7 @@ def main():
 
     output = {
         "resultados": results,
+        "feature_columns": feature_cols,
         "mejor_multiclase": best_model_name,
         "backtesting": {
             "modelo": bt["modelo"],
@@ -412,17 +442,25 @@ def main():
             "retorno_buyhold_pct": bt["retorno_buyhold"],
             "num_operaciones": bt["num_operaciones"],
         },
+        "backtesting_binario": {
+            "modelo": bt_binary["modelo"],
+            "threshold": bt_binary["threshold"],
+            "retorno_estrategia_pct": bt_binary["retorno_estrategia"],
+            "retorno_buyhold_pct": bt_binary["retorno_buyhold"],
+            "num_operaciones": bt_binary["num_operaciones"],
+        },
     }
 
     out_path = os.path.join(DIR, "evaluation_results.json")
-    with open(out_path, "w") as f:
-        json.dump(output, f, indent=2)
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(output, f, indent=2, ensure_ascii=False)
+
     print(f"\nResultados guardados en: {out_path}")
 
     print("\n" + "=" * 60)
     print("WALK-FORWARD VALIDATION")
     print("=" * 60)
-    df_wf = walk_forward_validation(PATH)
+    walk_forward_validation(PATH, metadata)
 
     print("\nEvaluación completada.")
 

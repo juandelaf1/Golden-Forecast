@@ -6,6 +6,7 @@ Optimiza hiperparámetros con RandomizedSearchCV y TimeSeriesSplit.
 Regla de preprocessing:
 - Logistic Regression -> con escalado dentro de Pipeline
 - Random Forest / LightGBM -> sin escalado
+- gold_return y gold_return_next_day nunca entran en X
 """
 
 import os
@@ -24,7 +25,17 @@ from sklearn.metrics import f1_score, accuracy_score, make_scorer
 PATH = "data/processed/gold-features.csv"
 MODELS_DIR = "models"
 TEST_SIZE = 0.2
-NON_FEATURE_COLS = ["Date", "target_binary", "target_multiclass"]
+RANDOM_STATE = 42
+N_ITER = 30
+N_SPLITS = 5
+
+NON_FEATURE_COLS = [
+    "Date",
+    "target_binary",
+    "target_multiclass",
+    "gold_return",
+    "gold_return_next_day",
+]
 
 RF_PARAM_GRID = {
     "n_estimators": [200, 300, 500],
@@ -49,27 +60,43 @@ LGBM_PARAM_GRID = {
     "num_leaves": [15, 31, 63],
 }
 
-N_ITER = 30
-N_SPLITS = 5
-RANDOM_STATE = 42
+
+def load_metadata(models_dir: str) -> dict:
+    path = os.path.join(models_dir, "train_metadata.json")
+    with open(path, encoding="utf-8") as f:
+        return json.load(f)
 
 
-def load_and_split(path: str, test_size: float = TEST_SIZE):
+def save_metadata(metadata: dict, models_dir: str):
+    path = os.path.join(models_dir, "train_metadata.json")
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(metadata, f, indent=2, ensure_ascii=False)
+
+
+def load_and_split(path: str, metadata: dict, test_size: float = TEST_SIZE):
     df = pd.read_csv(path, parse_dates=["Date"])
     df = df.sort_values("Date").reset_index(drop=True)
 
-    X = df.drop(columns=NON_FEATURE_COLS)
-    y_binary = df["target_binary"]
-    y_multiclass = df["target_multiclass"]
+    feature_cols = metadata.get("feature_columns")
+    if not feature_cols:
+        feature_cols = [c for c in df.columns if c not in NON_FEATURE_COLS]
+
+    missing = [c for c in feature_cols if c not in df.columns]
+    if missing:
+        raise ValueError(f"Faltan features en el dataset: {missing}")
+
+    X = df[feature_cols].copy()
+    y_binary = df["target_binary"].copy()
+    y_multiclass = df["target_multiclass"].copy()
 
     split_idx = int(len(df) * (1 - test_size))
 
-    X_train = X.iloc[:split_idx]
-    X_test = X.iloc[split_idx:]
-    y_bin_train = y_binary.iloc[:split_idx]
-    y_bin_test = y_binary.iloc[split_idx:]
-    y_multi_train = y_multiclass.iloc[:split_idx]
-    y_multi_test = y_multiclass.iloc[split_idx:]
+    X_train = X.iloc[:split_idx].copy()
+    X_test = X.iloc[split_idx:].copy()
+    y_bin_train = y_binary.iloc[:split_idx].copy()
+    y_bin_test = y_binary.iloc[split_idx:].copy()
+    y_multi_train = y_multiclass.iloc[:split_idx].copy()
+    y_multi_test = y_multiclass.iloc[split_idx:].copy()
 
     print(f"Dataset: {df.shape[0]} filas x {X.shape[1]} features")
     print(f"Train: {X_train.shape[0]} filas | Test: {X_test.shape[0]} filas")
@@ -137,19 +164,44 @@ def save_model(model, name: str, models_dir: str):
     print(f" Guardado: {path}")
 
 
+def append_models_to_metadata(metadata: dict, model_specs: list):
+    modelos = metadata.get("modelos", [])
+
+    if modelos and isinstance(modelos[0], str):
+        modelos = [{"name": name, "uses_scaled": name.startswith("lr")} for name in modelos]
+
+    existing_names = {m["name"] for m in modelos}
+    nuevos = 0
+
+    for spec in model_specs:
+        if spec["name"] not in existing_names:
+            modelos.append(spec)
+            existing_names.add(spec["name"])
+            nuevos += 1
+
+    metadata["modelos"] = modelos
+    return metadata, nuevos
+
+
 def main():
     print("=" * 60)
     print("Golden-Forecast — Optimización de hiperparámetros")
     print("=" * 60)
 
+    metadata = load_metadata(MODELS_DIR)
+
     (
-        X_train, X_test,
-        y_bin_train, y_bin_test,
-        y_multi_train, y_multi_test,
-    ) = load_and_split(PATH)
+        X_train,
+        X_test,
+        y_bin_train,
+        y_bin_test,
+        y_multi_train,
+        y_multi_test,
+    ) = load_and_split(PATH, metadata)
 
     results = []
     best_params_log = {}
+    optimized_model_specs = []
 
     print("\n" + "=" * 60)
     print("RANDOM FOREST — Target binario")
@@ -164,13 +216,17 @@ def main():
     )
 
     rf_bin_metrics = evaluate_optimized(
-        rf_bin_model, "rf_optimized_binary",
-        X_train, X_test,
-        y_bin_train, y_bin_test,
+        rf_bin_model,
+        "rf_optimized_binary",
+        X_train,
+        X_test,
+        y_bin_train,
+        y_bin_test,
     )
     results.append(rf_bin_metrics)
     best_params_log["rf_optimized_binary"] = rf_bin_params
     save_model(rf_bin_model, "rf_optimized_binary", MODELS_DIR)
+    optimized_model_specs.append({"name": "rf_optimized_binary", "uses_scaled": False})
 
     print("\n" + "=" * 60)
     print("RANDOM FOREST — Target multiclase")
@@ -185,13 +241,17 @@ def main():
     )
 
     rf_multi_metrics = evaluate_optimized(
-        rf_multi_model, "rf_optimized_multiclass",
-        X_train, X_test,
-        y_multi_train, y_multi_test,
+        rf_multi_model,
+        "rf_optimized_multiclass",
+        X_train,
+        X_test,
+        y_multi_train,
+        y_multi_test,
     )
     results.append(rf_multi_metrics)
     best_params_log["rf_optimized_multiclass"] = rf_multi_params
     save_model(rf_multi_model, "rf_optimized_multiclass", MODELS_DIR)
+    optimized_model_specs.append({"name": "rf_optimized_multiclass", "uses_scaled": False})
 
     print("\n" + "=" * 60)
     print("LOGISTIC REGRESSION — Target binario")
@@ -212,13 +272,17 @@ def main():
     )
 
     lr_bin_metrics = evaluate_optimized(
-        lr_bin_model, "lr_optimized_binary",
-        X_train, X_test,
-        y_bin_train, y_bin_test,
+        lr_bin_model,
+        "lr_optimized_binary",
+        X_train,
+        X_test,
+        y_bin_train,
+        y_bin_test,
     )
     results.append(lr_bin_metrics)
     best_params_log["lr_optimized_binary"] = lr_bin_params
     save_model(lr_bin_model, "lr_optimized_binary", MODELS_DIR)
+    optimized_model_specs.append({"name": "lr_optimized_binary", "uses_scaled": True})
 
     print("\n" + "=" * 60)
     print("LIGHTGBM — Target binario")
@@ -233,13 +297,17 @@ def main():
     )
 
     lgbm_bin_metrics = evaluate_optimized(
-        lgbm_bin_model, "lgbm_optimized_binary",
-        X_train, X_test,
-        y_bin_train, y_bin_test,
+        lgbm_bin_model,
+        "lgbm_optimized_binary",
+        X_train,
+        X_test,
+        y_bin_train,
+        y_bin_test,
     )
     results.append(lgbm_bin_metrics)
     best_params_log["lgbm_optimized_binary"] = lgbm_bin_params
     save_model(lgbm_bin_model, "lgbm_optimized_binary", MODELS_DIR)
+    optimized_model_specs.append({"name": "lgbm_optimized_binary", "uses_scaled": False})
 
     print("\n" + "=" * 60)
     print("RESUMEN OPTIMIZACIÓN")
@@ -253,22 +321,12 @@ def main():
         "mejores_parametros": best_params_log,
     }
     out_path = os.path.join(MODELS_DIR, "optimization_results.json")
-    with open(out_path, "w") as f:
-        json.dump(output, f, indent=2)
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(output, f, indent=2, ensure_ascii=False)
     print(f"\nResultados guardados en: {out_path}")
 
-    meta_path = os.path.join(MODELS_DIR, "train_metadata.json")
-    with open(meta_path) as f:
-        metadata = json.load(f)
-
-    nuevos = 0
-    for name in best_params_log.keys():
-        if name not in metadata["modelos"]:
-            metadata["modelos"].append(name)
-            nuevos += 1
-
-    with open(meta_path, "w") as f:
-        json.dump(metadata, f, indent=2)
+    metadata, nuevos = append_models_to_metadata(metadata, optimized_model_specs)
+    save_metadata(metadata, MODELS_DIR)
     print(f"Metadata actualizado — {nuevos} modelos optimizados añadidos")
 
     print("\n✓ Optimización completada.")

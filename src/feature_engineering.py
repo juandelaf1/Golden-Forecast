@@ -4,24 +4,57 @@ import pandas as pd
 # Columnas absolutas que se eliminan al final.
 # La idea es que el modelo no trabaje con precios absolutos, sino con variables relativas:
 # retornos, rangos, medias móviles, RSI, MACD, volatilidad y lags.
+#
+# IMPORTANTE:
+# - gold_return_next_day se elimina porque contiene información futura
+#   y solo debe existir como variable intermedia para crear targets.
+# - gold_return NO se elimina aquí porque se usa después para backtest y evaluación.
+#   Aun así, train.py y evaluate.py deben excluirla explícitamente de X.
+#
+# También eliminamos variables intermedias en escala de precio (dólares):
+# - gold_ma_5, gold_ma_20: medias móviles en $ — se reemplazan por gold_close_vs_ma_*
+# - gold_ma_cross: diferencia de medias en $ — se reemplaza por gold_ma_cross_pct
+# - gold_macd, gold_macd_signal: diferencia de EMAs en $ — se normalizan a gold_macd_pct, gold_macd_signal_pct
+# - gold_atr_14: en $ — se normaliza a gold_atr_14_pct
+# - vix_ma_20: en puntos VIX absolutos — se reemplaza por vix_vs_ma20 (relativo)
 COLUMNAS_ABSOLUTAS = [
     "gold_close", "gold_high", "gold_low", "gold_open",
     "dxy_close", "dxy_high", "dxy_low", "dxy_open",
     "vix_close", "vix_high", "vix_low", "vix_open",
     "tnx_close", "tnx_high", "tnx_low", "tnx_open",
-    "gold_return_next_day", "gvz_close", "gvz_high", "gvz_low", "gvz_open",
+    "gold_return_next_day",
+    "gvz_close", "gvz_high", "gvz_low", "gvz_open",
     "oil_close", "oil_high", "oil_low", "oil_open",
-    "sp500_close", "sp500_high", "sp500_low", "sp500_open"
+    "sp500_close", "sp500_high", "sp500_low", "sp500_open",
+    "gold_ma_5", "gold_ma_20",
+    "gold_ma_cross",
+    "gold_macd", "gold_macd_signal",
+    "gold_atr_14",
+    "vix_ma_20",
+]
+
+
+# Columnas que se eliminan porque son ruido confirmado.
+#
+# Criterio: permutation importance negativa en test + TimeSeriesSplit CV.
+# La permutation importance mide cuánto cae el F1 si se permuta aleatoriamente
+# esa feature; si cae a negativo, la feature está activamente dañando al modelo.
+# Un único split puede tener varianza alta, así que solo se eliminan las features
+# cuya eliminación mejora tanto el split 80/20 como la CV temporal de 5 folds.
+#
+# RESULTADO DEL ANÁLISIS:
+# - vix_high_fear, vix_extreme_fear: importance MDI casi nula; no aportan valor real.
+# - gold_return_lag_2, dxy_return_lag2: redundantes con variables cercanas.
+COLUMNAS_RUIDO = [
+    "vix_high_fear",
+    "vix_extreme_fear",
+    "gold_return_lag_2",
+    "dxy_return_lag2",
 ]
 
 
 def create_daily_returns(df):
-    """
-    Crea retornos diarios porcentuales.
-
-    Un retorno diario mide cuánto ha cambiado el precio respecto al día anterior.
-    Es más útil que el precio absoluto porque expresa variación relativa.
-    """
+    """Create daily percentage returns for all assets."""
     df = df.copy()
 
     df["gold_return"] = df["gold_close"].pct_change()
@@ -36,14 +69,7 @@ def create_daily_returns(df):
 
 
 def create_daily_ranges(df):
-    """
-    Crea el rango diario de cada activo.
-
-    Fórmula:
-    (máximo del día - mínimo del día) / apertura del día
-
-    Sirve para medir cuánto se ha movido el activo durante la sesión.
-    """
+    """Create daily high-low range as (high - low) / open for each asset."""
     df = df.copy()
 
     df["dxy_daily_range"] = (df["dxy_high"] - df["dxy_low"]) / df["dxy_open"]
@@ -57,14 +83,7 @@ def create_daily_ranges(df):
 
 
 def create_open_close_returns(df):
-    """
-    Crea el retorno intradía entre apertura y cierre.
-
-    Fórmula:
-    (cierre - apertura) / apertura
-
-    Esta variable resume si durante el día el activo terminó subiendo o bajando.
-    """
+    """Create intraday return between open and close for each asset."""
     df = df.copy()
 
     df["gold_open_close_return"] = (df["gold_close"] - df["gold_open"]) / df["gold_open"]
@@ -79,18 +98,7 @@ def create_open_close_returns(df):
 
 
 def create_moving_averages(df):
-    """
-    Crea medias móviles del oro y distancia del precio a esas medias.
-
-    gold_ma_5:
-    Media móvil corta de 5 días.
-
-    gold_ma_20:
-    Media móvil más amplia de 20 días.
-
-    gold_close_vs_ma_5 y gold_close_vs_ma_20:
-    Miden si el precio actual está por encima o por debajo de su media.
-    """
+    """Create moving averages and relative distance to them."""
     df = df.copy()
 
     df["gold_ma_5"] = df["gold_close"].rolling(window=5).mean()
@@ -103,22 +111,10 @@ def create_moving_averages(df):
 
 
 def create_rsi(df, window=14):
-    """
-    Crea el RSI de 14 días del oro.
-
-    RSI significa Relative Strength Index.
-
-    Mide la fuerza reciente de las subidas frente a las bajadas.
-    Suele usarse como indicador técnico:
-    - RSI alto: el activo ha subido mucho recientemente.
-    - RSI bajo: el activo ha bajado mucho recientemente.
-
-    Aquí se calcula solo con información pasada y actual, por lo que no introduce data leakage.
-    """
+    """Create 14-day RSI for gold. Uses only past data — no leakage."""
     df = df.copy()
 
     delta = df["gold_close"].diff()
-
     gains = delta.clip(lower=0)
     losses = -delta.clip(upper=0)
 
@@ -126,26 +122,13 @@ def create_rsi(df, window=14):
     avg_loss = losses.rolling(window=window).mean()
 
     rs = avg_gain / avg_loss
-
     df["gold_rsi_14"] = 100 - (100 / (1 + rs))
 
     return df
 
 
 def create_macd(df):
-    """
-    Crea MACD y señal del MACD.
-
-    MACD significa Moving Average Convergence Divergence.
-
-    Fórmula:
-    MACD = EMA de 12 días - EMA de 26 días
-
-    Señal:
-    Media exponencial de 9 días del MACD.
-
-    Sirve para detectar cambios de tendencia o momentum.
-    """
+    """Create MACD normalized by price level."""
     df = df.copy()
 
     ema_12 = df["gold_close"].ewm(span=12, adjust=False).mean()
@@ -154,17 +137,14 @@ def create_macd(df):
     df["gold_macd"] = ema_12 - ema_26
     df["gold_macd_signal"] = df["gold_macd"].ewm(span=9, adjust=False).mean()
 
+    df["gold_macd_pct"] = df["gold_macd"] / ema_26
+    df["gold_macd_signal_pct"] = df["gold_macd_signal"] / ema_26
+
     return df
 
 
 def create_rolling_volatility(df, window=14):
-    """
-    Crea volatilidad rolling de 14 días.
-
-    La volatilidad se calcula como la desviación estándar de los retornos recientes.
-    Si es alta, significa que el oro se está moviendo mucho.
-    Si es baja, significa que el precio está más estable.
-    """
+    """Create 14-day rolling volatility (standard deviation of returns)."""
     df = df.copy()
 
     df["gold_volatility_14"] = df["gold_return"].rolling(window=window).std()
@@ -173,43 +153,23 @@ def create_rolling_volatility(df, window=14):
 
 
 def create_return_lags(df):
-    """
-    Crea retardos del retorno del oro.
-
-    Estos lags permiten que el modelo vea qué pasó en días anteriores:
-
-    gold_return_lag_1:
-    Retorno del oro del día anterior.
-
-    gold_return_lag_2:
-    Retorno del oro de hace dos días.
-
-    No hay data leakage porque solo se usa información pasada.
-    """
+    """Create lagged return features."""
     df = df.copy()
 
     df["gold_return_lag_1"] = df["gold_return"].shift(1)
     df["gold_return_lag_2"] = df["gold_return"].shift(2)
     df["gvz_return_lag1"] = df["gvz_return"].shift(1)
+    df["oil_return_lag1"] = df["oil_return"].shift(1)
     df["sp500_return_lag1"] = df["sp500_return"].shift(1)
 
-    # Lags adicionales de DXY y VIX a 2 días.
-    # El dólar y el miedo del mercado no siempre impactan al oro el mismo día,
-    # a veces el efecto se nota con retraso.
     df["dxy_return_lag2"] = df["dxy_return"].shift(2)
     df["vix_return_lag2"] = df["vix_return"].shift(2)
 
     return df
 
 
-def create_momentum(df):
-    """
-    Crea variables de momentum a varios horizontes.
-
-    A diferencia de gold_return (retorno de 1 día), estas miden el
-    retorno acumulado de los últimos 3, 5 y 10 días. Ayudan al modelo
-    a distinguir entre una racha sostenida y un movimiento puntual.
-    """
+def create_cumulative_return(df):
+    """Create cumulative returns over 3, 5 and 10 days."""
     df = df.copy()
 
     df["gold_return_3d"] = df["gold_close"].pct_change(3)
@@ -219,18 +179,21 @@ def create_momentum(df):
     return df
 
 
+def create_vix_sentiment_features(df):
+    """Create VIX sentiment-related features."""
+    df = df.copy()
+
+    vix_ma_20 = df["vix_close"].rolling(window=20).mean()
+    df["vix_vs_ma20"] = (df["vix_close"] - vix_ma_20) / vix_ma_20
+    df["vix_high_fear"] = (df["vix_close"] > 25).astype(int)
+    df["vix_extreme_fear"] = (df["vix_close"] > 35).astype(int)
+    df["vix_ma_20"] = vix_ma_20
+
+    return df
+
+
 def create_ma_cross(df):
-    """
-    Crea el cruce entre la media móvil corta (5) y la larga (20) del oro.
-
-    gold_ma_cross: diferencia absoluta entre ambas medias.
-    gold_ma_cross_pct: la misma diferencia normalizada por la media larga,
-    para que sea comparable entre distintos niveles de precio del oro
-    (por ejemplo, no es lo mismo un gap de 5$ con el oro a 900 que a 2500).
-
-    Es un indicador clásico de tendencia: cuando la media corta cruza por
-    encima de la larga suele interpretarse como señal alcista, y viceversa.
-    """
+    """Create moving-average cross features."""
     df = df.copy()
 
     df["gold_ma_cross"] = df["gold_ma_5"] - df["gold_ma_20"]
@@ -239,15 +202,8 @@ def create_ma_cross(df):
     return df
 
 
-def create_spreads(df):
-    """
-    Crea spreads de retorno entre el oro y otros activos.
-
-    El oro se mueve muchas veces en relación (inversa) al dólar y a la
-    renta variable. Estos spreads capturan si el oro se está comportando
-    distinto a esos activos en el mismo día, lo cual puede anticipar
-    rotaciones de capital hacia o desde el oro.
-    """
+def create_relative_spreads(df):
+    """Create relative spreads between gold and other assets."""
     df = df.copy()
 
     df["gold_dxy_spread"] = df["gold_return"] - df["dxy_return"]
@@ -257,16 +213,7 @@ def create_spreads(df):
 
 
 def create_rolling_correlation(df, window=20):
-    """
-    Crea la correlación móvil de 20 días entre el retorno del oro y el
-    retorno del DXY y del S&P500.
-
-    La relación oro-dólar y oro-bolsa no es constante en el tiempo: hay
-    periodos de correlación fuerte y periodos donde se rompe (por ejemplo
-    en crisis de liquidez). Que el modelo vea si esa relación se está
-    manteniendo o rompiendo recientemente aporta información de régimen
-    de mercado que un retorno puntual no captura.
-    """
+    """Create rolling correlations between gold and DXY/SP500 returns."""
     df = df.copy()
 
     df["gold_dxy_corr20"] = df["gold_return"].rolling(window).corr(df["dxy_return"])
@@ -276,18 +223,7 @@ def create_rolling_correlation(df, window=20):
 
 
 def create_atr(df, window=14):
-    """
-    Crea el ATR (Average True Range) de 14 días del oro.
-
-    El True Range de un día es el mayor de:
-    - high - low
-    - |high - close anterior|
-    - |low - close anterior|
-
-    El ATR es la media móvil del True Range. Es un indicador de
-    volatilidad muy usado por traders porque, a diferencia del rango
-    diario simple, sí tiene en cuenta gaps respecto al cierre anterior.
-    """
+    """Create ATR normalized by price."""
     df = df.copy()
 
     prev_close = df["gold_close"].shift(1)
@@ -299,26 +235,13 @@ def create_atr(df, window=14):
     true_range = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
 
     df["gold_atr_14"] = true_range.rolling(window=window).mean()
+    df["gold_atr_14_pct"] = df["gold_atr_14"] / df["gold_close"]
 
     return df
 
 
 def create_bollinger_position(df, window=20, num_std=2):
-    """
-    Crea la posición del precio dentro de las Bandas de Bollinger.
-
-    En lugar de guardar las bandas superior/inferior como variables
-    absolutas (que dependen del nivel de precio del oro), guardamos
-    bb_position, que indica dónde está el precio dentro del canal:
-
-    bb_position = (close - banda_inferior) / (banda_superior - banda_inferior)
-
-    - bb_position cerca de 1: el precio está pegado a la banda superior
-      (posible sobrecompra).
-    - bb_position cerca de 0: el precio está pegado a la banda inferior
-      (posible sobreventa).
-    - bb_position alrededor de 0.5: el precio está en la media móvil.
-    """
+    """Create price position inside Bollinger Bands."""
     df = df.copy()
 
     rolling_mean = df["gold_close"].rolling(window=window).mean()
@@ -331,44 +254,12 @@ def create_bollinger_position(df, window=20, num_std=2):
 
     return df
 
-"""
-def create_calendar_features(df):
- 
-    Crea features de calendario.
-    El oro tiene patrones estacionales reales — ciertos días
-    de la semana y meses del año tienen comportamiento distinto.
-    
-    df = df.copy()
-    df["day_of_week"] = pd.to_datetime(df["Date"]).dt.dayofweek  # 0=lunes, 4=viernes
-    df["month"] = pd.to_datetime(df["Date"]).dt.month
-    return df
-
-"""
 
 def create_targets(df, threshold=0.003):
-    """
-    Crea las variables objetivo del proyecto.
-
-    gold_return_next_day:
-    Retorno del oro del día siguiente.
-    Esta columna se usa para construir los targets, pero después se elimina
-    para que no entre como variable predictora.
-
-    target_binary:
-    - 1 si el oro sube al día siguiente.
-    - 0 si el oro no sube.
-
-    target_multiclass:
-    - 1 si el oro sube más del threshold.
-    - 0 si el movimiento está entre -threshold y +threshold.
-    - -1 si el oro baja más del threshold.
-
-    En este caso el threshold es 0.005, es decir, 0.5%.
-    """
+    """Create binary and multiclass targets from next-day gold return."""
     df = df.copy()
 
     df["gold_return_next_day"] = df["gold_close"].pct_change().shift(-1)
-
     df["target_binary"] = (df["gold_return_next_day"] > 0).astype(int)
 
     df["target_multiclass"] = 0
@@ -379,26 +270,7 @@ def create_targets(df, threshold=0.003):
 
 
 def create_features(df):
-    """
-    Ejecuta todo el proceso de creación de variables predictoras.
-
-    Orden:
-    1. Retornos diarios.
-    2. Rangos diarios.
-    3. Retornos apertura-cierre.
-    4. Medias móviles.
-    5. RSI.
-    6. MACD.
-    7. Volatilidad rolling.
-    8. Lags del retorno del oro (incluye dxy/vix lag2).
-    9. Momentum (3d, 5d, 10d).
-    10. Cruce de medias móviles.
-    11. Spreads oro vs dxy/sp500.
-    12. Correlación móvil oro vs dxy/sp500.
-    13. ATR 14.
-    14. Posición en Bandas de Bollinger.
-    15. Patrones estacionales reales.
-    """
+    """Run complete feature engineering pipeline."""
     df = df.copy()
 
     df = create_daily_returns(df)
@@ -409,41 +281,31 @@ def create_features(df):
     df = create_macd(df)
     df = create_rolling_volatility(df)
     df = create_return_lags(df)
-    df = create_momentum(df)
+    df = create_cumulative_return(df)
     df = create_ma_cross(df)
-    df = create_spreads(df)
+    df = create_vix_sentiment_features(df)
+    df = create_relative_spreads(df)
     df = create_rolling_correlation(df)
     df = create_atr(df)
     df = create_bollinger_position(df)
-    #df = create_calendar_features(df)
 
     return df
 
 
 def run_feature_engineering(input_path, output_path):
-    """
-    Ejecuta el feature engineering completo y guarda el dataset final.
-
-    Lee el CSV limpio generado por preprocessing.py.
-    Después:
-    1. Crea variables predictoras.
-    2. Crea targets.
-    3. Elimina columnas absolutas.
-    4. Elimina filas con nulos generados por rolling, shift y pct_change.
-    5. Guarda el dataset final con features.
-    """
+    """Execute feature engineering and save final dataset."""
     df = pd.read_csv(input_path, parse_dates=["Date"])
 
     df = create_features(df)
     df = create_targets(df, threshold=0.003)
 
     df = df.drop(columns=COLUMNAS_ABSOLUTAS, errors="ignore")
+    df = df.drop(columns=COLUMNAS_RUIDO, errors="ignore")
     df = df.dropna()
 
     df.to_csv(output_path, index=False)
 
     print(f"Dataset con features guardado en {output_path} | shape: {df.shape}")
-
     return df
 
 
