@@ -41,6 +41,25 @@ def rename_columns(df):
         "TNX_('Low', '^TNX')": "tnx_low",
         "TNX_('Open', '^TNX')": "tnx_open",
         "TNX_('Volume', '^TNX')": "tnx_volume",
+        
+        "GVZ_('Close', '^GVZ')": "gvz_close",
+        "GVZ_('High', '^GVZ')": "gvz_high",
+        "GVZ_('Low', '^GVZ')": "gvz_low",
+        "GVZ_('Open', '^GVZ')": "gvz_open",
+        "GVZ_('Volume', '^GVZ')": "gvz_volume",
+        
+        "Oil_('Close', 'CL=F')": "oil_close",
+        "Oil_('High', 'CL=F')": "oil_high",
+        "Oil_('Low', 'CL=F')": "oil_low",
+        "Oil_('Open', 'CL=F')": "oil_open",
+        "Oil_('Volume', 'CL=F')": "oil_volume",
+        
+        "SP500_('Close', '^GSPC')": "sp500_close",
+        "SP500_('High', '^GSPC')": "sp500_high",
+        "SP500_('Low', '^GSPC')": "sp500_low",
+        "SP500_('Open', '^GSPC')": "sp500_open",
+        "SP500_('Volume', '^GSPC')": "sp500_volume",
+        
     })
 
     return df
@@ -54,6 +73,8 @@ def drop_uninformative_columns(df):
         "dxy_volume",
         "vix_volume",
         "tnx_volume",
+        "sp500_volume",
+        "gvz_volume",
     ]
 
     df = df.drop(columns=columns_to_drop, errors="ignore")
@@ -64,7 +85,7 @@ def drop_uninformative_columns(df):
 def remove_missing_values(df):
     """Drop rows with null values (few in this dataset, imputation not needed)."""
     df = df.copy()
-
+    df =df.ffill()
     df = df.dropna()
 
     return df
