@@ -20,14 +20,15 @@
 - Presentation storytelling, narrative & QA validation
 - Deployment (Docker, Render, CI/CD automation)
 - Data lineage, documentation & data dictionary
-- EDA notebook (PR #38)
+- EDA notebooks (PR #38)
 - Market sentiment & relative spread features (PR #39)
 - Model re-training with updated feature set
 - Testing (features, models, dashboard)
 - Mintlify documentation site
+- Github Actions workflow implementation
 - Final repo cleanup & handover
 
-**Entrega final**: Dashboard funcional + API health endpoint + repositorio documentado
+**Deliverables**: PPTX + Dashboard funcional + API health endpoint + github repository
 
 ---
 
@@ -59,6 +60,7 @@ The pipeline follows a strict, auditable flow to ensure reproducibility and trac
 3. **Processed Data**  
    - **Cleaned CSV**: `data/raw/gold-clean.csv` (after outlier handling, NaN treatment).  
    - **Feature Set**: `data/processed/gold-features.csv` (features + engineered columns, target variables).  
+    - **Predictions**: `data/processed/predictions.csv` (daily feed from github actions workflow)
 
 4. **Pipeline Flow**  
    ```
@@ -75,8 +77,13 @@ All steps are idempotent, version‑controlled, and documented in the `README.md
 | `src/extract/extract.py`              | Download raw Yahoo Finance data |
 | `src/preprocessing.py`                | Clean & rename columns |
 | `src/feature_engineering.py`          | Create 24 technical & macro features + 9 market sentiment (PR #39) |
+| `src/predict.py`                      | Daily prediction for next day |
 | `src/models/train.py`                 | Train LR, RF, XGBoost classifiers |
 | `src/models/evaluate.py`              | Compute metrics, backtest, overfit checks |
 | `src/dashboard/`                      | Plotly Dash UI with 8 tabs |
 | `src/dashboard/model_loader.py`       | On‑demand model loading |
+| `src/dashboard/app.py`                | Dash web application endpoint
+| `src/dashboard/callbacks.py`          | Defines the visual themes, data mappings, interactive callbacks, and layout structures |
+| `src/dashboard/data.py`               | Data engine|
+| `src/dashboard/model_loader.py`       | Loads, manages, and aggregates the predictions of the 12 trained machine learning models |
 | `render.yaml` / `Dockerfile`          | Deployment configuration |
