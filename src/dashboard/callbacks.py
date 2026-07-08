@@ -1283,6 +1283,24 @@ def build_simulation_tab() -> html.Div:
                 ],
             ),
             html.Div(
+                className="help-panel",
+                style={
+                    "marginBottom": "16px",
+                    "padding": "12px 16px",
+                    "background": "rgba(239, 68, 68, 0.08)",
+                    "borderRadius": "12px",
+                    "border": "1px solid rgba(239, 68, 68, 0.2)",
+                },
+                children=[
+                    html.P(
+                        "⚠ Modelo en fase beta — ROC-AUC ~0.50 (equivalente a aleatorio). "
+                        "Los resultados de esta simulación no son representativos. "
+                        "No usar para decisiones de inversión reales.",
+                        style={"color": "#f87171", "fontSize": "0.85rem", "margin": 0},
+                    ),
+                ],
+            ),
+            html.Div(
                 className="simulation-panel",
                 children=[
                     html.Div("Parámetros", className="card-title"),
@@ -1295,9 +1313,7 @@ def build_simulation_tab() -> html.Div:
                                     html.Label("Fecha inicio", className="input-label"),
                                     dcc.DatePickerSingle(
                                         id="sim-start",
-                                        date=context["data"]
-                                        .index[context["split_index"]]
-                                        .date(),
+                                        date=(context["data"].index[-1] - pd.DateOffset(months=1)).date(),
                                         display_format="YYYY-MM-DD",
                                         className="date-picker",
                                     ),
@@ -1701,7 +1717,7 @@ def _metric_color(v: float) -> str:
 
 
 def build_model_figure() -> go.Figure:
-    metrics = ["Precisión", "Precision", "Recall", "F1 Score", "ROC-AUC"]
+    metrics = ["Accuracy", "Precision", "Recall", "F1 Score", "ROC-AUC"]
     values = [
         context["accuracy"],
         context["precision"],
@@ -2252,7 +2268,7 @@ def build_model_comparison_table() -> html.Div:
         html.Tr(
             [
                 html.Th("Modelo", style=TH),
-                html.Th("Precisión", style=TH),
+                html.Th("Accuracy", style=TH),
                 html.Th("Precision", style=TH),
                 html.Th("Recall", style=TH),
                 html.Th("F1", style=TH),
@@ -2359,7 +2375,6 @@ TABLE = {"width": "100%", "borderCollapse": "collapse"}
 
 def build_experimental_section() -> html.Div:
     """B2B-friendly horizon comparison table."""
-    data.ensure_experimental()
     exp = context.get("experimental")
     if not exp or not exp.get("horizons"):
         return html.Div()
@@ -2368,7 +2383,7 @@ def build_experimental_section() -> html.Div:
         html.Tr(
             [
                 html.Th("Ventana", style=TH),
-                html.Th("Precisión", style=TH),
+                html.Th("Accuracy", style=TH),
                 html.Th("Precision", style=TH),
                 html.Th("Recall", style=TH),
                 html.Th("F1", style=TH),

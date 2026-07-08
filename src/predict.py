@@ -17,23 +17,20 @@ Si Joel reentrena y actualiza evaluation_results.json, este script
 automáticamente usará los nuevos modelos ganadores.
 """
 
-FEATURES_PATH    = "data/processed/gold-features.csv"
-MODELS_DIR       = "models"
-EVALUATION_PATH  = "models/evaluation_results.json"
-PREDICTIONS_LOG  = "data/predictions.csv"
+FEATURES_PATH = "data/processed/gold-features.csv"
+MODELS_DIR = "models"
+EVALUATION_PATH = "models/evaluation_results.json"
+PREDICTIONS_LOG = "data/processed/predictions.csv"
 
 # Columnas que no son variables predictoras y hay que eliminar antes de pasar al modelo
 NO_FEATURE_COLUMNS = ["Date", "target_binary", "target_multiclass"]
 
 # Etiquetas legibles para las predicciones
-BINARY_LABELS = {
-    1: "SUBE",
-    0: "BAJA"
-}
+BINARY_LABELS = {1: "SUBE", 0: "BAJA"}
 MULTI_LABELS = {
-    1:  "SUBE FUERTE (más del 0.5%)",
-    0:  "MOVIMIENTO PLANO (menos del 0.5%)",
-    -1: "BAJA FUERTE (más del 0.5%)"
+    1: "SUBE FUERTE (más del 0.5%)",
+    0: "MOVIMIENTO PLANO (menos del 0.5%)",
+    -1: "BAJA FUERTE (más del 0.5%)",
 }
 
 
@@ -109,23 +106,23 @@ def predict_next_day() -> dict:
 
     # Cargar los modelos ganadores usando los nombres leídos del JSON
     model_binary = load_pickle(f"{MODELS_DIR}/{best_binary_name}.pkl")
-    model_multi  = load_pickle(f"{MODELS_DIR}/{best_multi_name}.pkl")
+    model_multi = load_pickle(f"{MODELS_DIR}/{best_multi_name}.pkl")
 
     # Generar predicciones
-    pred_binary     = int(model_binary.predict(X_scaled)[0])
-    prob_sube       = round(float(model_binary.predict_proba(X_scaled)[0][1]), 4)
+    pred_binary = int(model_binary.predict(X_scaled)[0])
+    prob_sube = round(float(model_binary.predict_proba(X_scaled)[0][1]), 4)
     pred_multiclass = int(model_multi.predict(X_scaled)[0])
 
     result = {
-        "fecha_referencia":        str(fecha_referencia),
-        "prediccion_binaria":      pred_binary,
-        "señal_binaria":           BINARY_LABELS[pred_binary],
-        "probabilidad_sube":       prob_sube,
-        "prediccion_multiclase":   pred_multiclass,
-        "señal_multiclase":        MULTI_LABELS[pred_multiclass],
-        "modelo_binario_usado":    best_binary_name,
+        "fecha_referencia": str(fecha_referencia),
+        "prediccion_binaria": pred_binary,
+        "señal_binaria": BINARY_LABELS[pred_binary],
+        "probabilidad_sube": prob_sube,
+        "prediccion_multiclase": pred_multiclass,
+        "señal_multiclase": MULTI_LABELS[pred_multiclass],
+        "modelo_binario_usado": best_binary_name,
         "modelo_multiclase_usado": best_multi_name,
-        "generado_en":             datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC"),
+        "generado_en": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC"),
     }
 
     # Mostrar resultado en consola (visible en el log de GitHub Actions)
@@ -133,8 +130,10 @@ def predict_next_day() -> dict:
     print("Golden Forecast — Predicción del próximo día de mercado")
     print("=" * 55)
     print(f"  Datos de referencia : {result['fecha_referencia']}")
-    print(f"  Señal binaria       : {result['señal_binaria']}  "
-          f"(probabilidad de subida: {prob_sube * 100:.1f}%)")
+    print(
+        f"  Señal binaria       : {result['señal_binaria']}  "
+        f"(probabilidad de subida: {prob_sube * 100:.1f}%)"
+    )
     print(f"  Señal multiclase    : {result['señal_multiclase']}")
     print("=" * 55)
 
@@ -152,7 +151,9 @@ def save_prediction(result: dict) -> None:
     if os.path.exists(PREDICTIONS_LOG):
         existing = pd.read_csv(PREDICTIONS_LOG)
         if result["fecha_referencia"] in existing["fecha_referencia"].values:
-            print(f"  Ya existe predicción para {result['fecha_referencia']}. No se duplica.")
+            print(
+                f"  Ya existe predicción para {result['fecha_referencia']}. No se duplica."
+            )
             return
         row.to_csv(PREDICTIONS_LOG, mode="a", header=False, index=False)
     else:

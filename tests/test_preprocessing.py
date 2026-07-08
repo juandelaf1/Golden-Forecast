@@ -13,33 +13,31 @@ def create_raw_sample_dataframe():
     """
     Crea un dataset pequeño con columnas originales para probar el preprocessing.
     """
-    return pd.DataFrame({
-        "Date": pd.date_range(start="2020-01-01", periods=5, freq="D"),
-
-        "gold_open": [100, 101, 102, 103, 104],
-        "gold_high": [101, 102, 103, 104, 105],
-        "gold_low": [99, 100, 101, 102, 103],
-        "gold_close": [100, 101, 102, 103, 104],
-        "gold_volume": [1000, 1100, 1200, 1300, 1400],
-
-        "dxy_open": [90, 91, 92, 93, 94],
-        "dxy_high": [91, 92, 93, 94, 95],
-        "dxy_low": [89, 90, 91, 92, 93],
-        "dxy_close": [90, 91, 92, 93, 94],
-        "dxy_volume": [1, 1, 1, 1, 1],
-
-        "vix_open": [15, 16, 17, 18, 19],
-        "vix_high": [16, 17, 18, 19, 20],
-        "vix_low": [14, 15, 16, 17, 18],
-        "vix_close": [15, 16, 17, 18, 19],
-        "vix_volume": [1, 1, 1, 1, 1],
-
-        "tnx_open": [2, 2, 2, 2, 2],
-        "tnx_high": [3, 3, 3, 3, 3],
-        "tnx_low": [1, 1, 1, 1, 1],
-        "tnx_close": [2, 2, 2, 2, 2],
-        "tnx_volume": [1, 1, 1, 1, 1],
-    })
+    return pd.DataFrame(
+        {
+            "Date": pd.date_range(start="2020-01-01", periods=5, freq="D"),
+            "gold_open": [100, 101, 102, 103, 104],
+            "gold_high": [101, 102, 103, 104, 105],
+            "gold_low": [99, 100, 101, 102, 103],
+            "gold_close": [100, 101, 102, 103, 104],
+            "gold_volume": [1000, 1100, 1200, 1300, 1400],
+            "dxy_open": [90, 91, 92, 93, 94],
+            "dxy_high": [91, 92, 93, 94, 95],
+            "dxy_low": [89, 90, 91, 92, 93],
+            "dxy_close": [90, 91, 92, 93, 94],
+            "dxy_volume": [1, 1, 1, 1, 1],
+            "vix_open": [15, 16, 17, 18, 19],
+            "vix_high": [16, 17, 18, 19, 20],
+            "vix_low": [14, 15, 16, 17, 18],
+            "vix_close": [15, 16, 17, 18, 19],
+            "vix_volume": [1, 1, 1, 1, 1],
+            "tnx_open": [2, 2, 2, 2, 2],
+            "tnx_high": [3, 3, 3, 3, 3],
+            "tnx_low": [1, 1, 1, 1, 1],
+            "tnx_close": [2, 2, 2, 2, 2],
+            "tnx_volume": [1, 1, 1, 1, 1],
+        }
+    )
 
 
 def test_clean_gold_data_returns_dataframe(tmp_path):

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 50">
+  <rect width="200" height="50" fill="#1a1a2e"/>
+  <text x="12" y="34" font-family="Georgia, serif" font-size="24" font-weight="bold" fill="#D4AF37">GOLDEN</text>
+  <text x="108" y="34" font-family="Georgia, serif" font-size="24" font-weight="bold" fill="#FFD700">FORECAST</text>
+</svg>
