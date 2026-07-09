@@ -16,13 +16,10 @@ El dashboard de Golden Forecast es una herramienta interactiva de 9 pestañas qu
 
 ### Tarjetas superiores (4 métricas clave)
 
-<table>
-<tr><th>Métrica</th><th>Valor</th><th>Propósito</th></tr>
-<tr><td>Precio actual</td><td>Cotización spot del oro (GC=F)</td><td>Referencia de precio del día</td></tr>
-<tr><td>Señal de mercado</td><td>ALZA / PRECAUCIÓN / ESTABLE</td><td>Decisión principal del modelo para mañana</td></tr>
-<tr><td>Certeza</td><td>XX% (0-100%)</td><td>Confianza del modelo en su señal actual</td></tr>
-<tr><td>Actualizado</td><td>Fecha y hora UTC</td><td>Trazabilidad de la última actualización</td></tr>
-</table>
+- **Precio actual**: Cotización spot del oro (GC=F) — Referencia de precio del día
+- **Señal de mercado**: ALZA / PRECAUCIÓN / ESTABLE — Decisión principal del modelo para mañana
+- **Certeza**: XX% (0-100%) — Confianza del modelo en su señal actual
+- **Actualizado**: Fecha y hora UTC — Trazabilidad de la última actualización
 
 **Señales:**
 - **ALZA** — confianza ≥ 58%. El modelo espera subida.
@@ -49,17 +46,14 @@ El dashboard de Golden Forecast es una herramienta interactiva de 9 pestañas qu
 **Tipo:** Barras horizontales  
 **Métricas del modelo principal (lr_strong_reg_binary):**
 
-<table>
-<tr><th>Métrica</th><th>Valor actual</th><th>Qué mide</th></tr>
-<tr><td>Accuracy</td><td>56.9%</td><td>% de predicciones correctas sobre el total</td></tr>
-<tr><td>Precision</td><td>58.3%</td><td>De las veces que dijo "sube", % de aciertos</td></tr>
-<tr><td>Recall</td><td>87.5%</td><td>De las subidas reales, % capturadas</td></tr>
-<tr><td>F1 Score</td><td>0.700</td><td>Media armónica Precision + Recall</td></tr>
-<tr><td>ROC-AUC</td><td>0.500</td><td>Capacidad de distinguir subida/bajada</td></tr>
-</table>
+- **Accuracy**: 56.9% — % de predicciones correctas sobre el total
+- **Precision**: 58.3% — De las veces que dijo "sube", % de aciertos
+- **Recall**: 87.5% — De las subidas reales, % capturadas
+- **F1 Score**: 0.700 — Media armónica Precision + Recall
+- **ROC-AUC**: 0.500 — Capacidad de distinguir subida/bajada
 
 **Color de cada barra según valor:**
-- < 0.35 → rojo
+- &lt; 0.35 → rojo
 - 0.35-0.50 → naranja
 - 0.50-0.65 → amarillo
 - 0.65-0.80 → verde claro
@@ -88,8 +82,8 @@ El dashboard de Golden Forecast es una herramienta interactiva de 9 pestañas qu
 
 - **Línea dorada:** Precio del oro indexado a base 100. La indexación permite ver cambios relativos en una escala manejable.
 - **Línea azul discontinua:** Media Móvil de 21 días (MA21). Indica tendencia a corto plazo:
-  - Precio > MA21 → tendencia alcista
-  - Precio < MA21 → tendencia bajista
+  - Precio &gt; MA21 → tendencia alcista
+  - Precio &lt; MA21 → tendencia bajista
 - **Estrellas:** Señales del modelo en el período de test:
   - ⭐ Verde = predicción de subida
   - ⭐ Roja = predicción de bajada
@@ -111,10 +105,10 @@ El dashboard de Golden Forecast es una herramienta interactiva de 9 pestañas qu
 **Rango:** 0-100
 
 - **Línea verde:** Valor del RSI
-- **Línea roja (y=70):** Sobrecompra. RSI > 70 → activo caro, posible corrección bajista.
-- **Línea verde (y=30):** Sobreventa. RSI < 30 → activo barato, posible rebote alcista.
+- **Línea roja (y=70):** Sobrecompra. RSI &gt; 70 → activo caro, posible corrección bajista.
+- **Línea verde (y=30):** Sobreventa. RSI &lt; 30 → activo barato, posible rebote alcista.
 
-**Por qué existe:** Es el indicador más usado del mundo. Un RSI > 70 cuando el modelo dice ALZA es contradictorio y requiere cautela. RSI < 30 cuando el modelo dice BAJA sugiere posible rebote.
+**Por qué existe:** Es el indicador más usado del mundo. Un RSI &gt; 70 cuando el modelo dice ALZA es contradictorio y requiere cautela. RSI &lt; 30 cuando el modelo dice BAJA sugiere posible rebote.
 
 ### MACD (Moving Average Convergence Divergence)
 
@@ -134,13 +128,10 @@ El dashboard de Golden Forecast es una herramienta interactiva de 9 pestañas qu
 
 ### Cuadrícula 2×2
 
-<table>
-<tr><th>Subplot</th><th>Contenido</th><th>Relación con oro</th></tr>
-<tr><td>(1,1) Oro vs DXY</td><td>Scatter + recta regresión + ρ (Pearson)</td><td>Inversa. DXY sube → dólar fuerte → oro más caro → baja demanda</td></tr>
-<tr><td>(1,2) Oro vs VIX</td><td>Scatter + recta regresión + ρ</td><td>Directa. VIX alto → incertidumbre → refugio en oro</td></tr>
-<tr><td>(2,1) Oro vs TNX</td><td>Scatter + recta regresión + ρ</td><td>Inversa. TNX alto → bonos rentables → oro menos atractivo</td></tr>
-<tr><td>(2,2) Indicadores normalizados</td><td>Líneas Gold, DXY, VIX, TNX en base 100</td><td>Visión conjunta de las 4 series</td></tr>
-</table>
+- **(1,1) Oro vs DXY** — Scatter + recta regresión + ρ (Pearson) — Inversa. DXY sube → dólar fuerte → oro más caro → baja demanda
+- **(1,2) Oro vs VIX** — Scatter + recta regresión + ρ — Directa. VIX alto → incertidumbre → refugio en oro
+- **(2,1) Oro vs TNX** — Scatter + recta regresión + ρ — Inversa. TNX alto → bonos rentables → oro menos atractivo
+- **(2,2) Indicadores normalizados** — Líneas Gold, DXY, VIX, TNX en base 100 — Visión conjunta de las 4 series
 
 ### Panel de ayuda expandible
 Explicación de cada indicador macro con su valor actual y guía de interpretación.
@@ -180,11 +171,10 @@ Barras de Accuracy, Precision, Recall, F1, ROC-AUC (mismo gráfico que en Summar
 **Filas:** Real (Bajada/Subida)  
 **Columnas:** Predicho (Bajada/Subida)
 
-<table>
-<tr><th></th><th>Pred: Bajada</th><th>Pred: Subida</th></tr>
-<tr><td><strong>Real: Bajada</strong></td><td>Verdadero Negativo</td><td>Falso Positivo</td></tr>
-<tr><td><strong>Real: Subida</strong></td><td>Falso Negativo</td><td>Verdadero Positivo</td></tr>
-</table>
+- **Real: Bajada / Pred: Bajada** → Verdadero Negativo
+- **Real: Bajada / Pred: Subida** → Falso Positivo
+- **Real: Subida / Pred: Bajada** → Falso Negativo
+- **Real: Subida / Pred: Subida** → Verdadero Positivo
 
 **Color:** marrón oscuro → dorado (más aciertos = más dorado)
 
@@ -198,16 +188,13 @@ Barras de Accuracy, Precision, Recall, F1, ROC-AUC (mismo gráfico que en Summar
 
 ### Tabla Comparativa de 12 Modelos
 
-<table>
-<tr><th>Columna</th><th>Descripción</th><th>Modelo líder</th></tr>
-<tr><td>Modelo</td><td>Nombre (LR/RF/XGB × binario/multiclase × regular/deep)</td><td>—</td></tr>
-<tr><td>Accuracy</td><td>% de aciertos totales</td><td>lr_strong_reg_binary (56.9%)</td></tr>
-<tr><td>Precision</td><td>% de aciertos en predicciones de subida</td><td>xgb_binary (59.6%)</td></tr>
-<tr><td>Recall</td><td>% de subidas reales capturadas</td><td>lr_strong_reg_binary (87.5%)</td></tr>
-<tr><td>F1</td><td>Equilibrio precision-recall</td><td>lr_strong_reg_binary (0.700)</td></tr>
-<tr><td>ROC-AUC</td><td>Capacidad discriminativa</td><td>xgb_binary (0.526)</td></tr>
-<tr><td>Rentab.</td><td>Rentabilidad acumulada en test</td><td>xgb_binary (+34.5%)</td></tr>
-</table>
+- **Modelo** — Nombre (LR/RF/XGB × binario/multiclase × regular/deep) — Líder: —
+- **Accuracy** — % de aciertos totales — Líder: lr_strong_reg_binary (56.9%)
+- **Precision** — % de aciertos en predicciones de subida — Líder: xgb_binary (59.6%)
+- **Recall** — % de subidas reales capturadas — Líder: lr_strong_reg_binary (87.5%)
+- **F1** — Equilibrio precision-recall — Líder: lr_strong_reg_binary (0.700)
+- **ROC-AUC** — Capacidad discriminativa — Líder: xgb_binary (0.526)
+- **Rentab.** — Rentabilidad acumulada en test — Líder: xgb_binary (+34.5%)
 
 **Rentabilidad coloreada:** verde si positiva, roja si negativa.
 
@@ -228,13 +215,10 @@ Barras de Accuracy, Precision, Recall, F1, ROC-AUC (mismo gráfico que en Summar
 
 ### Controles
 
-<table>
-<tr><th>Control</th><th>Tipo</th><th>Default</th></tr>
-<tr><td>Fecha inicio</td><td>DatePicker</td><td>1 mes atrás desde el último dato</td></tr>
-<tr><td>Fecha fin</td><td>DatePicker</td><td>Último dato disponible</td></tr>
-<tr><td>Capital inicial</td><td>Input numérico</td><td>$10,000 (rango: $1,000 - $1,000,000)</td></tr>
-<tr><td>Botón</td><td>"EJECUTAR SIMULACIÓN"</td><td>—</td></tr>
-</table>
+- **Fecha inicio** — DatePicker — Default: 1 mes atrás desde el último dato
+- **Fecha fin** — DatePicker — Default: Último dato disponible
+- **Capital inicial** — Input numérico — Default: $10,000 (rango: $1,000 - $1,000,000)
+- **Botón** — "EJECUTAR SIMULACIÓN" — Default: —
 
 ### Resultados
 
@@ -301,15 +285,12 @@ Calcula el umbral de probabilidad que maximiza F1 (en lugar del default 0.5). Mu
 
 ### Hasta 4 tarjetas de métricas
 
-<table>
-<tr><th>Métrica</th><th>Qué mide</th><th>Interpretación</th></tr>
-<tr><td>Valor Justo</td><td>Distancia del precio a su media 200d en desviaciones típicas</td><td>&gt;2σ → sobrevalorado. &lt;-2σ → infravalorado</td></tr>
-<tr><td>Volatilidad Esperada</td><td>Volatilidad anualizada a 20 días</td><td>15% = ±15% al año de media</td></tr>
-<tr><td>Rango de Precio (ATR)</td><td>Rango verdadero medio 20 días / precio</td><td>2% = ±2% al día de media</td></tr>
-<tr><td>Riesgo de Caída</td><td>Máximo drawdown a 20 días</td><td>-5% = mayor caída esperada</td></tr>
-</table>
+- **Valor Justo** — Distancia del precio a su media 200d en desviaciones típicas — &gt;2σ → sobrevalorado. &lt;-2σ → infravalorado
+- **Volatilidad Esperada** — Volatilidad anualizada a 20 días — 15% = ±15% al año de media
+- **Rango de Precio (ATR)** — Rango verdadero medio 20 días / precio — 2% = ±2% al día de media
+- **Riesgo de Caída** — Máximo drawdown a 20 días — -5% = mayor caída esperada
 
-Cada tarjeta muestra: modelo usado, R², MAE, IC (Information Coefficient). Solo se muestra si el mejor modelo tiene R² > 0.
+Cada tarjeta muestra: modelo usado, R², MAE, IC (Information Coefficient). Solo se muestra si el mejor modelo tiene R² &gt; 0.
 
 **Panel de ayuda:** Explicación de cada métrica, cómo interpretarla y cómo usarla junto a la señal de clasificación.
 
@@ -323,16 +304,13 @@ Cada tarjeta muestra: modelo usado, R², MAE, IC (Information Coefficient). Solo
 
 ### Secciones
 
-<table>
-<tr><th>Sección</th><th>Contenido</th><th>Propósito</th></tr>
-<tr><td>Pipeline de Datos</td><td>5 pasos: Extracción (Yahoo Finance) → Preprocesamiento (limpieza) → Feature Engineering (35 features + targets) → Modelado (12 modelos) → Evaluación (métricas + backtest)</td><td>Demostrar que hay un proceso reproducible, no una caja negra</td></tr>
-<tr><td>Stack Tecnológico</td><td>Python 3.10+, pandas, numpy, scikit-learn, XGBoost, Plotly Dash, Docker, Render</td><td>Demostrar solvencia técnica y stack moderno</td></tr>
-<tr><td>Modelos Implementados</td><td>LR (C=0.1), RF (100 árboles, max_depth=5), XGB (100 estimadores, max_depth=3), LR multiclase</td><td>Transparencia total — cualquiera puede reproducir</td></tr>
-<tr><td>Señales de Trading</td><td>ALZA (≥58% confianza), PRECAUCIÓN (≤42%), ESTABLE (42-58%)</td><td>El usuario entiende cómo se toman las decisiones</td></tr>
-<tr><td>Equipo</td><td>María (PO), Juan (SM), Jose (Dev), Gema (Dev), Joel (Dev)</td><td>Atribución de roles (presentación colaborativa)</td></tr>
-<tr><td>Limitaciones</td><td>5 puntos clave</td><td>Honestidad intelectual — el usuario sabe qué NO esperar</td></tr>
-<tr><td>QR Repositorio</td><td>Enlace al GitHub</td><td>Acceso al código fuente completo</td></tr>
-</table>
+- **Pipeline de Datos** — 5 pasos: Extracción (Yahoo Finance) → Preprocesamiento (limpieza) → Feature Engineering (35 features + targets) → Modelado (12 modelos) → Evaluación (métricas + backtest) — Propósito: Demostrar que hay un proceso reproducible, no una caja negra
+- **Stack Tecnológico** — Python 3.10+, pandas, numpy, scikit-learn, XGBoost, Plotly Dash, Docker, Render — Propósito: Demostrar solvencia técnica y stack moderno
+- **Modelos Implementados** — LR (C=0.1), RF (100 árboles, max_depth=5), XGB (100 estimadores, max_depth=3), LR multiclase — Propósito: Transparencia total — cualquiera puede reproducir
+- **Señales de Trading** — ALZA (≥58% confianza), PRECAUCIÓN (≤42%), ESTABLE (42-58%) — Propósito: El usuario entiende cómo se toman las decisiones
+- **Equipo** — María (PO), Juan (SM), Jose (Dev), Gema (Dev), Joel (Dev) — Propósito: Atribución de roles (presentación colaborativa)
+- **Limitaciones** — 5 puntos clave — Propósito: Honestidad intelectual — el usuario sabe qué NO esperar
+- **QR Repositorio** — Enlace al GitHub — Propósito: Acceso al código fuente completo
 
 ### Limitaciones declaradas
 

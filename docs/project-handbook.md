@@ -361,12 +361,10 @@ Ver `docs/decision_log.md` para el registro completo y actualizado de decisiones
 
 ## 14. Registro de Riesgos (Risk Log)
 
-| Riesgo                | Impacto | Mitigación          |
-| --------------------- | ------- | ------------------- |
-| Overfitting           | Alto    | CV + regularización |
-| Mala calidad de datos | Alto    | EDA exhaustivo      |
-| Dataset insuficiente  | Medio   | Evaluación temprana |
-| Retrasos              | Medio   | Kanban + Daily Sync |
+- **Overfitting** — Impacto: Alto — Mitigación: CV + regularización
+- **Mala calidad de datos** — Impacto: Alto — Mitigación: EDA exhaustivo
+- **Dataset insuficiente** — Impacto: Medio — Mitigación: Evaluación temprana
+- **Retrasos** — Impacto: Medio — Mitigación: Kanban + Daily Sync
 
 ---
 
@@ -408,15 +406,13 @@ Estructura:
 
 ## 18. Stack Tecnológico
 
-| Área | Tecnologías |
-|------|-------------|
-| Lenguaje | Python 3.12 |
-| Datos | pandas, numpy, yfinance |
-| Modelado | scikit-learn, XGBoost |
-| Dashboard | Plotly Dash, Plotly.js, CSS Grid |
-| Deployment | Docker, Render |
-| Control de versiones | Git + GitHub (GitHub Flow) |
-| Entorno | VS Code, Jupyter Notebook |
+- **Lenguaje**: Python 3.12
+- **Datos**: pandas, numpy, yfinance
+- **Modelado**: scikit-learn, XGBoost
+- **Dashboard**: Plotly Dash, Plotly.js, CSS Grid
+- **Deployment**: Docker, Render
+- **Control de versiones**: Git + GitHub (GitHub Flow)
+- **Entorno**: VS Code, Jupyter Notebook
 
 ---
 
@@ -424,16 +420,14 @@ Estructura:
 
 Temática **Wild-West Saloon** con 8 pestañas:
 
-| Pestaña | Contenido |
-|---------|-----------|
-| **Panel de Control** | Señal del día (ALZA/ESTABLE/PRECAUCIÓN), certeza, precio + MA21, predicción vs realidad, rendimiento acumulado |
-| **Precio** | Gráfico histórico con RSI, MACD, volatilidad, rango de fechas seleccionable (1D a HIST), selector de unidad (USD/oz, %, indexado) |
-| **Indicadores** | RSI, MACD, volumen con selector de fechas |
-| **Macro** | Correlaciones DXY/VIX/TNX con desplegable explicativo |
-| **Backtest** | Estrategia ML vs Buy & Hold, alpha generado |
-| **Simulación** | Simulador de trading con capital inicial y rango de fechas |
-| **Métricas** | Importancia de variables (interactivo por categoría), matriz de confusión, ROC, tabla comparativa de modelos (clasificación + regresión) |
-| **Metodología** | Pipeline, modelos, equipo, stack, repositorio (QR) |
+- **Panel de Control** — Señal del día (ALZA/ESTABLE/PRECAUCIÓN), certeza, precio + MA21, predicción vs realidad, rendimiento acumulado
+- **Precio** — Gráfico histórico con RSI, MACD, volatilidad, rango de fechas seleccionable (1D a HIST), selector de unidad (USD/oz, %, indexado)
+- **Indicadores** — RSI, MACD, volumen con selector de fechas
+- **Macro** — Correlaciones DXY/VIX/TNX con desplegable explicativo
+- **Backtest** — Estrategia ML vs Buy & Hold, alpha generado
+- **Simulación** — Simulador de trading con capital inicial y rango de fechas
+- **Métricas** — Importancia de variables (interactivo por categoría), matriz de confusión, ROC, tabla comparativa de modelos (clasificación + regresión)
+- **Metodología** — Pipeline, modelos, equipo, stack, repositorio (QR)
 
 ### Ejecución
 
@@ -456,13 +450,11 @@ docker run -p 8050:8050 golden-forecast
 
 12 modelos entrenados con split temporal 80/20, escalado sin data leakage:
 
-| Modelo | Target | F1 (test) | Accuracy |
-|--------|--------|-----------|----------|
-| lr_strong_reg_binary | Binario | 0.70 | 56.9% |
-| lr_binary | Binario | 0.69 | 56.2% |
-| xgb_binary | Binario | 0.67 | 56.5% |
-| rf_binary | Binario | 0.66 | 55.2% |
-| lr_multiclass | Multiclase | 0.31 | 38.1% |
+- **lr_strong_reg_binary** (Binario): F1=0.70, Accuracy=56.9%
+- **lr_binary** (Binario): F1=0.69, Accuracy=56.2%
+- **xgb_binary** (Binario): F1=0.67, Accuracy=56.5%
+- **rf_binary** (Binario): F1=0.66, Accuracy=55.2%
+- **lr_multiclass** (Multiclase): F1=0.31, Accuracy=38.1%
 
 ---
 

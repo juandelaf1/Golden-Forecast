@@ -10,16 +10,14 @@
 
 ## Raw Data Schema
 
-| Column | Type | Description |
-|--------|------|-------------|
-| Gold_Open | float | Opening price of gold |
-| Gold_High | float | Daily high of gold |
-| Gold_Low | float | Daily low of gold |
-| Gold_Close | float | Closing price of gold |
-| Gold_Volume | float | Trading volume |
-| DXY_Close | float | Dollar index close |
-| VIX_Close | float | Volatility index close |
-| TNX_Close | float | 10Y Treasury yield close |
+- **Gold_Open** (float): Opening price of gold
+- **Gold_High** (float): Daily high of gold
+- **Gold_Low** (float): Daily low of gold
+- **Gold_Close** (float): Closing price of gold
+- **Gold_Volume** (float): Trading volume
+- **DXY_Close** (float): Dollar index close
+- **VIX_Close** (float): Volatility index close
+- **TNX_Close** (float): 10Y Treasury yield close
 
 ## Processing Pipeline
 
