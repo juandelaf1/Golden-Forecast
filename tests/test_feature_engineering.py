@@ -36,6 +36,18 @@ def create_sample_dataframe():
             "tnx_high": range(2, 2 + rows),
             "tnx_low": range(1, 1 + rows),
             "tnx_close": range(2, 2 + rows),
+            "gvz_open": range(10, 10 + rows),
+            "gvz_high": range(11, 11 + rows),
+            "gvz_low": range(10, 10 + rows),
+            "gvz_close": range(12, 12 + rows),
+            "oil_open": range(50, 50 + rows),
+            "oil_high": range(52, 52 + rows),
+            "oil_low": range(49, 49 + rows),
+            "oil_close": range(51, 51 + rows),
+            "sp500_open": range(1100, 1100 + rows),
+            "sp500_high": range(1110, 1110 + rows),
+            "sp500_low": range(1095, 1095 + rows),
+            "sp500_close": range(1105, 1105 + rows),
         }
     )
 
@@ -62,14 +74,14 @@ def test_create_features_adds_expected_columns():
         "gold_volatility_14",
         "gold_return_lag_1",
         "gold_return_lag_2",
-        "dxy_return_lag_2",
-        "vix_return_lag_2",
+        "dxy_return_lag2",
+        "vix_return_lag2",
         "gold_return_5d",
         "gold_return_10d",
         "vix_ma_20",
         "vix_high_fear",
         "vix_extreme_fear",
-        "gold_ma5_minus_ma20",
+        "gold_ma_cross",
         "gold_dxy_spread",
     ]
 
@@ -99,8 +111,8 @@ def test_lag_features_use_past_values():
 
     assert result.loc[3, "gold_return_lag_1"] == result.loc[2, "gold_return"]
     assert result.loc[4, "gold_return_lag_2"] == result.loc[2, "gold_return"]
-    assert result.loc[4, "dxy_return_lag_2"] == result.loc[2, "dxy_return"]
-    assert result.loc[4, "vix_return_lag_2"] == result.loc[2, "vix_return"]
+    assert result.loc[4, "dxy_return_lag2"] == result.loc[2, "dxy_return"]
+    assert result.loc[4, "vix_return_lag2"] == result.loc[2, "vix_return"]
 
 
 def test_targets_have_expected_classes():

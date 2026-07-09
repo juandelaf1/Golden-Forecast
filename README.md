@@ -13,21 +13,23 @@
   <img src="https://img.shields.io/badge/Yahoo%20Finance-yfinance-6001D2?logo=yahoo&logoColor=white" alt="yfinance">
   <img src="https://img.shields.io/badge/License-MIT-green" alt="License">
   <img src="https://img.shields.io/badge/Render-Live-46E3B7?logo=render&logoColor=white" alt="Render">
+  <img src="https://img.shields.io/badge/Mintlify-Docs-6B46C1?logo=mintlify&logoColor=white" alt="Mintlify">
+  <img src="https://github.com/juandelaf1/Golden-Forecast/actions/workflows/ci.yml/badge.svg" alt="CI">
 </p>
 
 ---
 
 # Golden Forecast — DataScope Solutions
 
-Somos **DataScope Solutions**, consultora internacional de analisis de datos. Este proyecto aplica Machine Learning supervisado sobre datos historicos del oro (GC=F) para generar predicciones explicables a traves de un dashboard interactivo.
+Somos **DataScope Solutions**, consultora internacional de análisis de datos. Este proyecto aplica Machine Learning supervisado sobre datos históricos del oro (GC=F) para generar predicciones explicables a través de un dashboard interactivo.
 
 ## Problema de Negocio
 
-Predecir el comportamiento del precio del oro usando datos historicos y macroeconomicos (DXY, VIX, TNX). Abordamos el problema desde dos enfoques:
+Predecir el comportamiento del precio del oro usando datos históricos y macroeconómicos (DXY, VIX, TNX). Abordamos el problema desde dos enfoques:
 
-- **Clasificacion binaria**: sube (1) o baja (0) al dia siguiente
-- **Clasificacion multiclase**: comprar (+1%), mantener, vender (<-1%)
-- **Regresion**: prediccion del retorno esperado (MAE, RMSE, R², MAPE)
+- **Clasificación binaria**: sube (1) o baja (0) al día siguiente
+- **Clasificación multiclase**: comprar (+1%), mantener, vender (<-1%)
+- **Regresión**: predicción del retorno esperado (MAE, RMSE, R², MAPE)
 
 ## Equipo
 
@@ -41,17 +43,18 @@ Predecir el comportamiento del precio del oro usando datos historicos y macroeco
 
 Datos diarios de **GC=F** (Gold Futures) via Yahoo Finance desde 2015, enriquecidos con 3 indicadores macro:
 
-| Indicador | Descripcion | Relacion con oro |
+| Indicador | Descripción | Relación con oro |
 |-----------|-------------|------------------|
-| **DXY** | Indice del dolar (cesta 6 divisas) | Inversa |
-| **VIX** | Indice de volatilidad / miedo | Directa (refugio) |
-| **TNX** | Bono USA 10 anos (tipos de interes) | Inversa |
+| **DXY** | Índice del dólar (cesta 6 divisas) | Inversa |
+| **VIX** | Índice de volatilidad / miedo | Directa (refugio) |
+| **TNX** | Bono USA 10 años (tipos de interés) | Inversa |
 
 > **Dashboard en vivo**: [https://golden-forecast.onrender.com](https://golden-forecast.onrender.com)
+> **Documentación**: [Mintlify](https://mintlify.com/juandelaf1/golden-forecast) (próximamente)
 
 ## Stack Tecnologico
 
-| Area | Tecnologias |
+| Área | Tecnologías |
 |------|-------------|
 | Datos | Python, pandas, numpy, yfinance |
 | Modelado | scikit-learn, XGBoost |
@@ -69,15 +72,16 @@ golden-forecast/
 ├── notebooks/                  # EDA, preprocessing, clasificacion
 ├── src/
 │   ├── extract/                # Descarga de datos
+│   ├── predict.py              # Predicción diaria con modelos guardados
 │   ├── models/                 # Pipeline entrenamiento (train.py, evaluate.py)
 │   ├── dashboard/              # App Dash (app.py, callbacks.py, layout.py, data.py, model_loader.py)
-│   ├── classification.py       # Modulo de clasificacion reutilizable
-│   └── regression.py           # Modulo de regresion exploratorio
+│   ├── classification.py       # Módulo de clasificación reutilizable
+│   └── regression.py           # Módulo de regresión exploratorio
 ├── models/                     # 12 modelos pre-entrenados (.pkl) + scaler + metadata
-├── docs/                       # Handbook, data dictionary, decision log, ml report, architecture
-├── scripts/                    # run_pipeline.py — orquestador
+├── docs/                       # Handbook, data dictionary, decision log, ml report, architecture, dashboard guide, screenshots
+├── .github/workflows/          # CI + Daily pipeline + Mintlify deploy
 ├── tests/                      # 7 test files (47 tests)
-├── mint.json                   # Documentacion Mintlify
+├── mint.json                   # Documentación Mintlify
 └── README.md, ROADMAP.md, requirements.txt, Dockerfile, render.yaml
 ```
 
@@ -109,27 +113,28 @@ Metricas de regresion disponibles via dashboard (MAE, RMSE, R², MAPE).
 
 ## Dashboard Interactivo
 
-Dashboard tematico **Wild-West Saloon** con 8 pestanas:
+Dashboard temático con 9 pestañas:
 
-| Pestana | Contenido |
+| Pestaña | Contenido |
 |---------|-----------|
-| **Panel de Control** | Senal del dia, certeza, precio + tendencia, prediccion vs realidad, rendimiento acumulado |
-| **Precio** | Grafico historico con RSI, MACD, volatilidad y rango de fechas seleccionable (1D a HIST) |
-| **Indicadores** | RSI, MACD, volumen con selector de fechas |
-| **Macro** | Correlaciones DXY/VIX/TNX con desplegable explicativo por indicador |
-| **Backtest** | Estrategia ML vs Buy & Hold, alpha generado |
-| **Simulacion** | Simulador de trading con capital inicial y rango de fechas |
-| **Metricas** | Importancia de variables (interactivo por categoria), matriz de confusion, ROC, comparativa modelos |
-| **Metodologia** | Pipeline, modelos, equipo, stack, repositorio (QR) |
+| **Panel de Control** | Señal del día, certeza, precio, predicción vs realidad, rendimiento acumulado |
+| **Precio** | Gráfico histórico con señales del modelo y MA 21 |
+| **Indicadores** | RSI (14), MACD con selector de fechas |
+| **Macro** | Correlaciones DXY/VIX/TNX + indicadores normalizados base 100 |
+| **Backtest** | Estrategia ML vs Buy & Hold, matriz de confusión, ROC, tabla 12 modelos |
+| **Simulación** | Simulador con capital inicial y rango personalizable (default 1 mes) |
+| **Métricas** | Importancia de variables, comparativa completa de modelos |
+| **Valor y Riesgo** | Valor justo, volatilidad, ATR, riesgo de caída (regresión) |
+| **Metodología** | Pipeline, modelos, equipo, stack, limitaciones |
 
 ### Funcionalidades destacadas
 
-- **Selector de unidad** en grafico de precio: USD/oz, % variacion diaria, indexado (base 100)
-- **Selector de fechas** (1D, 5D, 1M, 3M, 6M, 1A, HIST) en todos los graficos temporales
-- **Importancia de variables** filtrable por categoria (Tecnico, Macro, Precio)
-- **Dropdowns explicativos** en pestanas de Macro y Panel de Control
-- **Control de volumen** para ambientacion sonora
+- **Selector de fechas** (1D, 5D, 1M, 3M, 6M, 1A, HIST) en todos los gráficos temporales
+- **Importancia de variables** filtrable por categoría (Técnico, Macro, Precio)
+- **Dropdowns explicativos** en pestañas de Macro y Panel de Control
+- **Control de volumen** para ambientación sonora
 - **Ticker** con datos en tiempo real del oro, DXY, VIX, MA 21
+- **Documentación** desplegada automáticamente en Mintlify desde main
 
 ### Metricas mostradas
 
@@ -154,13 +159,27 @@ docker build -t golden-forecast .
 docker run -p 8050:8050 golden-forecast
 ```
 
-## Como Ejecutar (Pipeline completo)
+## Pipeline Automático (GitHub Actions)
+
+El pipeline diario se ejecuta automáticamente de lunes a viernes a las 23:00 UTC (tras cierre del mercado americano):
+
+```
+extract.py → preprocessing.py → feature_engineering.py → predict.py → git commit + push
+     ↓              ↓                    ↓                   ↓
+  Yahoo Finance  Columnas          35 features          Predicción del día
+  (GC=F, DXY,    limpias           + targets            siguiente guardada
+   VIX, TNX)                                            en predictions.csv
+```
+
+También se puede ejecutar manualmente desde la pestaña Actions de GitHub.
+
+## Pipeline completo (local)
 
 ```bash
 # 1. Clonar
 git clone https://github.com/juandelaf1/Golden-Forecast.git
 
-# 2. Dependencias
+# 2. Dependencias (entorno virtual recomendado)
 pip install -r requirements.txt
 
 # 3. Descargar datos frescos
@@ -170,8 +189,14 @@ python src/extract/extract.py
 python src/models/train.py
 python src/models/evaluate.py
 
-# 5. Lanzar dashboard
+# 5. Generar predicción diaria
+python src/predict.py
+
+# 6. Lanzar dashboard
 python src/dashboard/app.py
+
+# Documentación
+# Las docs se despliegan automáticamente en Mintlify desde main
 ```
 
 ## Gobernanza (Scrum)
