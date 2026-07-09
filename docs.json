@@ -12,7 +12,7 @@
     "groups": [
       {
         "group": "Inicio",
-        "pages": ["introduction"]
+        "pages": ["introduction", "ROADMAP"]
       },
       {
         "group": "Arquitectura",
@@ -20,7 +20,7 @@
       },
       {
         "group": "Datos",
-        "pages": ["docs/data-dictionary", "docs/data-lineage", "data/README"]
+        "pages": ["docs/data-dictionary", "docs/data-lineage", "docs/data-readme"]
       },
       {
         "group": "Modelos",
@@ -32,7 +32,7 @@
       },
       {
         "group": "Gobernanza",
-        "pages": ["docs/decision-log", "ROADMAP"]
+        "pages": ["docs/decision-log", "docs/test-report"]
       }
     ]
   },

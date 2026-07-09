@@ -29,7 +29,8 @@
     {
       "group": "Inicio",
       "pages": [
-        "introduction"
+        "introduction",
+        "ROADMAP"
       ]
     },
     {
@@ -43,7 +44,7 @@
       "pages": [
         "docs/data-dictionary",
         "docs/data-lineage",
-        "data/README"
+        "docs/data-readme"
       ]
     },
     {
@@ -64,7 +65,7 @@
       "group": "Gobernanza",
       "pages": [
         "docs/decision-log",
-        "ROADMAP"
+        "docs/test-report"
       ]
     }
   ],
