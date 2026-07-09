@@ -12,16 +12,21 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install Mintlify CLI
         run: npm install -g mintlify
-      - name: Check Mintlify status
-        run: mintlify status
-        env:
-          MINTLIFY_API_TOKEN: ${{ secrets.MINTLIFY_API_TOKEN }}
-      - name: Deploy documentation
+      - name: Debug — test token and deploy
+        shell: bash
         run: |
+          set +e
+          echo "Node version: $(node --version)"
+          echo "Mintlify version: $(npx mintlify --version 2>&1 || echo 'version check failed')"
+          echo "--- Testing token ---"
+          MINTLIFY_API_TOKEN="${{ secrets.MINTLIFY_API_TOKEN }}"
           if [ -z "$MINTLIFY_API_TOKEN" ]; then
-            echo "MINTLIFY_API_TOKEN not set — skipping deploy"
+            echo "ERROR: MINTLIFY_API_TOKEN is empty"
             exit 0
           fi
-          mintlify deploy 2>&1 || echo "MINTLIFY_EXIT_CODE=$?"
-        env:
-          MINTLIFY_API_TOKEN: ${{ secrets.MINTLIFY_API_TOKEN }}
+          echo "Token length: ${#MINTLIFY_API_TOKEN}"
+          echo "Token prefix: ${MINTLIFY_API_TOKEN:0:10}..."
+          echo "--- Running deploy ---"
+          npx mintlify deploy 2>&1
+          EXIT_CODE=$?
+          echo "MINTLIFY_EXIT_CODE=$EXIT_CODE"
