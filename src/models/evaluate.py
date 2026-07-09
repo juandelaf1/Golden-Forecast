@@ -229,7 +229,9 @@ def plot_walk_forward(df_wf: pd.DataFrame, save_path: str = "docs/walk_forward.p
 
     axes[0].bar(df_wf["ventana"], df_wf["accuracy"], color="goldenrod", alpha=0.8)
     axes[0].axhline(0.5, color="red", linestyle="--", label="Baseline (50%)")
-    axes[0].axhline(df_wf["accuracy"].mean(), color="steelblue", linestyle="--", label=f"Media ({df_wf['accuracy'].mean():.2%})")
+    axes[0].axhline(
+        df_wf["accuracy"].mean(), color="steelblue", linestyle="--", label=f"Media ({df_wf['accuracy'].mean():.2%})"
+    )
     axes[0].set_title("Accuracy por ventana temporal")
     axes[0].set_xlabel("Ventana")
     axes[0].set_ylabel("Accuracy")
@@ -312,17 +314,19 @@ def walk_forward_validation(df_path: str, metadata: dict, n_splits: int = 5):
         print(f" Retorno buy & hold: {cum_buyhold * 100:.2f}%")
         print(f" Operaciones: {n_trades} de {len(X_test_wf)} días")
 
-        results_wf.append({
-            "ventana": i + 1,
-            "fecha_inicio": str(date_start),
-            "fecha_fin": str(date_end),
-            "accuracy": round(acc, 4),
-            "f1": round(f1, 4),
-            "retorno_estrategia_pct": round(cum_strategy * 100, 2),
-            "retorno_buyhold_pct": round(cum_buyhold * 100, 2),
-            "n_trades": int(n_trades),
-            "n_dias": len(X_test_wf),
-        })
+        results_wf.append(
+            {
+                "ventana": i + 1,
+                "fecha_inicio": str(date_start),
+                "fecha_fin": str(date_end),
+                "accuracy": round(acc, 4),
+                "f1": round(f1, 4),
+                "retorno_estrategia_pct": round(cum_strategy * 100, 2),
+                "retorno_buyhold_pct": round(cum_buyhold * 100, 2),
+                "n_trades": int(n_trades),
+                "n_dias": len(X_test_wf),
+            }
+        )
 
     df_wf = pd.DataFrame(results_wf)
 
@@ -412,7 +416,9 @@ def main():
     best_binary_X_test = X_test_sc if best_binary_scaled else X_test
 
     print(f"Modelo binario seleccionado: {best_binary_name}")
-    bt_binary = backtest_binary(best_binary_model, best_binary_name, best_binary_X_test, df_test_context, threshold=0.56)
+    bt_binary = backtest_binary(
+        best_binary_model, best_binary_name, best_binary_X_test, df_test_context, threshold=0.56
+    )
     print(f"Retorno estrategia binaria: {bt_binary['retorno_estrategia']}%")
 
     multi_results = [r for r in results if "multiclass" in r["modelo"]]

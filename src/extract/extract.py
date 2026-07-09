@@ -6,35 +6,35 @@ import yfinance as yfi
 START = "2008-01-01"
 INTERVAL = "1d"
 OUTPUT = "data/raw/gold-macro-data.csv"
- 
+
 TICKERS = {
     "Gold": "GC=F",
     "DXY": "DX-Y.NYB",
     "VIX": "^VIX",
     "TNX": "^TNX",
-    "GVZ": "^GVZ",       # Volatilidad implícita del oro (VIX del oro)
-    "Oil": "CL=F",       # Futuros del petróleo WTI
-    "SP500": "^GSPC", 
+    "GVZ": "^GVZ",  # Volatilidad implícita del oro (VIX del oro)
+    "Oil": "CL=F",  # Futuros del petróleo WTI
+    "SP500": "^GSPC",
 }
- 
- 
+
+
 def download_ticker(name: str, ticker: str, start: str, interval: str) -> pd.DataFrame:
     print(f"Descargando {name} ({ticker})...")
     df = yfi.download(ticker, start=start, interval=interval, progress=False)
- 
+
     if df.empty:
         raise ValueError(f"No se obtuvieron datos para {name} ({ticker})")
-    
-    #ponemos al mismo nivel las columnas
-    #if isinstance(df.columns, pd.MultiIndex):
+
+    # ponemos al mismo nivel las columnas
+    # if isinstance(df.columns, pd.MultiIndex):
     #   df.columns = df.columns.get_level_values(0)
- 
+
     # yfinance puede devolver columnas multi-index si se piden varios tickers,
     # nos quedamos solo con las columnas que nos interesan
     df = df[["Close", "High", "Low", "Open", "Volume"]].copy()
     df.columns = [f"{name}_{col}" for col in df.columns]
     df.index.name = "Date"
- 
+
     print(f"  -> {name}: {df.shape[0]} filas, desde {df.index.min().date()} hasta {df.index.max().date()}")
     return df
 
@@ -54,16 +54,13 @@ def save_dataset(df: pd.DataFrame, OUTPUT: str) -> None:
 
 
 def main():
-    dfs = {
-        name: download_ticker(name, ticker, START, INTERVAL)
-        for name, ticker in TICKERS.items()
-    }
+    dfs = {name: download_ticker(name, ticker, START, INTERVAL) for name, ticker in TICKERS.items()}
     df_merged = merge_series(dfs)
     save_dataset(df_merged, OUTPUT)
- 
+
     print("\nPrimeras filas:")
     print(df_merged.head())
- 
- 
+
+
 if __name__ == "__main__":
     main()

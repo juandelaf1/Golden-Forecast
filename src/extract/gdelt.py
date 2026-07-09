@@ -16,7 +16,7 @@ def download_year(year):
         "format": "json",
         "maxrecords": 50,
         "startdatetime": start,
-        "enddatetime": end
+        "enddatetime": end,
     }
 
     while True:
@@ -31,7 +31,7 @@ def download_year(year):
         break
 
     print(response.headers.get("Content-Type"))
-    print(response.text[:500])   # solo los primeros 500 caracteres
+    print(response.text[:500])  # solo los primeros 500 caracteres
 
     data = response.json()
 
@@ -41,13 +41,15 @@ def download_year(year):
     rows = []
 
     for article in data["articles"]:
-        rows.append({
-            "Date": article["seendate"][:8],
-            "title": article["title"],
-            "language": article["language"],
-            "country": article["sourcecountry"],
-            "url": article["url"]
-        })
+        rows.append(
+            {
+                "Date": article["seendate"][:8],
+                "title": article["title"],
+                "language": article["language"],
+                "country": article["sourcecountry"],
+                "url": article["url"],
+            }
+        )
 
     df = pd.DataFrame(rows)
 
