@@ -13,6 +13,11 @@ jobs:
       - name: Install Mintlify CLI
         run: npm install -g mintlify
       - name: Deploy documentation
-        run: mintlify deploy
+        run: |
+          if [ -z "$MINTLIFY_API_TOKEN" ]; then
+            echo "MINTLIFY_API_TOKEN not set — skipping deploy"
+            exit 0
+          fi
+          mintlify deploy
         env:
           MINTLIFY_API_TOKEN: ${{ secrets.MINTLIFY_API_TOKEN }}

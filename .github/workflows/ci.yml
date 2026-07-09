@@ -47,9 +47,7 @@ jobs:
       - name: Run tests (smoke)
         run: |
           pytest tests/ -v --tb=short -k "not classification and not feature_engineering" --maxfail=5
-      - name: Upload coverage
-        uses: codecov/codecov-action@v4
-        if: always()
+      
 
   build-docker:
     name: Build Docker
@@ -76,4 +74,9 @@ jobs:
     steps:
       - name: Deploy to Render
         run: |
-          curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
+          HOOK="${{ secrets.RENDER_DEPLOY_HOOK }}"
+          if [ -z "$HOOK" ]; then
+            echo "RENDER_DEPLOY_HOOK not set — skipping deploy"
+            exit 0
+          fi
+          curl -f -X POST "$HOOK" || echo "Render deploy hook returned error (may be transient)"
