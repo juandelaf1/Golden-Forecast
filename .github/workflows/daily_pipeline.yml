@@ -7,7 +7,6 @@ on:
 
 permissions:
   contents: write
-  pull-requests: write
 
 jobs:
   pipeline:
@@ -41,27 +40,12 @@ jobs:
       - name: Paso 4 — Generar predicción del día siguiente
         run: python src/predict.py
 
-      - name: Crear rama y subir cambios
+      - name: Guardar resultados en el repositorio
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          BRANCH="daily/$(date -u +'%Y-%m-%d')"
-          git checkout -b "$BRANCH"
           git add data/processed/gold-clean.csv
           git add data/processed/gold-features.csv
           git add data/processed/predictions.csv
-          git diff --staged --quiet && echo "No changes" && exit 0
-          git commit -m "chore: actualización diaria $(date -u +'%Y-%m-%d')"
+          git diff --staged --quiet || git commit -m "chore: actualización diaria $(date -u +'%Y-%m-%d')"
           git push https://x-access-token:${{ secrets.GOLDEN_TOKEN }}@github.com/${{ github.repository }} HEAD
-
-      - name: Crear Pull Request
-        if: success()
-        env:
-          GH_TOKEN: ${{ secrets.GOLDEN_TOKEN }}
-        run: |
-          gh pr create \
-            --base main \
-            --head "daily/$(date -u +'%Y-%m-%d')" \
-            --title "chore: actualización diaria $(date -u +'%Y-%m-%d')" \
-            --body "Pipeline diario ejecutado automáticamente." \
-            --label automated
