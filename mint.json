@@ -25,6 +25,7 @@
     "name": "GitHub",
     "url": "https://github.com/juandelaf1/Golden-Forecast"
   },
+  "landingPage": "docs/project_handbook",
   "navigation": [
     {
       "group": "Golden Forecast",
