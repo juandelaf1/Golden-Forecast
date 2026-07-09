@@ -1,36 +1,39 @@
 # Dashboard Screenshots
 
-> **Nota:** Las capturas actuales corresponden a la versión anterior del dashboard (8 pestañas).  
-> Las pestañas actuales son: Panel de Control, Precio, Indicadores, Macro, Backtest, Simulación, Métricas, Valor y Riesgo, Metodología.
+Capturas del dashboard Golden Forecast con 9 pestañas (versión actual).
 
 ## Panel de Control
 
-![Panel de Control](assets/Captura%20de%20pantalla%202026-07-02%20183627.png)
+![Panel de Control](assets/screenshots/screenshot-panel-control.png)
 
 ## Precio
 
-![Precio](assets/Captura%20de%20pantalla%202026-07-02%20185555.png)
+![Precio](assets/screenshots/screenshot-precio.png)
 
 ## Indicadores
 
-![Indicadores](assets/Captura%20de%20pantalla%202026-07-02%20185605.png)
+![Indicadores](assets/screenshots/screenshot-indicadores.png)
 
 ## Macro
 
-![Macro](assets/Captura%20de%20pantalla%202026-07-02%20185618.png)
+![Macro](assets/screenshots/screenshot-macro.png)
 
 ## Backtest
 
-![Backtest](assets/Captura%20de%20pantalla%202026-07-02%20185624.png)
+![Backtest](assets/screenshots/screenshot-backtest.png)
 
 ## Simulación
 
-![Simulación](assets/Captura%20de%20pantalla%202026-07-02%20185636.png)
+![Simulación](assets/screenshots/screenshot-simulacion.png)
 
 ## Métricas
 
-![Métricas](assets/Captura%20de%20pantalla%202026-07-02%20185645.png)
+![Métricas](assets/screenshots/screenshot-metricas.png)
+
+## Valor y Riesgo
+
+![Valor y Riesgo](assets/screenshots/screenshot-valor-riesgo.png)
 
 ## Metodología
 
-![Metodología](assets/Captura%20de%20pantalla%202026-07-02%20185657.png)
+![Metodología](assets/screenshots/screenshot-metodologia.png)
