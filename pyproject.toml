@@ -1,0 +1,14 @@
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+ignore = ["E501", "E302", "F401", "F841", "W291", "W292", "W293", "E402", "E231", "F541", "E741"]
+
+[tool.ruff.format]
+quote-style = "preserve"
+
+[tool.black]
+line-length = 120
+target-version = ["py312"]
