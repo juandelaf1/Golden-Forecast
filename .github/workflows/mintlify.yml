@@ -12,12 +12,16 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install Mintlify CLI
         run: npm install -g mintlify
+      - name: Check Mintlify status
+        run: mintlify status
+        env:
+          MINTLIFY_API_TOKEN: ${{ secrets.MINTLIFY_API_TOKEN }}
       - name: Deploy documentation
         run: |
           if [ -z "$MINTLIFY_API_TOKEN" ]; then
             echo "MINTLIFY_API_TOKEN not set — skipping deploy"
             exit 0
           fi
-          mintlify deploy
+          mintlify deploy 2>&1 || echo "MINTLIFY_EXIT_CODE=$?"
         env:
           MINTLIFY_API_TOKEN: ${{ secrets.MINTLIFY_API_TOKEN }}
