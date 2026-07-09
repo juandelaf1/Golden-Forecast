@@ -2,10 +2,10 @@
   "$schema": "https://mintlify.com/schema.json",
   "name": "Golden Forecast",
   "logo": {
-    "dark": "/public/logo/dark.svg",
-    "light": "/public/logo/light.svg"
+    "dark": "/public/logo/logo.png",
+    "light": "/public/logo/logo.png"
   },
-  "favicon": "/favicon.svg",
+  "favicon": "/public/logo/logo.png",
   "colors": {
     "primary": "#B8860B",
     "light": "#FFD700",

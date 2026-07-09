@@ -1,3 +1,5 @@
+![Banner](/public/logo/banner.png)
+
 # Golden Forecast — DataScope Solutions
 
 Somos **DataScope Solutions**, consultora internacional de análisis de datos. Este proyecto aplica Machine Learning supervisado sobre datos históricos del oro (GC=F) para generar predicciones explicables a través de un dashboard interactivo.
