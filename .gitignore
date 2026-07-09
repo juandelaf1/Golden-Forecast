@@ -233,11 +233,12 @@ walkforward.py
 # Backups
 src/_dashboard_backup/
 
-# Artefactos diseño
+# Artefactos diseño (excepto public/screenshots/ que son para Mintlify)
 art_direction/
 generation/
 prompts/
-screenshots/
+/public/screenshots/
+!public/screenshots/
 mock_server/
 
 # Assets duplicados (solo raíz)

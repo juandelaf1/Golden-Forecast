@@ -7,53 +7,32 @@
     "light": "#FFD700",
     "dark": "#8B6914"
   },
-  "favicon": "/favicon.svg",
+  "favicon": "/public/logo/logo.png",
   "navigation": {
     "groups": [
       {
-        "group": "Golden Forecast",
-        "pages": [
-          "introduction"
-        ]
+        "group": "Inicio",
+        "pages": ["introduction"]
       },
       {
         "group": "Arquitectura",
-        "pages": [
-          "docs/architecture"
-        ]
+        "pages": ["docs/architecture"]
       },
       {
         "group": "Datos",
-        "pages": [
-          "docs/data_dictionary",
-          "docs/data_lineage"
-        ]
+        "pages": ["docs/data_dictionary", "docs/data_lineage", "data/README"]
       },
       {
         "group": "Modelos",
-        "pages": [
-          "docs/ml_report"
-        ]
+        "pages": ["docs/ml_report"]
       },
       {
         "group": "Dashboard",
-        "pages": [
-          "docs/project_handbook"
-        ]
+        "pages": ["docs/dashboard_guide", "docs/project_handbook", "docs/screenshots"]
       },
       {
         "group": "Gobernanza",
-        "pages": [
-          "docs/decision_log",
-          "ROADMAP"
-        ]
-      },
-      {
-        "group": "Dashboard",
-        "pages": [
-          "docs/project_handbook",
-          "docs/screenshots"
-        ]
+        "pages": ["docs/decision_log", "ROADMAP"]
       }
     ]
   },

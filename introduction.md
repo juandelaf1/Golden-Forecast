@@ -1,4 +1,4 @@
-![Banner](/public/logo/banner.png)
+![Banner](https://raw.githubusercontent.com/juandelaf1/Golden-Forecast/main/public/logo/banner.png)
 
 # Golden Forecast — DataScope Solutions
 
