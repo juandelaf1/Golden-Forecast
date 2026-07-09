@@ -26,6 +26,8 @@
   <img src="https://img.shields.io/badge/Yahoo%20Finance-yfinance-6001D2?logo=yahoo&logoColor=white" alt="yfinance">
   <img src="https://img.shields.io/badge/License-MIT-green" alt="License">
   <img src="https://img.shields.io/badge/Render-Live-46E3B7?logo=render&logoColor=white" alt="Render">
+  <img src="https://img.shields.io/badge/Mintlify-Docs-6B46C1?logo=mintlify&logoColor=white" alt="Mintlify">
+  <img src="https://github.com/juandelaf1/Golden-Forecast/actions/workflows/ci.yml/badge.svg" alt="CI">
 </p>
 
 ---
@@ -135,27 +137,28 @@ Metricas de regresion disponibles via dashboard (MAE, RMSE, R², MAPE).|
 
 ## Dashboard
 
-Dashboard tematico **Wild-West Saloon** con 8 pestanas:
+Dashboard temático con 9 pestañas:
 
-| Pestana | Contenido |
+| Pestaña | Contenido |
 |---------|-----------|
-| **Panel de Control** | Senal del dia, certeza, precio + tendencia, prediccion vs realidad, rendimiento acumulado |
-| **Precio** | Grafico historico con RSI, MACD, volatilidad y rango de fechas seleccionable (1D a HIST) |
-| **Indicadores** | RSI, MACD, volumen con selector de fechas |
-| **Macro** | Correlaciones DXY/VIX/TNX con desplegable explicativo por indicador |
-| **Backtest** | Estrategia ML vs Buy & Hold, alpha generado |
-| **Simulacion** | Simulador de trading con capital inicial y rango de fechas |
-| **Metricas** | Importancia de variables (interactivo por categoria), matriz de confusion, ROC, comparativa modelos |
-| **Metodologia** | Pipeline, modelos, equipo, stack, repositorio (QR) |
+| **Panel de Control** | Señal del día, certeza, precio, predicción vs realidad, rendimiento acumulado |
+| **Precio** | Gráfico histórico con señales del modelo y MA 21 |
+| **Indicadores** | RSI (14), MACD con selector de fechas |
+| **Macro** | Correlaciones DXY/VIX/TNX + indicadores normalizados base 100 |
+| **Backtest** | Estrategia ML vs Buy & Hold, matriz de confusión, ROC, tabla 12 modelos |
+| **Simulación** | Simulador con capital inicial y rango personalizable (default 1 mes) |
+| **Métricas** | Importancia de variables, comparativa completa de modelos |
+| **Valor y Riesgo** | Valor justo, volatilidad, ATR, riesgo de caída (regresión) |
+| **Metodología** | Pipeline, modelos, equipo, stack, limitaciones |
 
 ### Funcionalidades destacadas
 
-- **Selector de unidad** en grafico de precio: USD/oz, % variacion diaria, indexado (base 100)
-- **Selector de fechas** (1D, 5D, 1M, 3M, 6M, 1A, HIST) en todos los graficos temporales
-- **Importancia de variables** filtrable por categoria (Tecnico, Macro, Precio)
-- **Dropdowns explicativos** en pestanas de Macro y Panel de Control
-- **Control de volumen** para ambientacion sonora
+- **Selector de fechas** (1D, 5D, 1M, 3M, 6M, 1A, HIST) en todos los gráficos temporales
+- **Importancia de variables** filtrable por categoría (Técnico, Macro, Precio)
+- **Dropdowns explicativos** en pestañas de Macro y Panel de Control
+- **Control de volumen** para ambientación sonora
 - **Ticker** con datos en tiempo real del oro, DXY, VIX, MA 21
+- **Documentación** desplegada automáticamente en Mintlify desde main
 
 ### Metricas mostradas
 

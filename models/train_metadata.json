@@ -1,23 +1,140 @@
 {
   "modelos": [
-    "lr_binary",
-    "lr_multiclass",
-    "lr_strong_reg_binary",
-    "lr_strong_reg_multiclass",
-    "rf_binary",
-    "rf_multiclass",
-    "rf_deep_binary",
-    "rf_deep_multiclass",
-    "xgb_binary",
-    "xgb_multiclass",
-    "xgb_deep_binary",
-    "xgb_deep_multiclass"
+    {
+      "name": "lr_binary",
+      "uses_scaled": true
+    },
+    {
+      "name": "lr_multiclass",
+      "uses_scaled": true
+    },
+    {
+      "name": "lr_strong_reg_binary",
+      "uses_scaled": true
+    },
+    {
+      "name": "lr_strong_reg_multiclass",
+      "uses_scaled": true
+    },
+    {
+      "name": "rf_binary",
+      "uses_scaled": false
+    },
+    {
+      "name": "rf_multiclass",
+      "uses_scaled": false
+    },
+    {
+      "name": "xgb_binary",
+      "uses_scaled": false
+    },
+    {
+      "name": "xgb_multiclass",
+      "uses_scaled": false
+    },
+    {
+      "name": "xgb_deep_binary",
+      "uses_scaled": false
+    },
+    {
+      "name": "xgb_deep_multiclass",
+      "uses_scaled": false
+    },
+    {
+      "name": "lgb_binary",
+      "uses_scaled": false
+    },
+    {
+      "name": "lgb_multiclass",
+      "uses_scaled": false
+    },
+    {
+      "name": "lgb_deep_binary",
+      "uses_scaled": false
+    },
+    {
+      "name": "lgb_deep_multiclass",
+      "uses_scaled": false
+    },
+    {
+      "name": "rf_optimized_binary",
+      "uses_scaled": false
+    },
+    {
+      "name": "rf_optimized_multiclass",
+      "uses_scaled": false
+    },
+    {
+      "name": "lr_optimized_binary",
+      "uses_scaled": true
+    },
+    {
+      "name": "lgbm_optimized_binary",
+      "uses_scaled": false
+    }
   ],
-  "features": "data/processed/gold-features.csv",
+  "features_path": "data/processed/gold-features.csv",
   "test_size": 0.2,
-  "NO_FEATURE_COLUMN": [
+  "no_feature_columns": [
     "Date",
     "target_binary",
-    "target_multiclass"
-  ]
+    "target_multiclass",
+    "gold_return",
+    "gold_return_next_day"
+  ],
+  "feature_columns": [
+    "gold_volume",
+    "oil_volume",
+    "dxy_return",
+    "vix_return",
+    "tnx_return",
+    "gvz_return",
+    "oil_return",
+    "sp500_return",
+    "dxy_daily_range",
+    "vix_daily_range",
+    "tnx_daily_range",
+    "gvz_daily_range",
+    "oil_daily_range",
+    "sp500_daily_range",
+    "gold_open_close_return",
+    "dxy_open_close_return",
+    "vix_open_close_return",
+    "tnx_open_close_return",
+    "gvz_open_close_return",
+    "oil_open_close_return",
+    "sp500_open_close_return",
+    "gold_close_vs_ma_5",
+    "gold_close_vs_ma_20",
+    "gold_rsi_14",
+    "gold_macd_pct",
+    "gold_macd_signal_pct",
+    "gold_volatility_14",
+    "gold_return_lag_1",
+    "gvz_return_lag1",
+    "oil_return_lag1",
+    "sp500_return_lag1",
+    "vix_return_lag2",
+    "gold_return_3d",
+    "gold_return_5d",
+    "gold_return_10d",
+    "gold_ma_cross_pct",
+    "vix_vs_ma20",
+    "gold_dxy_spread",
+    "gold_sp500_spread",
+    "gold_dxy_corr20",
+    "gold_sp500_corr20",
+    "gold_atr_14_pct",
+    "bb_position"
+  ],
+  "multiclass_encode": {
+    "-1": 0,
+    "0": 1,
+    "1": 2
+  },
+  "multiclass_decode": {
+    "0": -1,
+    "1": 0,
+    "2": 1
+  }
 }
