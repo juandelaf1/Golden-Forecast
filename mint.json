@@ -25,12 +25,11 @@
     "name": "GitHub",
     "url": "https://github.com/juandelaf1/Golden-Forecast"
   },
-  "landingPage": "docs/project_handbook",
   "navigation": [
     {
-      "group": "Golden Forecast",
+      "group": "Inicio",
       "pages": [
-        "README"
+        "docs/index"
       ]
     },
     {
@@ -57,7 +56,8 @@
       "group": "Dashboard",
       "pages": [
         "docs/dashboard_guide",
-        "docs/project_handbook"
+        "docs/project_handbook",
+        "docs/screenshots"
       ]
     },
     {
@@ -65,12 +65,6 @@
       "pages": [
         "docs/decision_log",
         "ROADMAP"
-      ]
-    },
-    {
-      "group": "Galería",
-      "pages": [
-        "docs/screenshots"
       ]
     }
   ],
