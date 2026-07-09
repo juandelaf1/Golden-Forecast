@@ -1,5 +1,8 @@
 # Dashboard Screenshots
 
+> **Nota:** Las capturas actuales corresponden a la versión anterior del dashboard (8 pestañas).  
+> Las pestañas actuales son: Panel de Control, Precio, Indicadores, Macro, Backtest, Simulación, Métricas, Valor y Riesgo, Metodología.
+
 ## Panel de Control
 
 ![Panel de Control](assets/Captura%20de%20pantalla%202026-07-02%20183627.png)

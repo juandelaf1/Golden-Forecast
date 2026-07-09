@@ -73,3 +73,10 @@
 | 07/07/2026 | Merge main → feature/full-pipeline | Sincronización con PRs #38 y #39. Conflicto en docstring de `feature_engineering.py` resuelto |
 | 07/07/2026 | Deploy caído por feature mismatch en Render | Modelos .pkl antiguos no reconocen nuevas columnas (PR #39). Pendiente reentrenar por Joel |
 | 07/07/2026 | Documentación Mintlify creada | `mint.json` configurado con navegación, colores dorados, enlace a dashboard y GitHub |
+| 08/07/2026 | PR #51 mergeado: ROADMAP actualizado + predict.py pipeline (María) | Añadido `predict.py` para predicción diaria con modelos guardados, ROADMAP con deliverables detallados |
+| 08/07/2026 | PR #52 (Joel) cerrado como superseded | Sus cambios integrados directamente en `feature/full-pipeline` para evitar conflictos múltiples con `main` |
+| 08/07/2026 | PR #53 mergeado: integración full-pipeline | `feature/full-pipeline` → `main`. Contiene: mejoras de Joel (RF optimizado, threshold tuning, pipeline evaluacion), modulos de Juan (regression, classification, dashboard 9 tabs), docs e infra |
+| 08/07/2026 | PR #54 mergeado: README actualizado + presentación PPTX (María) | README con estructura final, enlaces a docs, descripción del equipo y licencia |
+| 08/07/2026 | Daily pipeline corregido para respetar ruleset de main | Ahora crea rama `daily/YYYY-MM-DD` + PR automático en vez de push directo |
+| 08/07/2026 | Mintlify config: rutas de logo corregidas | `/logo/` → `/public/logo/` en `mint.json` y `docs.json` |
+| 08/07/2026 | Screenshots actualizadas con nota de versión | Capturas corresponden a versión 8 pestañas, dashboard actual tiene 9 pestañas |
