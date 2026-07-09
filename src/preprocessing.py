@@ -85,7 +85,7 @@ def drop_uninformative_columns(df):
 def remove_missing_values(df):
     """Drop rows with null values (few in this dataset, imputation not needed)."""
     df = df.copy()
-    df =df.ffill()
+    df = df.ffill()
     df = df.dropna()
 
     return df

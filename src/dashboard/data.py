@@ -266,7 +266,6 @@ def build_context() -> dict:
 
 def ensure_all_models():
     """Load remaining classification models on demand and update context."""
-    global context
     if context.get('_all_models_loaded'):
         return
 
@@ -332,7 +331,6 @@ ensure_experimental = ensure_all_models
 
 def ensure_regression():
     """Train regression models on demand."""
-    global context
     if context.get('regression') is not None or not REGRESSION_AVAILABLE:
         return
     try:

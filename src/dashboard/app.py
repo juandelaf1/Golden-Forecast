@@ -9,10 +9,12 @@ app = dash.Dash(__name__, title='Golden Forecast', suppress_callback_exceptions=
                 assets_folder=os.path.join(os.path.dirname(__file__), 'assets'))
 server = app.server
 
+
 # Health endpoint for Render monitoring
 @server.route('/health')
 def health():
     return jsonify({'status': 'healthy', 'service': 'golden-forecast'})
+
 
 app.layout = layout.build_layout()
 callbacks.register_callbacks(app)

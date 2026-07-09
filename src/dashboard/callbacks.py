@@ -301,6 +301,7 @@ def register_callbacks(app):
         Input('vol-slider', 'value'),
     )
 
+
 def build_summary_tab() -> html.Div:
     return html.Div(
         className='section-panel',
@@ -906,6 +907,7 @@ def _last(df, n=None):
     n = n or MAX_POINTS
     return df.iloc[-min(n, len(df)):]
 
+
 def build_price_figure() -> go.Figure:
     df = _last(context['data'])
     base = df['gold'].iloc[0]
@@ -1081,6 +1083,7 @@ def _metric_color(v: float) -> str:
     if v < 0.80:
         return '#7bc96a'
     return '#4ade80'
+
 
 def build_model_figure() -> go.Figure:
     metrics = ['Precisión', 'Precision', 'Recall', 'F1 Score', 'ROC-AUC']
@@ -1316,7 +1319,7 @@ def build_feature_importance_figure(category='all') -> go.Figure:
 
     # Filter by category
     if category != 'all':
-        pairs = [(l, v, d, c) for l, v, d, c in zip(labels, values, descs, cats) if c == category]
+        pairs = [(lb, v, d, c) for lb, v, d, c in zip(labels, values, descs, cats) if c == category]
         if pairs:
             labels, values, descs, cats = zip(*pairs)
         labels = list(labels)

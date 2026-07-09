@@ -37,20 +37,22 @@ def download_ticker(name: str, ticker: str, start: str, interval: str) -> pd.Dat
  
     print(f"  -> {name}: {df.shape[0]} filas, desde {df.index.min().date()} hasta {df.index.max().date()}")
     return df
- 
-#Unimos las series por fechas
+
+
 def merge_series(dfs: dict) -> pd.DataFrame:
     df_merged = pd.concat(dfs.values(), axis=1, sort=False)
     df_merged = df_merged.ffill()
     df_merged = df_merged.dropna()
     return df_merged
- 
+
+
 def save_dataset(df: pd.DataFrame, OUTPUT: str) -> None:
     os.makedirs(os.path.dirname(OUTPUT), exist_ok=True)
     df.to_csv(OUTPUT)
     print(f"\nGuardado en: {OUTPUT}")
     print(f"Shape: {df.shape[0]} filas x {df.shape[1]} columnas")
- 
+
+
 def main():
     dfs = {
         name: download_ticker(name, ticker, START, INTERVAL)
