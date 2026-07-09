@@ -140,7 +140,11 @@ def train_models(X_train_df, X_train_scaled, y_binary_train, y_multiclass_train)
         }
         print(f" {model_name}_binary -> OK")
 
-        y_multi_encoded = y_multiclass_train.map(MULTICLASS_ENCODE) if ("xgb" in model_name and "lgb" not in model_name) else y_multiclass_train
+        y_multi_encoded = (
+            y_multiclass_train.map(MULTICLASS_ENCODE)
+            if ("xgb" in model_name and "lgb" not in model_name)
+            else y_multiclass_train
+        )
 
         m_multi = copy.deepcopy(model)
         m_multi.fit(X_fit, y_multi_encoded)

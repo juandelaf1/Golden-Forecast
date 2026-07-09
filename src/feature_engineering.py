@@ -1,6 +1,5 @@
 import pandas as pd
 
-
 # Columnas absolutas que se eliminan al final.
 # La idea es que el modelo no trabaje con precios absolutos, sino con variables relativas:
 # retornos, rangos, medias móviles, RSI, MACD, volatilidad y lags.
@@ -18,17 +17,40 @@ import pandas as pd
 # - gold_atr_14: en $ — se normaliza a gold_atr_14_pct
 # - vix_ma_20: en puntos VIX absolutos — se reemplaza por vix_vs_ma20 (relativo)
 COLUMNAS_ABSOLUTAS = [
-    "gold_close", "gold_high", "gold_low", "gold_open",
-    "dxy_close", "dxy_high", "dxy_low", "dxy_open",
-    "vix_close", "vix_high", "vix_low", "vix_open",
-    "tnx_close", "tnx_high", "tnx_low", "tnx_open",
+    "gold_close",
+    "gold_high",
+    "gold_low",
+    "gold_open",
+    "dxy_close",
+    "dxy_high",
+    "dxy_low",
+    "dxy_open",
+    "vix_close",
+    "vix_high",
+    "vix_low",
+    "vix_open",
+    "tnx_close",
+    "tnx_high",
+    "tnx_low",
+    "tnx_open",
     "gold_return_next_day",
-    "gvz_close", "gvz_high", "gvz_low", "gvz_open",
-    "oil_close", "oil_high", "oil_low", "oil_open",
-    "sp500_close", "sp500_high", "sp500_low", "sp500_open",
-    "gold_ma_5", "gold_ma_20",
+    "gvz_close",
+    "gvz_high",
+    "gvz_low",
+    "gvz_open",
+    "oil_close",
+    "oil_high",
+    "oil_low",
+    "oil_open",
+    "sp500_close",
+    "sp500_high",
+    "sp500_low",
+    "sp500_open",
+    "gold_ma_5",
+    "gold_ma_20",
     "gold_ma_cross",
-    "gold_macd", "gold_macd_signal",
+    "gold_macd",
+    "gold_macd_signal",
     "gold_atr_14",
     "vix_ma_20",
 ]
@@ -310,7 +332,4 @@ def run_feature_engineering(input_path, output_path):
 
 
 if __name__ == "__main__":
-    run_feature_engineering(
-        "data/processed/gold-clean.csv",
-        "data/processed/gold-features.csv"
-    )
+    run_feature_engineering("data/processed/gold-clean.csv", "data/processed/gold-features.csv")

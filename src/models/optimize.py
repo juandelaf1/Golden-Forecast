@@ -257,10 +257,12 @@ def main():
     print("LOGISTIC REGRESSION — Target binario")
     print("=" * 60)
 
-    lr_pipeline = Pipeline([
-        ("scaler", StandardScaler()),
-        ("model", LogisticRegression(random_state=RANDOM_STATE)),
-    ])
+    lr_pipeline = Pipeline(
+        [
+            ("scaler", StandardScaler()),
+            ("model", LogisticRegression(random_state=RANDOM_STATE)),
+        ]
+    )
 
     lr_bin_model, lr_bin_params, _ = optimize_model(
         lr_pipeline,

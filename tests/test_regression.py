@@ -1,4 +1,5 @@
 """Tests for regression module."""
+
 import pandas as pd
 import numpy as np
 import pytest
@@ -21,11 +22,11 @@ class TestRegressionModels:
 
     def test_get_regression_models_has_rf(self):
         models = get_regression_models()
-        assert 'Random Forest' in models
+        assert "Random Forest" in models
 
     def test_get_regression_models_has_ridge(self):
         models = get_regression_models()
-        assert 'Ridge' in models
+        assert "Ridge" in models
 
 
 class TestRegressionTargetSpecs:
@@ -35,13 +36,13 @@ class TestRegressionTargetSpecs:
         assert len(TARGET_SPECS) == 4
 
     def test_target_specs_keys(self):
-        expected = {'realized_vol_20d', 'future_atr_20d', 'max_drawdown_20d', 'fair_value_dist'}
+        expected = {"realized_vol_20d", "future_atr_20d", "max_drawdown_20d", "fair_value_dist"}
         assert set(TARGET_SPECS.keys()) == expected
 
     def test_target_specs_horizon(self):
         for name, spec in TARGET_SPECS.items():
-            assert 'horizon' in spec
-            assert spec['horizon'] >= 1
+            assert "horizon" in spec
+            assert spec["horizon"] >= 1
 
 
 class TestRegressionMetrics:
@@ -72,8 +73,8 @@ class TestRegressionMetrics:
         models = get_regression_models()
         results = evaluate_regression(models, X[:split], X[split:], y[:split], y[split:])
         assert isinstance(results, pd.DataFrame)
-        assert 'Modelo' in results.columns
-        assert 'MAE' in results.columns
-        assert 'RMSE' in results.columns
-        assert 'R²' in results.columns
+        assert "Modelo" in results.columns
+        assert "MAE" in results.columns
+        assert "RMSE" in results.columns
+        assert "R²" in results.columns
         assert len(results) == len(models)

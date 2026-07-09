@@ -90,9 +90,7 @@ def predict_next_day() -> dict:
     fecha_referencia = pd.Timestamp(latest_row["Date"].values[0]).date()
 
     # Separar las variables predictoras (eliminar Date y targets)
-    X = latest_row.drop(
-        columns=[c for c in NO_FEATURE_COLUMNS if c in latest_row.columns]
-    )
+    X = latest_row.drop(columns=[c for c in NO_FEATURE_COLUMNS if c in latest_row.columns])
 
     # Cargar el scaler y transformar (NUNCA reajustar — debe ser el mismo que se usó en train.py)
     scaler = load_pickle(f"{MODELS_DIR}/scaler.pkl")
@@ -130,10 +128,7 @@ def predict_next_day() -> dict:
     print("Golden Forecast — Predicción del próximo día de mercado")
     print("=" * 55)
     print(f"  Datos de referencia : {result['fecha_referencia']}")
-    print(
-        f"  Señal binaria       : {result['señal_binaria']}  "
-        f"(probabilidad de subida: {prob_sube * 100:.1f}%)"
-    )
+    print(f"  Señal binaria       : {result['señal_binaria']}  " f"(probabilidad de subida: {prob_sube * 100:.1f}%)")
     print(f"  Señal multiclase    : {result['señal_multiclase']}")
     print("=" * 55)
 
@@ -151,9 +146,7 @@ def save_prediction(result: dict) -> None:
     if os.path.exists(PREDICTIONS_LOG):
         existing = pd.read_csv(PREDICTIONS_LOG)
         if result["fecha_referencia"] in existing["fecha_referencia"].values:
-            print(
-                f"  Ya existe predicción para {result['fecha_referencia']}. No se duplica."
-            )
+            print(f"  Ya existe predicción para {result['fecha_referencia']}. No se duplica.")
             return
         row.to_csv(PREDICTIONS_LOG, mode="a", header=False, index=False)
     else:
