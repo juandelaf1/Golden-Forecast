@@ -4,36 +4,36 @@ Capturas del dashboard Golden Forecast con 9 pestañas (versión actual).
 
 ## Panel de Control
 
-![Panel de Control](assets/screenshots/screenshot-panel-control.png)
+![Panel de Control](/docs/assets/screenshots/screenshot-panel-control.png)
 
 ## Precio
 
-![Precio](assets/screenshots/screenshot-precio.png)
+![Precio](/docs/assets/screenshots/screenshot-precio.png)
 
 ## Indicadores
 
-![Indicadores](assets/screenshots/screenshot-indicadores.png)
+![Indicadores](/docs/assets/screenshots/screenshot-indicadores.png)
 
 ## Macro
 
-![Macro](assets/screenshots/screenshot-macro.png)
+![Macro](/docs/assets/screenshots/screenshot-macro.png)
 
 ## Backtest
 
-![Backtest](assets/screenshots/screenshot-backtest.png)
+![Backtest](/docs/assets/screenshots/screenshot-backtest.png)
 
 ## Simulación
 
-![Simulación](assets/screenshots/screenshot-simulacion.png)
+![Simulación](/docs/assets/screenshots/screenshot-simulacion.png)
 
 ## Métricas
 
-![Métricas](assets/screenshots/screenshot-metricas.png)
+![Métricas](/docs/assets/screenshots/screenshot-metricas.png)
 
 ## Valor y Riesgo
 
-![Valor y Riesgo](assets/screenshots/screenshot-valor-riesgo.png)
+![Valor y Riesgo](/docs/assets/screenshots/screenshot-valor-riesgo.png)
 
 ## Metodología
 
-![Metodología](assets/screenshots/screenshot-metodologia.png)
+![Metodología](/docs/assets/screenshots/screenshot-metodologia.png)

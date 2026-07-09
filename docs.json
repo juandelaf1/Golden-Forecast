@@ -49,8 +49,9 @@
         ]
       },
       {
-        "group": "Galería",
+        "group": "Dashboard",
         "pages": [
+          "docs/project_handbook",
           "docs/screenshots"
         ]
       }
